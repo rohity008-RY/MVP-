@@ -1,0 +1,16 @@
+{
+  "name": "Bazaar Setu Customer",
+  "short_name": "Bazaar Customer",
+  "start_url": "/customer",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f0f14",
+  "icons": [
+    {
+      "src": "/assets/bazaar-setu-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

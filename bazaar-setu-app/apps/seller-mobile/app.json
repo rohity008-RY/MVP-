@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "Bazaar Setu Seller",
+    "slug": "bazaar-setu-seller",
+    "scheme": "bazaarsetu-seller",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": ["expo-router", "expo-location", "expo-image-picker"]
+  }
+}

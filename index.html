@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bazaar Setu Static App</title>
+  <meta name="description" content="Bazaar Setu customer and seller static mobile app prototype.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" rel="stylesheet">
+  <link rel="icon" href="assets/bazaar-setu-logo.svg?v=catalogue1" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css?v=catalogue1">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="modebar" aria-label="Bazaar Setu app selector">
+      <div class="mode-brand">
+        <img class="brand-logo brand-logo-sm" src="assets/bazaar-setu-logo.svg" alt="Bazaar Setu logo">
+        <div>
+          <strong>Bazaar Setu</strong>
+          <small>Customer, seller, and ops access</small>
+        </div>
+      </div>
+      <nav class="mode-tabs" aria-label="App mode">
+        <button type="button" class="mode-tab active" data-mode="customer">Customer App</button>
+        <button type="button" class="mode-tab" data-mode="seller">Seller App</button>
+        <button type="button" class="mode-tab" data-mode="ops">Ops Admin</button>
+      </nav>
+    </header>
+
+    <section class="app-stage">
+      <div class="phone customer-phone active-mode" id="customerApp" aria-label="Customer app">
+        <section class="screen customer-screen active" id="customer-splash" data-screen="splash">
+          <div class="splash-logo">
+            <img class="brand-logo brand-logo-xl" src="assets/bazaar-setu-logo.svg" alt="Bazaar Setu logo">
+            <div class="splash-wordmark">Bazaar<span>Setu</span></div>
+            <div class="splash-sub">Multi-seller marketplace</div>
+            <div class="splash-badges">
+              <span><i class="ti ti-building-store"></i>500+ Sellers</span>
+              <span><i class="ti ti-truck-delivery"></i>Fast Delivery</span>
+              <span><i class="ti ti-tag"></i>Best Prices</span>
+            </div>
+            <button type="button" class="enter-btn" onclick="showCustomerScreen('home')">Start Shopping <i class="ti ti-arrow-right"></i></button>
+          </div>
+        </section>
+
+        <section class="screen customer-screen" id="customer-home" data-screen="home">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <header class="home-header">
+            <div class="home-top">
+              <img class="brand-logo home-logo" src="assets/bazaar-setu-logo.svg" alt="Bazaar Setu logo">
+              <button type="button" class="location-bar" onclick="showCustomerScreen('profile')">
+                <span class="loc-label">Deliver to</span>
+                <strong>Andheri West <i class="ti ti-chevron-down"></i></strong>
+              </button>
+              <div class="header-icons">
+                <button type="button" onclick="showCustomerScreen('search')" aria-label="Search"><i class="ti ti-search"></i></button>
+                <button type="button" class="notification-icon-button" onclick="showCustomerScreen('notifications')" aria-label="Notifications"><i class="ti ti-bell"></i><span data-notification-count>0</span></button>
+              </div>
+            </div>
+            <button type="button" class="search-bar" onclick="showCustomerScreen('search')">
+              <i class="ti ti-search"></i><span>Search fruits, vegetables, dairy...</span><i class="ti ti-microphone"></i>
+            </button>
+          </header>
+          <div class="scroll-body">
+            <section class="hero-carousel" aria-label="Offers">
+              <article class="hero-card hc1"><span>Fresh Arrivals</span><strong>Farm Fresh<br>Vegetables</strong><button type="button">Shop Now</button></article>
+              <article class="hero-card hc2"><span>Today's Deal</span><strong>Organic Fruits<br>Upto 40% Off</strong><button type="button">Grab Now</button></article>
+              <article class="hero-card hc3"><span>New Sellers</span><strong>Artisan Bakery<br>Now Near You</strong><button type="button">Explore</button></article>
+            </section>
+            <div class="section-hdr"><h2>Shop by Category</h2><button type="button" onclick="showCustomerScreen('search')">See all</button></div>
+            <div class="cat-scroll" id="homeCategories"></div>
+            <div class="section-hdr"><h2>Top Sellers Near You</h2><button type="button">View all</button></div>
+            <div class="seller-strip" id="sellerStrip"></div>
+            <div class="section-hdr"><h2>Trending Products</h2><button type="button" onclick="showCustomerScreen('search')">See all</button></div>
+            <div class="product-grid" id="homeProducts"></div>
+            <div class="pb-safe"></div>
+          </div>
+          <nav class="bottom-nav" data-customer-nav></nav>
+        </section>
+
+        <section class="screen customer-screen" id="customer-search" data-screen="search">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <header class="page-header search-header">
+            <button type="button" class="back-btn" onclick="showCustomerScreen('home')" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+            <label class="search-field">
+              <i class="ti ti-search"></i>
+              <input id="customerSearchInput" type="search" placeholder="Search products, sellers...">
+              <button type="button" aria-label="Voice search"><i class="ti ti-microphone"></i></button>
+            </label>
+          </header>
+          <div class="chip-row" id="searchChips"></div>
+          <div class="scroll-body surface-body">
+            <div class="popular-searches">
+              <p>Popular Searches</p>
+              <button type="button" data-search-term="Spinach">Spinach</button>
+              <button type="button" data-search-term="Tomatoes">Tomatoes</button>
+              <button type="button" data-search-term="Milk">Milk</button>
+              <button type="button" data-search-term="Eggs">Eggs</button>
+            </div>
+            <div class="section-hdr"><h2>All Products</h2><small id="productCountLabel">0 items</small></div>
+            <div class="product-grid" id="searchProducts"></div>
+            <div class="pb-safe"></div>
+          </div>
+          <nav class="bottom-nav" data-customer-nav></nav>
+        </section>
+
+        <section class="screen customer-screen" id="customer-cart" data-screen="cart">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <header class="page-header">
+            <button type="button" class="back-btn" onclick="showCustomerScreen('home')" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+            <h1>My Cart</h1>
+            <small id="cartItemLabel">0 items</small>
+          </header>
+          <div class="scroll-body" id="cartBody"></div>
+          <nav class="bottom-nav" data-customer-nav></nav>
+        </section>
+
+        <section class="screen customer-screen" id="customer-orders" data-screen="orders">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <div class="orders-tabs">
+            <button type="button" class="active" data-order-tab="active">Active</button>
+            <button type="button" data-order-tab="delivered">Delivered</button>
+            <button type="button" data-order-tab="cancelled">Cancelled</button>
+          </div>
+          <div class="scroll-body surface-body" id="customerOrders"></div>
+          <nav class="bottom-nav" data-customer-nav></nav>
+        </section>
+
+        <section class="screen customer-screen" id="customer-notifications" data-screen="notifications">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <header class="page-header">
+            <button type="button" class="back-btn" onclick="showCustomerScreen('home')" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+            <h1>Notifications</h1>
+            <button type="button" class="voice-pill" onclick="markCustomerNotificationsRead()">Mark read</button>
+          </header>
+          <div class="orders-tabs notification-tabs">
+            <button type="button" class="active">All</button>
+            <button type="button">Offers</button>
+            <button type="button">Orders</button>
+          </div>
+          <div class="scroll-body surface-body" id="customerNotifications"></div>
+          <nav class="bottom-nav" data-customer-nav></nav>
+        </section>
+
+        <section class="screen customer-screen" id="customer-profile" data-screen="profile">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <div class="scroll-body">
+            <section class="profile-header">
+              <div class="profile-top">
+                <div class="profile-avatar">RK</div>
+                <div><h1>Rahul Kumar</h1><p>+91 98765 43210</p></div>
+                <button type="button">Edit</button>
+              </div>
+              <div class="profile-stats"><span><strong>23</strong>Orders</span><span><strong>Rs. 4.2k</strong>Spent</span><span><strong>320</strong>Points</span></div>
+            </section>
+            <section class="menu-section">
+              <p>Account</p>
+              <button type="button"><i class="ti ti-map-pin"></i><span><strong>Saved Addresses</strong><small>Home, Work, Other</small></span><i class="ti ti-chevron-right"></i></button>
+              <button type="button"><i class="ti ti-wallet"></i><span><strong>Payments & Wallet</strong><small>UPI, Cards, BazaarPay</small></span><i class="ti ti-chevron-right"></i></button>
+              <button type="button"><i class="ti ti-star"></i><span><strong>Rewards & Coupons</strong><small>320 points · 3 coupons</small></span><i class="ti ti-chevron-right"></i></button>
+            </section>
+            <section class="menu-section">
+              <p>Seller Tools</p>
+              <button type="button" onclick="submitSellerLead()"><img class="menu-logo-icon" src="assets/bazaar-setu-logo.svg" alt=""><span><strong>Become a Seller</strong><small>Request a callback from Bazaar Setu Ops</small></span><i class="ti ti-chevron-right"></i></button>
+            </section>
+            <div id="customerProfileDetails"></div>
+            <div class="profile-actions"><button type="button">Help Center</button><button type="button">Sign Out</button></div>
+            <div class="pb-safe"></div>
+          </div>
+          <nav class="bottom-nav" data-customer-nav></nav>
+        </section>
+      </div>
+
+      <div class="phone seller-phone" id="sellerApp" aria-label="Seller app">
+        <section class="screen seller-screen active" id="seller-lang" data-screen="s-lang">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <div class="scroll-body">
+            <div class="seller-logo">
+              <img class="brand-logo brand-logo-lg" src="assets/bazaar-setu-logo.svg" alt="Bazaar Setu logo">
+              <h1>अपनी भाषा चुनें</h1>
+              <p>Choose your language to get started</p>
+            </div>
+            <div class="language-grid" id="languageGrid"></div>
+            <div class="screen-pad">
+              <button type="button" class="pri-btn" onclick="showSellerScreen('s-welcome')">आगे बढ़ें — Continue <i class="ti ti-arrow-right"></i></button>
+              <small>You can change language anytime in settings</small>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen seller-screen" id="seller-welcome" data-screen="s-welcome">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <div class="scroll-body surface-body">
+            <section class="seller-welcome-hero">
+              <p><img class="brand-logo hero-logo" src="assets/bazaar-setu-logo.svg" alt="Bazaar Setu logo">Bazaar Setu Seller</p>
+              <h1>अपना बिज़नेस<br>शुरू करें</h1>
+              <span>Start selling in minutes — no tech expertise needed</span>
+              <div><strong>500+<small>Sellers</small></strong><strong>0%<small>Commission 30d</small></strong><strong>5 min<small>To go live</small></strong></div>
+            </section>
+            <section class="screen-pad">
+              <h2>Select your seller type</h2>
+              <div class="tier-list" id="tierList"></div>
+              <button type="button" class="pri-btn" id="tierButton" onclick="showSellerScreen('s-signup')">Register as Micro Seller <i class="ti ti-arrow-right"></i></button>
+            </section>
+          </div>
+        </section>
+
+        <section class="screen seller-screen" id="seller-signup" data-screen="s-signup">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <header class="seller-step-header">
+            <div><button type="button" class="back-btn" onclick="showSellerScreen('s-welcome')"><i class="ti ti-arrow-left"></i></button><strong>Step <span id="stepNum">1</span> of 4</strong></div>
+            <div class="step-dots" id="stepDots"></div>
+            <span><i id="progressBar"></i></span>
+          </header>
+          <div class="scroll-body surface-body" id="signupSteps"></div>
+        </section>
+
+        <section class="screen seller-screen" id="seller-dash" data-screen="s-dash">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <header class="seller-dash-header">
+            <div>
+              <p><img class="brand-logo dash-logo" src="assets/bazaar-setu-logo.svg" alt="Bazaar Setu logo">Nirmala's Kitchen</p>
+              <h1>नमस्ते, Nirmala!</h1>
+              <small data-seller-store-status><i></i> Store Open · Kurla West</small>
+            </div>
+            <button type="button" onclick="showSellerScreen('s-ai')"><i class="ti ti-sparkles"></i> AI Help</button>
+            <section><span>Today's Sales<strong>Rs. 1,840</strong><small>+12 orders</small></span><span>Pending<strong>3</strong><small>Need action</small></span><span>Rating<strong>4.8</strong><small>18 reviews</small></span></section>
+          </header>
+          <div class="scroll-body surface-body">
+            <button type="button" class="ai-insight" onclick="showSellerScreen('s-ai')"><strong><i class="ti ti-sparkles"></i> AI Insight — आज का सुझाव</strong><span>Mango Pickle sales up 40% this week. Stock is running low — add 10+ units.</span></button>
+            <section class="screen-pad">
+              <h2>Action Centre</h2>
+              <div class="action-card-list">
+                <button type="button" onclick="showSellerScreen('s-orders')"><i class="ti ti-alert-circle"></i><span><strong>3 new orders — confirm now</strong><small>Accept within 10 min to maintain SLA</small></span><em>Urgent</em></button>
+                <button type="button" onclick="showSellerScreen('s-inventory')"><i class="ti ti-package"></i><span><strong>Mango Pickle — only <span data-stock-inline>4</span> left</strong><small>Update stock to avoid order failures</small></span><em>Low Stock</em></button>
+                <button type="button" onclick="showSellerScreen('s-ai')"><i class="ti ti-sparkles"></i><span><strong>AI: Lemon pickle trending near you</strong><small>34 searches this week with no seller</small></span><i class="ti ti-chevron-right"></i></button>
+              </div>
+              <div class="seller-shortcuts">
+                <button type="button" onclick="showSellerScreen('s-orders')"><i class="ti ti-receipt"></i><strong>Orders</strong><small>3 pending</small></button>
+                <button type="button" onclick="showSellerScreen('s-inventory')"><i class="ti ti-package"></i><strong>Inventory</strong><small>2 products low</small></button>
+                <button type="button" onclick="showSellerScreen('s-ai')"><i class="ti ti-sparkles"></i><strong>AI Assistant</strong><small>Ask anything</small></button>
+                <button type="button" onclick="showSellerScreen('s-analytics')"><i class="ti ti-chart-bar"></i><strong>Analytics</strong><small>Weekly report</small></button>
+              </div>
+            </section>
+            <div class="pb-safe"></div>
+          </div>
+          <nav class="bottom-nav seller-nav" data-seller-nav></nav>
+        </section>
+
+        <section class="screen seller-screen" id="seller-ai" data-screen="s-ai">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <header class="page-header">
+            <button type="button" class="back-btn" onclick="showSellerScreen('s-dash')"><i class="ti ti-arrow-left"></i></button>
+            <div class="ai-title"><span><img class="brand-logo ai-logo" src="assets/bazaar-setu-logo.svg" alt="Bazaar Setu logo"></span><strong>Bazaar Setu AI</strong><small>Online · हिंदी / English</small></div>
+            <button type="button" class="voice-pill"><i class="ti ti-microphone"></i>Voice</button>
+          </header>
+          <div class="chip-row ai-chips" id="aiChips"></div>
+          <div class="scroll-body surface-body ai-chat" id="aiChat"></div>
+          <footer class="ai-input">
+            <label><input id="chatInput" placeholder="Hindi या English में पूछें..."><i class="ti ti-microphone"></i></label>
+            <button type="button" onclick="sendSellerAiMessage()"><i class="ti ti-send"></i></button>
+          </footer>
+        </section>
+
+        <section class="screen seller-screen" id="seller-orders" data-screen="s-orders">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <header class="page-header"><button type="button" class="back-btn" onclick="showSellerScreen('s-dash')"><i class="ti ti-arrow-left"></i></button><h1>Orders</h1><small>3 new</small></header>
+          <div class="scroll-body surface-body" id="sellerOrders"></div>
+          <nav class="bottom-nav seller-nav" data-seller-nav></nav>
+        </section>
+
+        <section class="screen seller-screen" id="seller-inventory" data-screen="s-inventory">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <header class="page-header"><button type="button" class="back-btn" onclick="showSellerScreen('s-dash')"><i class="ti ti-arrow-left"></i></button><h1>My Products</h1><button type="button" class="header-add"><i class="ti ti-plus"></i>Add</button></header>
+          <div class="scroll-body surface-body" id="sellerInventory"></div>
+          <nav class="bottom-nav seller-nav" data-seller-nav></nav>
+        </section>
+
+        <section class="screen seller-screen" id="seller-analytics" data-screen="s-analytics">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <header class="page-header"><button type="button" class="back-btn" onclick="showSellerScreen('s-dash')"><i class="ti ti-arrow-left"></i></button><h1>Analytics</h1><button type="button" class="voice-pill" onclick="showSellerScreen('s-ai')"><i class="ti ti-sparkles"></i>AI Explain</button></header>
+          <div class="scroll-body surface-body analytics-body">
+            <section class="analytics-kpis"><article><span>This Week</span><strong>Rs. 8,400</strong><small>+22% vs last week</small></article><article><span>Total Orders</span><strong>56</strong><small>+14 orders</small></article></section>
+            <section class="chart-card"><h2>Revenue — Last 7 Days</h2><div class="bar-chart" id="anBars"></div><div class="chart-days"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div></section>
+            <button type="button" class="ai-insight" onclick="showSellerScreen('s-ai')"><strong><i class="ti ti-sparkles"></i> AI Analytics Summary</strong><span>Sales peak on Saturday. Adding Garlic Pickle could increase average order by Rs. 60.</span></button>
+            <div class="pb-safe"></div>
+          </div>
+          <nav class="bottom-nav seller-nav" data-seller-nav></nav>
+        </section>
+
+        <section class="screen seller-screen" id="seller-profile" data-screen="s-profile">
+          <div class="status-bar"><span>9:41</span><span><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span></div>
+          <header class="page-header"><button type="button" class="back-btn" onclick="showSellerScreen('s-dash')"><i class="ti ti-arrow-left"></i></button><h1>Profile</h1><button type="button" class="voice-pill" onclick="toggleSellerStoreLive()"><i class="ti ti-power"></i>Store</button></header>
+          <div class="scroll-body surface-body" id="sellerProfile"></div>
+          <nav class="bottom-nav seller-nav" data-seller-nav></nav>
+        </section>
+      </div>
+
+      <div class="ops-app" id="opsApp" aria-label="Ops admin panel">
+        <aside class="ops-sidebar">
+          <div class="ops-brand">
+            <img class="brand-logo ops-brand-logo" src="assets/bazaar-setu-logo.svg" alt="Bazaar Setu logo">
+            <div>
+              <strong>Bazaar Setu</strong>
+              <span>Operations Panel</span>
+            </div>
+          </div>
+          <div class="ops-role-card">
+            <small>Signed in as</small>
+            <strong id="opsRoleName">Super Admin</strong>
+            <span id="opsRoleSummary">Full platform access</span>
+          </div>
+          <nav class="ops-nav" data-ops-nav aria-label="Ops navigation"></nav>
+          <div class="ops-user-card">
+            <span id="opsUserAvatar">SA</span>
+            <div>
+              <strong id="opsUserName">Suresh Admin</strong>
+              <small id="opsUserRole">Backend Admin</small>
+            </div>
+            <i class="ti ti-settings"></i>
+          </div>
+        </aside>
+
+        <section class="ops-main">
+          <header class="ops-topbar">
+            <div class="ops-title">
+              <h1 id="opsTitle">Platform Overview</h1>
+              <p id="opsAccessNote">Admin can monitor every backend workflow.</p>
+            </div>
+            <label class="ops-search">
+              <i class="ti ti-search"></i>
+              <input type="search" placeholder="Search sellers, orders, users...">
+            </label>
+            <div class="ops-role-switch" aria-label="Role access switcher">
+              <button type="button" data-ops-role="admin" onclick="selectOpsRole('admin')">Admin</button>
+              <button type="button" data-ops-role="ops" onclick="selectOpsRole('ops')">Ops</button>
+              <button type="button" data-ops-role="support" onclick="selectOpsRole('support')">Support</button>
+              <button type="button" data-ops-role="logistics" onclick="selectOpsRole('logistics')">Logistics</button>
+            </div>
+            <button type="button" class="ops-icon-btn" aria-label="Notifications"><i class="ti ti-bell"></i><span></span></button>
+            <button type="button" class="ops-primary-btn" data-action-roles="admin,ops,support,logistics"><i class="ti ti-download"></i>Export CSV</button>
+          </header>
+
+          <div class="ops-content">
+            <section class="ops-view active" data-ops-view="ops-overview">
+              <div class="ops-stat-row">
+                <article class="ops-stat-card"><span>Gross Merchandise Value</span><strong>Rs. 18.4L</strong><small class="up">+22% this month</small><i style="width:78%;background:var(--green)"></i></article>
+                <article class="ops-stat-card"><span>Active Sellers</span><strong>512</strong><small class="up">+34 this week</small><i style="width:65%;background:var(--blue)"></i></article>
+                <article class="ops-stat-card"><span>Orders Today</span><strong>1,284</strong><small class="up">+11% vs yesterday</small><i style="width:88%;background:var(--purple)"></i></article>
+                <article class="ops-stat-card"><span>Platform SLA Score</span><strong>94.2%</strong><small class="down">-0.8pp</small><i style="width:94%;background:var(--amber)"></i></article>
+              </div>
+              <div class="ops-grid-2">
+                <article class="ops-panel">
+                  <header><h2>Order Volume - Last 7 Days</h2><button type="button" onclick="showOpsView('ops-orders')">View all</button></header>
+                  <div class="ops-bars" id="opsOrderBars"></div>
+                  <div class="ops-days"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+                </article>
+                <article class="ops-panel">
+                  <header><h2>Pending Actions</h2><button type="button">All alerts</button></header>
+                  <div class="ops-action-list">
+                    <button type="button" onclick="showOpsView('ops-verification')"><i class="ti ti-shield-check"></i><span><strong>7 sellers awaiting verification</strong><small>KYC documents pending review</small></span><em class="ops-pill amber">Pending</em></button>
+                    <button type="button" onclick="showOpsView('ops-refunds')"><i class="ti ti-rotate-clockwise-2"></i><span><strong>5 refund requests open</strong><small>Rs. 3,240 total pending</small></span><em class="ops-pill red">Urgent</em></button>
+                    <button type="button" onclick="showOpsView('ops-catalogue')"><i class="ti ti-package"></i><span><strong>12 product requests for approval</strong><small>New products needing catalogue review</small></span><em class="ops-pill blue">Review</em></button>
+                    <button type="button" onclick="showOpsView('ops-delivery')"><i class="ti ti-truck-delivery"></i><span><strong>3 delivery batches ready</strong><small>Andheri, Goregaon, Borivali zones</small></span><em class="ops-pill purple">Ready</em></button>
+                  </div>
+                </article>
+              </div>
+              <article class="ops-panel">
+                <header><h2>Role Access Matrix</h2><button type="button">RBAC enabled</button></header>
+                <div class="ops-access-grid">
+                  <div><strong>Admin</strong><span>Everything, payouts, compliance, suspensions</span></div>
+                  <div><strong>Ops</strong><span>Orders, sellers, verification, catalogue, delivery</span></div>
+                  <div><strong>Support</strong><span>Orders, sellers, refunds, customer escalations</span></div>
+                  <div><strong>Logistics</strong><span>Orders and delivery batching only</span></div>
+                </div>
+              </article>
+              <article class="ops-panel">
+                <header><h2>Top Sellers by GMV this week</h2><button type="button" onclick="showOpsView('ops-sellers')">View sellers</button></header>
+                <table class="ops-table">
+                  <thead><tr><th>Seller</th><th>Category</th><th>Orders</th><th>GMV</th><th>SLA</th><th>Status</th><th>Action</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="ops-avatar green">RF</span><div><strong>Ram Fresh Farms</strong><small>SLR-00412</small></div></td><td><em class="ops-pill green">Vegetables</em></td><td>142</td><td>Rs. 28,400</td><td>96%</td><td><em class="ops-pill green">Active</em></td><td><button type="button" class="ops-secondary-btn">View</button></td></tr>
+                    <tr><td><span class="ops-avatar blue">OD</span><div><strong>Om Dairy Hub</strong><small>SLR-00287</small></div></td><td><em class="ops-pill blue">Dairy</em></td><td>98</td><td>Rs. 22,100</td><td>91%</td><td><em class="ops-pill green">Active</em></td><td><button type="button" class="ops-secondary-btn">View</button></td></tr>
+                    <tr><td><span class="ops-avatar red">KS</span><div><strong>Krishnan Stores</strong><small>SLR-00481</small></div></td><td><em class="ops-pill amber">Grocery</em></td><td>12</td><td>Rs. 4,200</td><td>68%</td><td><em class="ops-pill red">SLA Risk</em></td><td><button type="button" class="ops-danger-btn" data-action-roles="admin,ops">Warn</button></td></tr>
+                  </tbody>
+                </table>
+              </article>
+            </section>
+
+            <section class="ops-view" data-ops-view="ops-orders">
+              <div class="ops-stat-row">
+                <article class="ops-stat-card"><span>Total Orders Today</span><strong>1,284</strong><small class="up">+11% vs yesterday</small></article>
+                <article class="ops-stat-card"><span>Unconfirmed</span><strong class="danger">18</strong><small class="down">Needs seller action</small></article>
+                <article class="ops-stat-card"><span>In Transit</span><strong class="info">342</strong><small class="up">On track</small></article>
+                <article class="ops-stat-card"><span>Delivered</span><strong class="success">892</strong><small class="up">69.5% delivery rate</small></article>
+              </div>
+              <article class="ops-panel">
+                <header><h2>Parent Order Monitor</h2><button type="button" class="ops-primary-btn">Export</button></header>
+                <div class="ops-chip-row"><button class="active">All Orders</button><button>Unconfirmed (18)</button><button>SLA Breach Risk (6)</button><button>Multi-seller (84)</button><button>COD (412)</button></div>
+                <table class="ops-table">
+                  <thead><tr><th>Order</th><th>Customer</th><th>Sellers</th><th>Value</th><th>Payment</th><th>Status</th><th>SLA</th><th>Action</th></tr></thead>
+                  <tbody>
+                    <tr><td><strong>#ORD-8831</strong><small>2 min ago</small></td><td>Rahul Kumar<small>Andheri W</small></td><td><em class="ops-pill green">RF</em><em class="ops-pill blue">OD</em></td><td>Rs. 842</td><td><em class="ops-pill amber">COD</em></td><td><em class="ops-pill red">Unconfirmed</em></td><td>8 min left</td><td><button class="ops-secondary-btn">Detail</button><button class="ops-danger-btn" data-action-roles="admin,ops,support">Escalate</button></td></tr>
+                    <tr><td><strong>#ORD-8829</strong><small>18 min ago</small></td><td>Priya Sharma<small>Goregaon E</small></td><td><em class="ops-pill green">RF</em></td><td>Rs. 420</td><td><em class="ops-pill green">UPI</em></td><td><em class="ops-pill amber">Confirmed</em></td><td>22 min left</td><td><button class="ops-secondary-btn">Detail</button></td></tr>
+                    <tr><td><strong>#ORD-8800</strong><small>5 hrs ago</small></td><td>Sneha Mehta<small>Andheri E</small></td><td><em class="ops-pill blue">OD</em></td><td>Rs. 168</td><td><em class="ops-pill green">UPI</em></td><td><em class="ops-pill red">Rejected</em></td><td>Refund pending</td><td><button class="ops-secondary-btn">Detail</button><button class="ops-danger-btn" data-action-roles="admin,support" onclick="showOpsView('ops-refunds')">Refund</button></td></tr>
+                  </tbody>
+                </table>
+              </article>
+            </section>
+
+            <section class="ops-view" data-ops-view="ops-sellers">
+              <div class="ops-stat-row">
+                <article class="ops-stat-card"><span>Total Sellers</span><strong>512</strong><small class="up">+34 this week</small></article>
+                <article class="ops-stat-card"><span>Active Today</span><strong>388</strong><small>75.8% active rate</small></article>
+                <article class="ops-stat-card"><span>Avg SLA Score</span><strong>94.2%</strong><small class="up">+0.4pp</small></article>
+                <article class="ops-stat-card"><span>Flagged / Suspended</span><strong class="danger">8</strong><small class="down">SLA violations</small></article>
+              </div>
+              <article class="ops-panel">
+                <header><h2>All Sellers</h2><button class="ops-primary-btn" data-action-roles="admin,ops">Onboard Seller</button></header>
+                <div class="ops-chip-row"><button class="active">All (512)</button><button>Active</button><button>Inactive</button><button>SLA Risk</button><button>Suspended</button></div>
+                <table class="ops-table">
+                  <thead><tr><th>Seller</th><th>Categories</th><th>Location</th><th>Orders</th><th>GMV</th><th>SLA</th><th>Status</th><th>Action</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="ops-avatar green">RF</span><div><strong>Ram Fresh Farms</strong><small>Since Jan 2024</small></div></td><td>Vegetables, Fruits</td><td>Andheri W</td><td>142</td><td>Rs. 28,400</td><td>96%</td><td><em class="ops-pill green">Active</em></td><td><button class="ops-secondary-btn">Edit</button><button class="ops-secondary-btn" data-action-roles="admin">Suspend</button></td></tr>
+                    <tr><td><span class="ops-avatar blue">OD</span><div><strong>Om Dairy Hub</strong><small>Since Mar 2024</small></div></td><td>Dairy, Eggs</td><td>Goregaon E</td><td>98</td><td>Rs. 22,100</td><td>91%</td><td><em class="ops-pill green">Active</em></td><td><button class="ops-secondary-btn">Edit</button><button class="ops-secondary-btn" data-action-roles="admin">Suspend</button></td></tr>
+                    <tr><td><span class="ops-avatar red">KS</span><div><strong>Krishnan Stores</strong><small>Since Jun 2024</small></div></td><td>Grocery</td><td>Bandra W</td><td>12</td><td>Rs. 4,200</td><td>68%</td><td><em class="ops-pill red">SLA Risk</em></td><td><button class="ops-secondary-btn">Edit</button><button class="ops-danger-btn" data-action-roles="admin,ops">Warn</button></td></tr>
+                  </tbody>
+                </table>
+              </article>
+            </section>
+
+            <section class="ops-view" data-ops-view="ops-verification">
+              <div class="ops-grid-2">
+                <article class="ops-panel">
+                  <header><h2>Pending Verifications</h2><button type="button">7 open</button></header>
+                  <table class="ops-table">
+                    <thead><tr><th>Seller</th><th>Type</th><th>Submitted</th><th>Docs</th><th>Action</th></tr></thead>
+                    <tbody>
+                      <tr><td><span class="ops-avatar purple">NK</span><div><strong>Nirmala's Kitchen</strong><small>Food - Kurla</small></div></td><td><em class="ops-pill purple">New</em></td><td>Today 8:30 AM</td><td><em class="ops-pill green">4/5</em></td><td><button class="ops-primary-btn" data-action-roles="admin,ops">Review</button></td></tr>
+                      <tr><td><span class="ops-avatar amber">SM</span><div><strong>Suresh Masale</strong><small>Spices - Dadar</small></div></td><td><em class="ops-pill purple">New</em></td><td>Yesterday</td><td><em class="ops-pill amber">3/5</em></td><td><button class="ops-primary-btn" data-action-roles="admin,ops">Review</button></td></tr>
+                    </tbody>
+                  </table>
+                </article>
+                <article class="ops-detail-panel">
+                  <header><div><h2>Nirmala's Kitchen</h2><p>Food seller - Kurla West - FSSAI required</p></div><em class="ops-pill amber">Review</em></header>
+                  <div class="ops-check-list">
+                    <div class="pass"><i class="ti ti-check"></i><span>FSSAI License valid till Dec 2026</span><b>Verified</b></div>
+                    <div class="pass"><i class="ti ti-check"></i><span>GST Certificate</span><b>Verified</b></div>
+                    <div class="pass"><i class="ti ti-check"></i><span>PAN and Aadhaar</span><b>Matched</b></div>
+                    <div class="warn"><i class="ti ti-clock"></i><span>Legal Metrology certificate</span><b>Awaiting upload</b></div>
+                  </div>
+                  <div class="ops-button-row"><button class="ops-success-btn" data-action-roles="admin,ops">Approve Seller</button><button class="ops-danger-btn" data-action-roles="admin,ops">Request Docs</button><button class="ops-secondary-btn" data-action-roles="admin">Reject</button></div>
+                </article>
+              </div>
+            </section>
+
+            <section class="ops-view" data-ops-view="ops-catalogue">
+              <article class="ops-panel">
+                <header><h2>Product Approval Queue</h2><button class="ops-primary-btn" data-action-roles="admin,ops">Bulk Import CSV</button></header>
+                <div class="ops-chip-row"><button class="active">Pending</button><button>Approved</button><button>Rejected</button><button>Missing HSN</button><button>No Image</button></div>
+                <table class="ops-table">
+                  <thead><tr><th>Product</th><th>Seller</th><th>Category</th><th>Unit</th><th>HSN</th><th>Status</th><th>Action</th></tr></thead>
+                  <tbody id="opsCatalogueRequests"></tbody>
+                </table>
+              </article>
+            </section>
+
+            <section class="ops-view" data-ops-view="ops-leads">
+              <article class="ops-panel">
+                <header><h2>Seller Lead Queue</h2><button class="ops-primary-btn" data-action-roles="admin,ops,support">Assign Leads</button></header>
+                <div class="ops-chip-row"><button class="active">New Leads</button><button>Contacted</button><button>Converted</button><button>Not Interested</button></div>
+                <table class="ops-table">
+                  <thead><tr><th>Customer</th><th>Phone</th><th>Source</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
+                  <tbody id="opsSellerLeads"></tbody>
+                </table>
+              </article>
+            </section>
+
+            <section class="ops-view" data-ops-view="ops-settings">
+              <div class="ops-grid-2">
+                <article class="ops-panel">
+                  <header><h2>Payment Methods</h2><button type="button">Customer checkout config</button></header>
+                  <div id="opsPaymentConfig" class="ops-config-grid"></div>
+                </article>
+                <article class="ops-panel">
+                  <header><h2>Rewards Configuration</h2><button type="button">Shopping rewards</button></header>
+                  <div id="opsRewardConfig" class="ops-config-grid"></div>
+                </article>
+              </div>
+            </section>
+
+            <section class="ops-view" data-ops-view="ops-notifications">
+              <div class="ops-grid-2">
+                <article class="ops-panel">
+                  <header><h2>Publish Notification</h2><button type="button" class="ops-primary-btn" onclick="publishAdminNotification()">Publish</button></header>
+                  <div class="ops-notification-form">
+                    <label><span>Audience</span><select id="opsNotificationAudience"><option value="customer">Customers</option><option value="seller">Sellers</option><option value="all">All users</option></select></label>
+                    <label><span>Type</span><select id="opsNotificationType"><option value="offer">Offer</option><option value="order">Order</option><option value="system">System</option></select></label>
+                    <label><span>Title</span><input id="opsNotificationTitle" value="Weekend Bazaar deal"></label>
+                    <label><span>Message</span><textarea id="opsNotificationBody">Fresh products and kirana essentials are live near you. Tap to shop now.</textarea></label>
+                    <button type="button" class="ops-success-btn" onclick="publishAdminNotification()">Publish notification</button>
+                  </div>
+                </article>
+                <article class="ops-panel">
+                  <header><h2>Published Notifications</h2><button type="button">Local prototype log</button></header>
+                  <div id="opsNotificationHistory" class="ops-notification-history"></div>
+                </article>
+              </div>
+            </section>
+
+            <section class="ops-view" data-ops-view="ops-refunds">
+              <div class="ops-grid-2">
+                <article class="ops-panel">
+                  <header><h2>Refund Queue</h2><button type="button">5 open</button></header>
+                  <table class="ops-table">
+                    <thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Reason</th><th>Action</th></tr></thead>
+                    <tbody>
+                      <tr><td><strong>#ORD-8800</strong><small>5 hrs ago</small></td><td>Sneha M.</td><td>Rs. 168</td><td><em class="ops-pill red">Seller Rejected</em></td><td><button class="ops-success-btn" data-action-roles="admin,support">Process</button></td></tr>
+                      <tr><td><strong>#ORD-8754</strong><small>Yesterday</small></td><td>Karan P.</td><td>Rs. 842</td><td><em class="ops-pill amber">Wrong Item</em></td><td><button class="ops-success-btn" data-action-roles="admin,support">Process</button></td></tr>
+                    </tbody>
+                  </table>
+                </article>
+                <article class="ops-detail-panel">
+                  <header><div><h2>Refund - #ORD-8800</h2><p>Sneha Mehta - Om Dairy Hub - 5 hours ago</p></div><em class="ops-pill red">Seller Rejected</em></header>
+                  <div class="ops-info-grid"><div><span>Refund Amount</span><strong>Rs. 168</strong></div><div><span>Payment Mode</span><strong>UPI</strong></div><div><span>Order Value</span><strong>Rs. 168</strong></div></div>
+                  <div class="ops-note">Customer paid online. Seller rejected with note: "Out of stock". Refund is pending Support/Admin approval.</div>
+                  <div class="ops-button-row"><button class="ops-success-btn" data-action-roles="admin,support">Approve Refund</button><button class="ops-danger-btn" data-action-roles="admin,support">Escalate Seller</button></div>
+                </article>
+              </div>
+            </section>
+
+            <section class="ops-view" data-ops-view="ops-payouts">
+              <article class="ops-panel">
+                <header><h2>Payout Ledger</h2><button class="ops-success-btn" data-action-roles="admin">Run Auto-Payout</button></header>
+                <table class="ops-table">
+                  <thead><tr><th>Seller</th><th>Orders</th><th>GMV</th><th>Commission</th><th>Payout</th><th>Bank</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="ops-avatar green">RF</span><strong>Ram Fresh Farms</strong></td><td>142</td><td>Rs. 28,400</td><td>Rs. 1,420</td><td>Rs. 26,980</td><td>HDFC ****4821</td><td><em class="ops-pill green">Settled</em></td></tr>
+                    <tr><td><span class="ops-avatar red">KS</span><strong>Krishnan Stores</strong></td><td>12</td><td>Rs. 4,200</td><td>Rs. 210</td><td>Rs. 3,990</td><td>ICICI ****7712</td><td><em class="ops-pill red">Bank Error</em></td></tr>
+                  </tbody>
+                </table>
+              </article>
+            </section>
+
+            <section class="ops-view" data-ops-view="ops-compliance">
+              <article class="ops-panel">
+                <header><h2>Compliance Monitor</h2><button type="button">FSSAI / GST / Legal Metrology</button></header>
+                <table class="ops-table">
+                  <thead><tr><th>Seller</th><th>FSSAI</th><th>GST</th><th>PAN</th><th>Legal Metrology</th><th>Status</th><th>Action</th></tr></thead>
+                  <tbody>
+                    <tr><td><strong>Ram Fresh Farms</strong></td><td><em class="ops-pill green">Valid</em></td><td><em class="ops-pill green">Verified</em></td><td><em class="ops-pill green">Matched</em></td><td><em class="ops-pill green">Submitted</em></td><td><em class="ops-pill green">Compliant</em></td><td><button class="ops-secondary-btn">View Docs</button></td></tr>
+                    <tr><td><strong>Green Tea & More</strong></td><td><em class="ops-pill amber">Expires in 22d</em></td><td><em class="ops-pill green">Verified</em></td><td><em class="ops-pill green">Matched</em></td><td><em class="ops-pill red">Missing</em></td><td><em class="ops-pill amber">Action Required</em></td><td><button class="ops-primary-btn" data-action-roles="admin,ops">Remind</button></td></tr>
+                    <tr><td><strong>Krishnan Stores</strong></td><td><em class="ops-pill red">Expired</em></td><td><em class="ops-pill red">Missing</em></td><td><em class="ops-pill green">Matched</em></td><td><em class="ops-pill red">Missing</em></td><td><em class="ops-pill red">Suspended</em></td><td><button class="ops-danger-btn" data-action-roles="admin">Suspend</button></td></tr>
+                  </tbody>
+                </table>
+              </article>
+            </section>
+
+            <section class="ops-view" data-ops-view="ops-delivery">
+              <article class="ops-panel">
+                <header><h2>Delivery Batch View</h2><button class="ops-primary-btn" data-action-roles="admin,ops,logistics">Create Batch</button></header>
+                <div class="ops-chip-row"><button class="active">All Batches</button><button>Andheri Zone</button><button>Goregaon Zone</button><button>Borivali Zone</button></div>
+                <table class="ops-table">
+                  <thead><tr><th>Batch</th><th>Zone</th><th>Orders</th><th>Sellers</th><th>Delivery Partner</th><th>Status</th><th>SLA</th><th>Action</th></tr></thead>
+                  <tbody>
+                    <tr><td><strong>BTCH-2241</strong></td><td>Andheri W</td><td>14 orders</td><td><em class="ops-pill green">RF</em><em class="ops-pill blue">OD</em></td><td>Ravi Kumar<small>+91 98xxx 12345</small></td><td><em class="ops-pill purple">Ready</em></td><td>Awaiting dispatch</td><td><button class="ops-success-btn" data-action-roles="admin,ops,logistics">Dispatch</button></td></tr>
+                    <tr><td><strong>BTCH-2238</strong></td><td>Goregaon E</td><td>9 orders</td><td><em class="ops-pill green">RF</em></td><td>Sunil Patil<small>+91 97xxx 88321</small></td><td><em class="ops-pill blue">In Transit</em></td><td>22 min left</td><td><button class="ops-secondary-btn">Track</button></td></tr>
+                  </tbody>
+                </table>
+              </article>
+            </section>
+          </div>
+        </section>
+      </div>
+    </section>
+    <div class="print-modal" id="printModal" aria-hidden="true">
+      <div class="print-sheet" role="dialog" aria-modal="true" aria-labelledby="printModalTitle">
+        <header>
+          <div>
+            <small>Bazaar Setu printable</small>
+            <h2 id="printModalTitle">Print options</h2>
+          </div>
+          <button type="button" onclick="closePrintOptions()" aria-label="Close print options"><i class="ti ti-x"></i></button>
+        </header>
+        <div class="print-formats" id="printFormatButtons"></div>
+        <div class="print-preview" id="printPreview"></div>
+        <div class="print-actions">
+          <button type="button" class="ops-secondary-btn" onclick="window.print()">Print</button>
+          <button type="button" class="ops-primary-btn" onclick="downloadMockDocument()">Download HTML Mock</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="app.js?v=catalogue1"></script>
+</body>
+</html>

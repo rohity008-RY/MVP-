@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BazaarSetu — Operations &amp; Support Admin Panel</title>
+<link rel="manifest" href="/admin/manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --ink: #0C0C12; --ink2: #181824; --ink3: #26263A;
+  --s1: #FFFFFF; --s2: #F5F4F1; --s3: #ECEAE6; --s4: #E3E1DC;
+  --t1: #0C0C12; --t2: #4A4A62; --t3: #8F8FAA;
+  --grn: #1D9E75; --grn2: #E1F5EE; --grn3: #085041;
+  --amb: #BA7517; --amb2: #FAEEDA; --amb3: #412402;
+  --red: #E24B4A; --red2: #FCEBEB; --red3: #501313;
+  --blu: #185FA5; --blu2: #E6F1FB; --blu3: #042C53;
+  --pur: #534AB7; --pur2: #EEEDFE; --pur3: #26215C;
+  --cor: #D85A30; --cor2: #FAECE7; --cor3: #4A1B0C;
+  --acc: #FF4B2B; --br: #E4E2DC;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'DM Sans', sans-serif;
+  background: #CFCDC7;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px 10px 40px;
+  min-height: 100vh;
+}
+
+/* ─────────── SHELL ─────────── */
+.shell {
+  width: 1200px;
+  max-width: 100%;
+  height: 900px;
+  display: flex;
+  flex-direction: row;
+  background: var(--s2);
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--br);
+  box-shadow: 0 24px 80px rgba(12,12,18,.22), 0 0 0 1px rgba(12,12,18,.05);
+}
+
+/* ─────────── SIDEBAR ─────────── */
+.sidebar {
+  width: 224px;
+  min-width: 224px;
+  background: var(--ink);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.sidebar::-webkit-scrollbar { display: none; }
+
+.sb-logo {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0;
+}
+.sb-role {
+  font-size: 10px;
+  color: rgba(255,255,255,.3);
+  margin-top: 3px;
+  font-weight: 500;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+}
+.sb-section {
+  padding: 14px 14px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,.22);
+  letter-spacing: .9px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  margin: 1px 8px;
+  transition: background .15s;
+  border: 1px solid transparent;
+}
+.sb-item:hover { background: rgba(255,255,255,.06); }
+.sb-item.on {
+  background: rgba(255,75,43,.15);
+  border-color: rgba(255,75,43,.22);
+}
+.sb-item i {
+  font-size: 16px;
+  color: rgba(255,255,255,.38);
+  flex-shrink: 0;
+  transition: color .15s;
+}
+.sb-item.on i { color: var(--acc); }
+.sb-item span {
+  font-family: 'Sora', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,.45);
+  transition: color .15s;
+  flex: 1;
+}
+.sb-item.on span { color: #fff; }
+.sb-badge {
+  background: var(--acc);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-family: 'Sora', sans-serif;
+}
+.sb-bottom {
+  margin-top: auto;
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0;
+}
+.sb-user { display: flex; align-items: center; gap: 9px; }
+.sb-av {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: rgba(255,75,43,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-weight: 700; color: var(--acc); font-size: 11px;
+  flex-shrink: 0;
+}
+.sb-uname { font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; color: #fff; }
+.sb-urole { font-size: 10px; color: rgba(255,255,255,.3); margin-top: 1px; }
+
+/* ─────────── MAIN ─────────── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.topbar {
+  background: var(--s1);
+  border-bottom: 1px solid var(--br);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 54px;
+  flex-shrink: 0;
+}
+.tb-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--t1);
+  flex: 1;
+}
+.tb-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--s2);
+  border: 1px solid var(--br);
+  border-radius: 9px;
+  padding: 6px 11px;
+  width: 200px;
+}
+.tb-search i { font-size: 15px; color: var(--t3); }
+.tb-search input {
+  border: none;
+  background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--t1);
+  outline: none;
+  flex: 1;
+  min-width: 0;
+}
+.tb-search input::placeholder { color: var(--t3); }
+.tb-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--s2);
+  border: 1px solid var(--br);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+.tb-icon i { font-size: 16px; color: var(--t2); }
+.notif-dot {
+  position: absolute; top: 5px; right: 5px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--acc);
+  border: 1.5px solid var(--s1);
+}
+.tb-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--acc); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 6px 13px;
+  font-family: 'Sora', sans-serif;
+  font-size: 11px; font-weight: 600;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+}
+
+/* ─────────── CONTENT AREA ─────────── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  background: var(--s2);
+}
+.content::-webkit-scrollbar { width: 4px; }
+.content::-webkit-scrollbar-thumb { background: var(--s4); border-radius: 2px; }
+
+/* ─────────── VIEWS ─────────── */
+.view { display: none; }
+.view.on { display: block; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ─────────── STAT CARDS ─────────── */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.stat-card {
+  background: var(--s1);
+  border: 1px solid var(--br);
+  border-radius: 12px;
+  padding: 13px 15px;
+}
+.sc-lbl { font-size: 10px; color: var(--t3); font-weight: 500; margin-bottom: 5px; letter-spacing: .3px; }
+.sc-val { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; color: var(--t1); }
+.sc-chg { font-size: 11px; font-weight: 500; margin-top: 3px; display: flex; align-items: center; gap: 3px; }
+.up { color: var(--grn); }
+.dn { color: var(--red); }
+.sc-bar { height: 3px; background: var(--s3); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.sc-bar-fill { height: 100%; border-radius: 2px; }
+
+/* ─────────── PANELS ─────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 12px; }
+
+.panel {
+  background: var(--s1);
+  border: 1px solid var(--br);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.panel-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--br);
+}
+.panel-title { font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; color: var(--t1); }
+.panel-action { font-size: 11px; color: var(--acc); font-weight: 500; cursor: pointer; }
+
+/* ─────────── PILLS ─────────── */
+.pill { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; font-family: 'Sora', sans-serif; white-space: nowrap; }
+.p-grn { background: var(--grn2); color: var(--grn3); }
+.p-amb { background: var(--amb2); color: var(--amb3); }
+.p-red { background: var(--red2); color: var(--red3); }
+.p-blu { background: var(--blu2); color: var(--blu3); }
+.p-pur { background: var(--pur2); color: var(--pur3); }
+.p-cor { background: var(--cor2); color: var(--cor3); }
+
+/* ─────────── TABLE ─────────── */
+.tbl { width: 100%; border-collapse: collapse; font-size: 11px; }
+.tbl th {
+  text-align: left; padding: 8px 13px;
+  font-size: 10px; font-weight: 600; color: var(--t3);
+  text-transform: uppercase; letter-spacing: .5px;
+  border-bottom: 1px solid var(--br);
+  background: var(--s2);
+  font-family: 'Sora', sans-serif;
+}
+.tbl td { padding: 9px 13px; border-bottom: 1px solid var(--s3); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: var(--s2); }
+.t-name { font-family: 'Sora', sans-serif; font-size: 11px; font-weight: 500; color: var(--t1); }
+.t-sub { font-size: 10px; color: var(--t3); margin-top: 1px; }
+.av {
+  width: 28px; height: 28px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Sora', sans-serif; font-weight: 700; font-size: 10px;
+  flex-shrink: 0;
+}
+
+/* ─────────── CHIPS ─────────── */
+.chip-row {
+  display: flex; gap: 5px;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--br);
+  overflow-x: auto;
+}
+.chip-row::-webkit-scrollbar { display: none; }
+.chip {
+  background: var(--s2); border: 1px solid var(--br);
+  border-radius: 20px; padding: 4px 11px;
+  font-size: 10px; font-weight: 500; color: var(--t2);
+  cursor: pointer; font-family: 'Sora', sans-serif; white-space: nowrap;
+  transition: background .12s;
+}
+.chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+/* ─────────── BUTTONS ─────────── */
+.btn-act { display: inline-flex; align-items: center; gap: 4px; background: var(--acc); color: #fff; border: none; border-radius: 7px; padding: 5px 10px; font-family: 'Sora', sans-serif; font-size: 10px; font-weight: 600; cursor: pointer; }
+.btn-sec { background: var(--s2); border: 1px solid var(--br); border-radius: 7px; padding: 5px 10px; font-family: 'Sora', sans-serif; font-size: 10px; font-weight: 500; color: var(--t2); cursor: pointer; }
+.btn-grn { background: var(--grn2); border: 1px solid #9FE1CB; border-radius: 7px; padding: 5px 10px; font-family: 'Sora', sans-serif; font-size: 10px; font-weight: 600; color: var(--grn3); cursor: pointer; }
+.btn-red { background: var(--red2); border: 1px solid #F7C1C1; border-radius: 7px; padding: 5px 10px; font-family: 'Sora', sans-serif; font-size: 10px; font-weight: 600; color: var(--red3); cursor: pointer; }
+
+/* ─────────── MISC ─────────── */
+.progress { height: 5px; background: var(--s3); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 64px; }
+.bar-col { flex: 1; border-radius: 2px 2px 0 0; min-height: 4px; }
+.detail-panel { background: var(--s1); border: 1px solid var(--br); border-radius: 16px; padding: 18px; }
+.dp-title { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; color: var(--t1); }
+.dp-sub { font-size: 11px; color: var(--t3); margin-top: 2px; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; margin: 12px 0; }
+.info-cell { background: var(--s2); border-radius: 8px; padding: 10px; }
+.ic-lbl { font-size: 9px; font-weight: 600; color: var(--t3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+.ic-val { font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; color: var(--t1); }
+.chk-list { display: flex; flex-direction: column; gap: 5px; }
+.chk-item { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--br); }
+.chk-pass { background: var(--grn2); border-color: #9FE1CB; }
+.chk-warn { background: var(--amb2); border-color: #FAC775; }
+.chk-dot { width: 20px; height: 20px; border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.chk-pass .chk-dot { background: var(--grn); color: #fff; }
+.chk-warn .chk-dot { background: var(--amb); color: #fff; }
+.chk-dot i { font-size: 11px; }
+.chk-lbl { flex: 1; font-family: 'Sora', sans-serif; font-size: 11px; font-weight: 500; color: var(--t1); }
+.chk-pass .chk-status { font-size: 10px; color: var(--grn3); }
+.chk-warn .chk-status { font-size: 10px; color: var(--amb3); }
+.tl-row { display: flex; gap: 9px; padding-bottom: 10px; position: relative; }
+.tl-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tl-dot i { font-size: 10px; }
+.tl-line { position: absolute; left: 10px; top: 22px; bottom: 0; width: 1.5px; background: var(--s3); }
+.tl-row:last-child .tl-line { display: none; }
+.tl-t { font-family: 'Sora', sans-serif; font-size: 11px; font-weight: 600; color: var(--t1); padding-top: 2px; }
+.tl-s { font-size: 10px; color: var(--t3); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<div class="sidebar">
+
+  <div class="sb-logo">
+    <svg width="134" height="40" viewBox="0 0 260 76" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#FF7A5C"/>
+          <stop offset="100%" stop-color="#FF2D00"/>
+        </linearGradient>
+      </defs>
+      <path d="M8 50 Q36 8 64 50" stroke="url(#g1)" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+      <path d="M8 62 Q20 46 32 62" stroke="#FF4B2B" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.72"/>
+      <path d="M32 62 Q44 46 56 62" stroke="#FF4B2B" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.72"/>
+      <path d="M56 62 Q66 46 70 62" stroke="#FF4B2B" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.4"/>
+      <line x1="4" y1="68" x2="72" y2="68" stroke="#FF4B2B" stroke-width="2.5" stroke-linecap="round" opacity="0.25"/>
+      <circle cx="36" cy="36" r="5" fill="#FF4B2B"/>
+      <circle cx="36" cy="36" r="8" fill="none" stroke="#FF4B2B" stroke-width="1.5" opacity="0.32"/>
+      <line x1="18" y1="50" x2="18" y2="66" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.14"/>
+      <line x1="36" y1="50" x2="36" y2="66" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.14"/>
+      <line x1="54" y1="50" x2="54" y2="66" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.14"/>
+      <text x="84" y="32" font-family="Sora,sans-serif" font-size="24" font-weight="800" fill="white" letter-spacing="-0.8">Bazaar</text>
+      <text x="84" y="60" font-family="Sora,sans-serif" font-size="24" font-weight="800" fill="#FF4B2B" letter-spacing="-0.8">Setu</text>
+    </svg>
+    <div class="sb-role">Operations Panel</div>
+  </div>
+
+  <div class="sb-section">Overview</div>
+  <div class="sb-item on" onclick="nav(this,'v-overview')"><i class="ti ti-layout-dashboard"></i><span>Dashboard</span></div>
+  <div class="sb-item" onclick="nav(this,'v-orders')"><i class="ti ti-receipt"></i><span>Order Monitor</span><span class="sb-badge">14</span></div>
+
+  <div class="sb-section">Sellers</div>
+  <div class="sb-item" onclick="nav(this,'v-sellers')"><i class="ti ti-building-store"></i><span>All Sellers</span></div>
+  <div class="sb-item" onclick="nav(this,'v-verification')"><i class="ti ti-shield-check"></i><span>Verification</span><span class="sb-badge">7</span></div>
+  <div class="sb-item" onclick="nav(this,'v-catalogue')"><i class="ti ti-package"></i><span>Catalogue Import</span></div>
+
+  <div class="sb-section">Finance</div>
+  <div class="sb-item" onclick="nav(this,'v-refunds')"><i class="ti ti-rotate-clockwise-2"></i><span>Refunds</span><span class="sb-badge">5</span></div>
+  <div class="sb-item" onclick="nav(this,'v-payouts')"><i class="ti ti-cash"></i><span>Payouts</span></div>
+
+  <div class="sb-section">Platform</div>
+  <div class="sb-item" onclick="nav(this,'v-compliance')"><i class="ti ti-certificate"></i><span>Compliance</span></div>
+  <div class="sb-item" onclick="nav(this,'v-delivery')"><i class="ti ti-truck-delivery"></i><span>Delivery Batching</span></div>
+
+  <div class="sb-bottom">
+    <div class="sb-user">
+      <div class="sb-av">SA</div>
+      <div>
+        <div class="sb-uname">Suresh Admin</div>
+        <div class="sb-urole">Backend Admin</div>
+      </div>
+      <i class="ti ti-settings" style="font-size:14px;color:rgba(255,255,255,.28);margin-left:auto;cursor:pointer"></i>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-title" id="tb-title">Platform Overview</div>
+    <div class="tb-search">
+      <i class="ti ti-search"></i>
+      <input type="text" placeholder="Search sellers, orders, users…">
+    </div>
+    <div class="tb-icon">
+      <i class="ti ti-bell"></i>
+      <span class="notif-dot"></span>
+    </div>
+    <div class="tb-icon"><i class="ti ti-refresh"></i></div>
+    <button class="tb-btn"><i class="ti ti-download" style="font-size:12px"></i> Export CSV</button>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══ DASHBOARD OVERVIEW ═══ -->
+    <div class="view on" id="v-overview">
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="sc-lbl">Gross Merchandise Value</div>
+          <div class="sc-val">₹18.4L</div>
+          <div class="sc-chg up"><i class="ti ti-trending-up" style="font-size:11px"></i> +22% this month</div>
+          <div class="sc-bar"><div class="sc-bar-fill" style="width:78%;background:var(--grn)"></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-lbl">Active Sellers</div>
+          <div class="sc-val">512</div>
+          <div class="sc-chg up"><i class="ti ti-trending-up" style="font-size:11px"></i> +34 this week</div>
+          <div class="sc-bar"><div class="sc-bar-fill" style="width:65%;background:var(--blu)"></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-lbl">Orders Today</div>
+          <div class="sc-val">1,284</div>
+          <div class="sc-chg up"><i class="ti ti-trending-up" style="font-size:11px"></i> +11% vs yesterday</div>
+          <div class="sc-bar"><div class="sc-bar-fill" style="width:88%;background:var(--pur)"></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-lbl">Platform SLA Score</div>
+          <div class="sc-val">94.2%</div>
+          <div class="sc-chg dn"><i class="ti ti-trending-down" style="font-size:11px"></i> -0.8pp</div>
+          <div class="sc-bar"><div class="sc-bar-fill" style="width:94%;background:var(--amb)"></div></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title">Order Volume — Last 7 Days</div>
+            <span class="panel-action" onclick="nav(document.querySelector('[onclick*=v-orders]'),'v-orders')">View all →</span>
+          </div>
+          <div style="padding:14px 15px">
+            <div class="bar-chart" id="ov-bars"></div>
+            <div style="display:flex;justify-content:space-between;margin-top:5px">
+              <span style="font-size:10px;color:var(--t3)">Mon</span>
+              <span style="font-size:10px;color:var(--t3)">Tue</span>
+              <span style="font-size:10px;color:var(--t3)">Wed</span>
+              <span style="font-size:10px;color:var(--t3)">Thu</span>
+              <span style="font-size:10px;color:var(--t3)">Fri</span>
+              <span style="font-size:10px;color:var(--t3)">Sat</span>
+              <span style="font-size:10px;color:var(--t3)">Sun</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title">Pending Actions</div><span class="panel-action">All alerts</span></div>
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 13px;border-bottom:1px solid var(--s3);cursor:pointer" onclick="nav(document.querySelector('[onclick*=v-verification]'),'v-verification')">
+            <div style="width:28px;height:28px;border-radius:7px;background:var(--amb2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-shield" style="font-size:14px;color:var(--amb)"></i></div>
+            <div style="flex:1"><div style="font-family:'Sora',sans-serif;font-size:11px;font-weight:600;color:var(--t1)">7 sellers awaiting verification</div><div style="font-size:10px;color:var(--t3)">KYC documents pending review</div></div>
+            <span class="pill p-amb">Pending</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 13px;border-bottom:1px solid var(--s3);cursor:pointer" onclick="nav(document.querySelector('[onclick*=v-refunds]'),'v-refunds')">
+            <div style="width:28px;height:28px;border-radius:7px;background:var(--red2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-rotate-clockwise-2" style="font-size:14px;color:var(--red)"></i></div>
+            <div style="flex:1"><div style="font-family:'Sora',sans-serif;font-size:11px;font-weight:600;color:var(--t1)">5 refund requests open</div><div style="font-size:10px;color:var(--t3)">₹3,240 total pending</div></div>
+            <span class="pill p-red">Urgent</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 13px;border-bottom:1px solid var(--s3);cursor:pointer" onclick="nav(document.querySelector('[onclick*=v-catalogue]'),'v-catalogue')">
+            <div style="width:28px;height:28px;border-radius:7px;background:var(--blu2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-package" style="font-size:14px;color:var(--blu)"></i></div>
+            <div style="flex:1"><div style="font-family:'Sora',sans-serif;font-size:11px;font-weight:600;color:var(--t1)">12 product requests for approval</div><div style="font-size:10px;color:var(--t3)">New products needing catalogue review</div></div>
+            <span class="pill p-blu">Review</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 13px;cursor:pointer" onclick="nav(document.querySelector('[onclick*=v-delivery]'),'v-delivery')">
+            <div style="width:28px;height:28px;border-radius:7px;background:var(--pur2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-truck-delivery" style="font-size:14px;color:var(--pur)"></i></div>
+            <div style="flex:1"><div style="font-family:'Sora',sans-serif;font-size:11px;font-weight:600;color:var(--t1)">3 delivery batches ready to dispatch</div><div style="font-size:10px;color:var(--t3)">Andheri, Goregaon, Borivali zones</div></div>
+            <span class="pill p-pur">Ready</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title">Top Sellers by GMV this week</div>
+          <span class="panel-action" onclick="nav(document.querySelector('[onclick*=v-sellers]'),'v-sellers')">View all sellers →</span>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Seller</th><th>Category</th><th>Orders</th><th>GMV</th><th>SLA</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--grn2);color:var(--grn3)">RF</div><div><div class="t-name">Ram Fresh Farms</div><div class="t-sub">SLR-00412</div></div></div></td>
+              <td><span class="pill p-grn">Vegetables</span></td><td>142</td>
+              <td style="font-family:'Sora',sans-serif;font-weight:600">₹28,400</td>
+              <td><div style="display:flex;align-items:center;gap:5px"><div class="progress" style="width:50px"><div class="progress-fill" style="width:96%;background:var(--grn)"></div></div><span style="font-size:10px;color:var(--grn3);font-weight:600">96%</span></div></td>
+              <td><span class="pill p-grn">Active</span></td>
+              <td><button class="btn-sec">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--blu2);color:var(--blu3)">OD</div><div><div class="t-name">Om Dairy Hub</div><div class="t-sub">SLR-00287</div></div></div></td>
+              <td><span class="pill p-blu">Dairy</span></td><td>98</td>
+              <td style="font-family:'Sora',sans-serif;font-weight:600">₹22,100</td>
+              <td><div style="display:flex;align-items:center;gap:5px"><div class="progress" style="width:50px"><div class="progress-fill" style="width:91%;background:var(--grn)"></div></div><span style="font-size:10px;color:var(--grn3);font-weight:600">91%</span></div></td>
+              <td><span class="pill p-grn">Active</span></td>
+              <td><button class="btn-sec">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--amb2);color:var(--amb3)">SB</div><div><div class="t-name">Sharma Bakery</div><div class="t-sub">SLR-00319</div></div></div></td>
+              <td><span class="pill p-cor">Bakery</span></td><td>201</td>
+              <td style="font-family:'Sora',sans-serif;font-weight:600">₹19,800</td>
+              <td><div style="display:flex;align-items:center;gap:5px"><div class="progress" style="width:50px"><div class="progress-fill" style="width:98%;background:var(--grn)"></div></div><span style="font-size:10px;color:var(--grn3);font-weight:600">98%</span></div></td>
+              <td><span class="pill p-grn">Active</span></td>
+              <td><button class="btn-sec">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--red2);color:var(--red3)">KS</div><div><div class="t-name">Krishnan Stores</div><div class="t-sub">SLR-00481</div></div></div></td>
+              <td><span class="pill p-grn">Grocery</span></td><td>12</td>
+              <td style="font-family:'Sora',sans-serif;font-weight:600">₹4,200</td>
+              <td><div style="display:flex;align-items:center;gap:5px"><div class="progress" style="width:50px"><div class="progress-fill" style="width:68%;background:var(--red)"></div></div><span style="font-size:10px;color:var(--red3);font-weight:600">68%</span></div></td>
+              <td><span class="pill p-red">SLA Risk</span></td>
+              <td><button class="btn-red">Warn</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ ORDER MONITOR ═══ -->
+    <div class="view" id="v-orders">
+      <div class="stat-row">
+        <div class="stat-card"><div class="sc-lbl">Total Orders Today</div><div class="sc-val">1,284</div><div class="sc-chg up">+11% vs yesterday</div></div>
+        <div class="stat-card"><div class="sc-lbl">Unconfirmed</div><div class="sc-val" style="color:var(--red)">18</div><div class="sc-chg dn">Needs seller action</div></div>
+        <div class="stat-card"><div class="sc-lbl">In Transit</div><div class="sc-val" style="color:var(--blu)">342</div><div class="sc-chg up">On track</div></div>
+        <div class="stat-card"><div class="sc-lbl">Delivered</div><div class="sc-val" style="color:var(--grn)">892</div><div class="sc-chg up">69.5% delivery rate</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">Parent Order Monitor</div><button class="tb-btn" style="font-size:10px;padding:5px 11px"><i class="ti ti-download" style="font-size:12px"></i> Export</button></div>
+        <div class="chip-row">
+          <div class="chip on" onclick="cSel(this)">All Orders</div>
+          <div class="chip" onclick="cSel(this)">Unconfirmed (18)</div>
+          <div class="chip" onclick="cSel(this)">SLA Breach Risk (6)</div>
+          <div class="chip" onclick="cSel(this)">Multi-seller (84)</div>
+          <div class="chip" onclick="cSel(this)">COD (412)</div>
+          <div class="chip" onclick="cSel(this)">Delivered</div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Order ID</th><th>Customer</th><th>Sellers</th><th>Amount</th><th>Payment</th><th>Status</th><th>SLA</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="t-name">#ORD-8831</div><div class="t-sub">2 min ago</div></td>
+              <td><div class="t-name">Rahul Kumar</div><div class="t-sub">Andheri W</div></td>
+              <td><div style="display:flex;gap:3px"><span class="pill p-grn">RF</span><span class="pill p-blu">OD</span></div></td>
+              <td style="font-family:'Sora',sans-serif;font-weight:600">₹379</td>
+              <td><span class="pill p-amb">COD</span></td>
+              <td><span class="pill p-red">Unconfirmed</span></td>
+              <td><span style="font-size:10px;color:var(--red);font-weight:600">8 min left</span></td>
+              <td><div style="display:flex;gap:4px"><button class="btn-sec">Detail</button><button class="btn-red">Escalate</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="t-name">#ORD-8829</div><div class="t-sub">18 min ago</div></td>
+              <td><div class="t-name">Priya Sharma</div><div class="t-sub">Goregaon E</div></td>
+              <td><span class="pill p-grn">RF</span></td>
+              <td style="font-family:'Sora',sans-serif;font-weight:600">₹84</td>
+              <td><span class="pill p-grn">UPI</span></td>
+              <td><span class="pill p-amb">Confirmed</span></td>
+              <td><span style="font-size:10px;color:var(--grn);font-weight:600">On track</span></td>
+              <td><button class="btn-sec">Detail</button></td>
+            </tr>
+            <tr>
+              <td><div class="t-name">#ORD-8812</div><div class="t-sub">3 hrs ago</div></td>
+              <td><div class="t-name">Amit Desai</div><div class="t-sub">Borivali W</div></td>
+              <td><div style="display:flex;gap:3px"><span class="pill p-grn">RF</span><span class="pill p-cor">SB</span></div></td>
+              <td style="font-family:'Sora',sans-serif;font-weight:600">₹201</td>
+              <td><span class="pill p-grn">Prepaid</span></td>
+              <td><span class="pill p-grn">Delivered</span></td>
+              <td><span style="font-size:10px;color:var(--grn);font-weight:600">Completed</span></td>
+              <td><div style="display:flex;gap:4px"><button class="btn-sec">Invoice</button><button class="btn-grn">Settled</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="t-name">#ORD-8800</div><div class="t-sub">5 hrs ago</div></td>
+              <td><div class="t-name">Sneha Mehta</div><div class="t-sub">Andheri E</div></td>
+              <td><span class="pill p-blu">OD</span></td>
+              <td style="font-family:'Sora',sans-serif;font-weight:600">₹168</td>
+              <td><span class="pill p-grn">UPI</span></td>
+              <td><span class="pill p-red">Rejected</span></td>
+              <td><span style="font-size:10px;color:var(--red);font-weight:600">Refund due</span></td>
+              <td><div style="display:flex;gap:4px"><button class="btn-sec">Detail</button><button class="btn-red" onclick="nav(document.querySelector('[onclick*=v-refunds]'),'v-refunds')">Refund</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ VERIFICATION ═══ -->
+    <div class="view" id="v-verification">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+        <div class="stat-card"><div class="sc-lbl">Awaiting Review</div><div class="sc-val" style="color:var(--amb)">7</div><div class="sc-chg">KYC submitted</div></div>
+        <div class="stat-card"><div class="sc-lbl">Approved This Week</div><div class="sc-val" style="color:var(--grn)">23</div><div class="sc-chg up">+8 vs last week</div></div>
+        <div class="stat-card"><div class="sc-lbl">Rejected / Flagged</div><div class="sc-val" style="color:var(--red)">3</div><div class="sc-chg">Incomplete docs</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title">Pending Verifications</div></div>
+          <div class="chip-row">
+            <div class="chip on" onclick="cSel(this)">All (7)</div>
+            <div class="chip" onclick="cSel(this)">New Sellers</div>
+            <div class="chip" onclick="cSel(this)">Re-verification</div>
+          </div>
+          <table class="tbl">
+            <thead><tr><th>Seller</th><th>Type</th><th>Submitted</th><th>Docs</th><th></th></tr></thead>
+            <tbody>
+              <tr style="cursor:pointer;background:#FFFDF8">
+                <td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--pur2);color:var(--pur3)">NK</div><div><div class="t-name">Nirmala's Kitchen</div><div class="t-sub">Food · Kurla</div></div></div></td>
+                <td><span class="pill p-pur">New</span></td>
+                <td><div class="t-sub">Today 8:30 AM</div></td>
+                <td><span class="pill p-grn">4/5</span></td>
+                <td><button class="btn-act">Review</button></td>
+              </tr>
+              <tr>
+                <td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--cor2);color:var(--cor3)">SM</div><div><div class="t-name">Suresh Masale</div><div class="t-sub">Spices · Dadar</div></div></div></td>
+                <td><span class="pill p-pur">New</span></td><td><div class="t-sub">Yesterday</div></td><td><span class="pill p-amb">3/5</span></td>
+                <td><button class="btn-act">Review</button></td>
+              </tr>
+              <tr>
+                <td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--amb2);color:var(--amb3)">PP</div><div><div class="t-name">Pune Pickle Co.</div><div class="t-sub">Condiments · VP</div></div></div></td>
+                <td><span class="pill p-blu">Re-verify</span></td><td><div class="t-sub">2 days ago</div></td><td><span class="pill p-grn">5/5</span></td>
+                <td><button class="btn-act">Review</button></td>
+              </tr>
+              <tr>
+                <td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--red2);color:var(--red3)">GT</div><div><div class="t-name">Green Tea &amp; More</div><div class="t-sub">Beverages · Thane</div></div></div></td>
+                <td><span class="pill p-pur">New</span></td><td><div class="t-sub">3 days ago</div></td><td><span class="pill p-red">2/5</span></td>
+                <td><button class="btn-red">Incomplete</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="detail-panel">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+            <div>
+              <div class="dp-title">Nirmala's Kitchen — Verification Review</div>
+              <div class="dp-sub">SLR-APP-0084 · Submitted today 8:30 AM · Kurla West</div>
+            </div>
+            <span class="pill p-amb" id="verifStatus">Pending</span>
+          </div>
+          <div class="info-grid">
+            <div class="info-cell"><div class="ic-lbl">FSSAI</div><div class="ic-val">10020042011234</div></div>
+            <div class="info-cell"><div class="ic-lbl">GST</div><div class="ic-val">27AAACN1234K1Z5</div></div>
+            <div class="info-cell"><div class="ic-lbl">PAN</div><div class="ic-val">AAACN1234K</div></div>
+            <div class="info-cell"><div class="ic-lbl">Bank</div><div class="ic-val">SBI ···· 9821</div></div>
+            <div class="info-cell"><div class="ic-lbl">Legal Metrology</div><div class="ic-val" style="color:var(--amb)">Pending</div></div>
+            <div class="info-cell"><div class="ic-lbl">Location</div><div class="ic-val">Kurla West, Mumbai</div></div>
+          </div>
+          <div style="font-family:'Sora',sans-serif;font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Document Checklist</div>
+          <div class="chk-list">
+            <div class="chk-item chk-pass"><div class="chk-dot"><i class="ti ti-check"></i></div><div class="chk-lbl">FSSAI License (valid till Dec 2026)</div><div class="chk-status">Verified</div></div>
+            <div class="chk-item chk-pass"><div class="chk-dot"><i class="ti ti-check"></i></div><div class="chk-lbl">GST Certificate</div><div class="chk-status">Verified</div></div>
+            <div class="chk-item chk-pass"><div class="chk-dot"><i class="ti ti-check"></i></div><div class="chk-lbl">PAN &amp; Aadhaar</div><div class="chk-status">Matched</div></div>
+            <div class="chk-item chk-pass"><div class="chk-dot"><i class="ti ti-check"></i></div><div class="chk-lbl">Bank account verified (penny drop)</div><div class="chk-status">Done</div></div>
+            <div class="chk-item chk-warn"><div class="chk-dot"><i class="ti ti-clock"></i></div><div class="chk-lbl">Legal Metrology certificate</div><div class="chk-status">Awaiting upload</div></div>
+          </div>
+          <div style="display:flex;gap:7px;margin-top:14px">
+            <button class="btn-grn" style="flex:1;padding:8px;border-radius:9px" onclick="approveVerif()"><i class="ti ti-check"></i> Approve Seller</button>
+            <button class="btn-red" style="flex:1;padding:8px;border-radius:9px">Request Docs</button>
+            <button class="btn-sec" style="flex:1;padding:8px;border-radius:9px">Reject &amp; Notify</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ALL SELLERS ═══ -->
+    <div class="view" id="v-sellers">
+      <div class="stat-row">
+        <div class="stat-card"><div class="sc-lbl">Total Sellers</div><div class="sc-val">512</div><div class="sc-chg up">+34 this week</div></div>
+        <div class="stat-card"><div class="sc-lbl">Active Today</div><div class="sc-val">388</div><div class="sc-chg">75.8% active rate</div></div>
+        <div class="stat-card"><div class="sc-lbl">Avg SLA Score</div><div class="sc-val">94.2%</div><div class="sc-chg up">+0.4pp</div></div>
+        <div class="stat-card"><div class="sc-lbl">Flagged / Suspended</div><div class="sc-val" style="color:var(--red)">8</div><div class="sc-chg dn">SLA violations</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">All Sellers</div><button class="tb-btn" style="font-size:10px;padding:5px 11px">+ Onboard Seller</button></div>
+        <div class="chip-row">
+          <div class="chip on" onclick="cSel(this)">All (512)</div>
+          <div class="chip" onclick="cSel(this)">Active</div>
+          <div class="chip" onclick="cSel(this)">Inactive</div>
+          <div class="chip" onclick="cSel(this)">SLA Risk</div>
+          <div class="chip" onclick="cSel(this)">Suspended (8)</div>
+          <div class="chip" onclick="cSel(this)">New This Week</div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Seller</th><th>Category</th><th>Location</th><th>Orders (7d)</th><th>GMV (7d)</th><th>SLA</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--grn2);color:var(--grn3)">RF</div><div><div class="t-name">Ram Fresh Farms</div><div class="t-sub">Since Jan 2024</div></div></div></td><td>Vegetables, Fruits</td><td>Andheri W</td><td>142</td><td style="font-family:'Sora',sans-serif;font-weight:600">₹28,400</td><td><span style="color:var(--grn);font-weight:600;font-size:11px">96%</span></td><td><span class="pill p-grn">Active</span></td><td><div style="display:flex;gap:4px"><button class="btn-sec">Edit</button><button class="btn-sec">Suspend</button></div></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--blu2);color:var(--blu3)">OD</div><div><div class="t-name">Om Dairy Hub</div><div class="t-sub">Since Mar 2024</div></div></div></td><td>Dairy, Eggs</td><td>Goregaon E</td><td>98</td><td style="font-family:'Sora',sans-serif;font-weight:600">₹22,100</td><td><span style="color:var(--grn);font-weight:600;font-size:11px">91%</span></td><td><span class="pill p-grn">Active</span></td><td><div style="display:flex;gap:4px"><button class="btn-sec">Edit</button><button class="btn-sec">Suspend</button></div></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--red2);color:var(--red3)">KS</div><div><div class="t-name">Krishnan Stores</div><div class="t-sub">Since Jun 2024</div></div></div></td><td>Grocery</td><td>Bandra W</td><td>12</td><td style="font-family:'Sora',sans-serif;font-weight:600">₹4,200</td><td><span style="color:var(--red);font-weight:600;font-size:11px">68%</span></td><td><span class="pill p-red">SLA Risk</span></td><td><div style="display:flex;gap:4px"><button class="btn-sec">Edit</button><button class="btn-red">Warn</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ REFUNDS ═══ -->
+    <div class="view" id="v-refunds">
+      <div class="stat-row">
+        <div class="stat-card"><div class="sc-lbl">Open Refunds</div><div class="sc-val" style="color:var(--red)">5</div><div class="sc-chg dn">₹3,240 pending</div></div>
+        <div class="stat-card"><div class="sc-lbl">Processed Today</div><div class="sc-val" style="color:var(--grn)">8</div><div class="sc-chg up">₹5,120 returned</div></div>
+        <div class="stat-card"><div class="sc-lbl">Avg Resolution</div><div class="sc-val">1.4d</div><div class="sc-chg up">Target: &lt;2 days</div></div>
+        <div class="stat-card"><div class="sc-lbl">Refund Rate</div><div class="sc-val">2.1%</div><div class="sc-chg up">Platform avg</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title">Refund Queue</div></div>
+          <div class="chip-row">
+            <div class="chip on" onclick="cSel(this)">All (5)</div>
+            <div class="chip" onclick="cSel(this)">Seller Rejected</div>
+            <div class="chip" onclick="cSel(this)">Not Delivered</div>
+            <div class="chip" onclick="cSel(this)">Wrong Item</div>
+          </div>
+          <table class="tbl">
+            <thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Reason</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td><div class="t-name">#ORD-8800</div><div class="t-sub">5 hrs ago</div></td><td><div class="t-name">Sneha M.</div></td><td style="font-family:'Sora',sans-serif;font-weight:600;color:var(--red)">₹168</td><td><span class="pill p-red">Seller Rejected</span></td><td><button class="btn-grn" onclick="processRefund(this)">Process</button></td></tr>
+              <tr><td><div class="t-name">#ORD-8754</div><div class="t-sub">Yesterday</div></td><td><div class="t-name">Karan P.</div></td><td style="font-family:'Sora',sans-serif;font-weight:600;color:var(--red)">₹842</td><td><span class="pill p-amb">Wrong Item</span></td><td><button class="btn-grn" onclick="processRefund(this)">Process</button></td></tr>
+              <tr><td><div class="t-name">#ORD-8721</div><div class="t-sub">2 days ago</div></td><td><div class="t-name">Ritu S.</div></td><td style="font-family:'Sora',sans-serif;font-weight:600;color:var(--red)">₹320</td><td><span class="pill p-blu">Not Delivered</span></td><td><button class="btn-grn" onclick="processRefund(this)">Process</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="detail-panel">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+            <div><div class="dp-title">Refund — #ORD-8800</div><div class="dp-sub">Sneha Mehta · Om Dairy Hub · 5 hours ago</div></div>
+            <span class="pill p-red">Seller Rejected</span>
+          </div>
+          <div class="info-grid">
+            <div class="info-cell"><div class="ic-lbl">Refund Amount</div><div class="ic-val" style="color:var(--red)">₹168</div></div>
+            <div class="info-cell"><div class="ic-lbl">Payment Mode</div><div class="ic-val">UPI</div></div>
+            <div class="info-cell"><div class="ic-lbl">Order Value</div><div class="ic-val">₹168</div></div>
+          </div>
+          <div style="font-family:'Sora',sans-serif;font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Rejection Timeline</div>
+          <div>
+            <div class="tl-row"><div class="tl-line"></div><div class="tl-dot" style="background:var(--grn);color:#fff"><i class="ti ti-check" style="font-size:10px"></i></div><div><div class="tl-t">Order placed &amp; paid</div><div class="tl-s">Today 4:00 AM · UPI ₹168</div></div></div>
+            <div class="tl-row"><div class="tl-line"></div><div class="tl-dot" style="background:var(--red);color:#fff"><i class="ti ti-x" style="font-size:10px"></i></div><div><div class="tl-t">Seller rejected order</div><div class="tl-s">Today 4:18 AM · "Out of stock"</div></div></div>
+            <div class="tl-row"><div class="tl-dot" style="background:var(--amb);color:#fff"><i class="ti ti-clock" style="font-size:10px"></i></div><div><div class="tl-t">Refund pending ops approval</div><div class="tl-s">Today 4:18 AM · Auto-triggered</div></div></div>
+          </div>
+          <div style="background:var(--s2);border-radius:8px;padding:10px;margin:12px 0;font-size:11px;color:var(--t2);line-height:1.5">
+            <strong style="color:var(--t1)">Seller note:</strong> "Stock ran out overnight, unable to fulfil. Apologies."
+          </div>
+          <div style="display:flex;gap:7px">
+            <button class="btn-grn" style="flex:1;padding:8px;border-radius:9px" onclick="processRefundDetail()"><i class="ti ti-check"></i> Approve &amp; Initiate Refund</button>
+            <button class="btn-red" style="flex:1;padding:8px;border-radius:9px">Escalate to Seller</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ DELIVERY BATCHING ═══ -->
+    <div class="view" id="v-delivery">
+      <div class="stat-row">
+        <div class="stat-card"><div class="sc-lbl">Active Batches</div><div class="sc-val">12</div><div class="sc-chg">3 zones covered</div></div>
+        <div class="stat-card"><div class="sc-lbl">In Transit</div><div class="sc-val" style="color:var(--blu)">342</div><div class="sc-chg up">On schedule</div></div>
+        <div class="stat-card"><div class="sc-lbl">Ready to Dispatch</div><div class="sc-val" style="color:var(--amb)">3</div><div class="sc-chg">Awaiting agent</div></div>
+        <div class="stat-card"><div class="sc-lbl">Avg Delivery Time</div><div class="sc-val">38m</div><div class="sc-chg up">SLA: 45m</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">Delivery Batch View</div><button class="tb-btn" style="font-size:10px;padding:5px 11px">Create Batch</button></div>
+        <div class="chip-row">
+          <div class="chip on" onclick="cSel(this)">All Batches</div>
+          <div class="chip" onclick="cSel(this)">Andheri Zone</div>
+          <div class="chip" onclick="cSel(this)">Goregaon Zone</div>
+          <div class="chip" onclick="cSel(this)">Borivali Zone</div>
+          <div class="chip" onclick="cSel(this)">Completed Today</div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Batch ID</th><th>Zone</th><th>Orders</th><th>Sellers</th><th>Agent</th><th>Status</th><th>ETA</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><div class="t-name">BTCH-2241</div></td><td>Andheri W</td><td>14 orders</td><td><div style="display:flex;gap:3px"><span class="pill p-grn">RF</span><span class="pill p-blu">OD</span></div></td><td><div class="t-name">Ravi Kumar</div><div class="t-sub">+91 98xxx 12345</div></td><td><span class="pill p-pur">Ready</span></td><td><span style="font-size:10px;font-weight:600;color:var(--amb)">Awaiting dispatch</span></td><td><button class="btn-grn">Dispatch</button></td></tr>
+            <tr><td><div class="t-name">BTCH-2238</div></td><td>Goregaon E</td><td>9 orders</td><td><span class="pill p-grn">RF</span></td><td><div class="t-name">Sunil Patil</div><div class="t-sub">+91 97xxx 88321</div></td><td><span class="pill p-blu">In Transit</span></td><td><span style="font-size:10px;font-weight:600;color:var(--grn)">~22 min left</span></td><td><button class="btn-sec">Track</button></td></tr>
+            <tr><td><div class="t-name">BTCH-2231</div></td><td>Borivali W</td><td>18 orders</td><td><div style="display:flex;gap:3px"><span class="pill p-cor">SB</span><span class="pill p-blu">OD</span></div></td><td><div class="t-name">Deepak M.</div><div class="t-sub">+91 99xxx 54321</div></td><td><span class="pill p-grn">Delivered</span></td><td><span style="font-size:10px;font-weight:600;color:var(--grn)">Completed</span></td><td><button class="btn-sec">Summary</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ CATALOGUE ═══ -->
+    <div class="view" id="v-catalogue">
+      <div class="stat-row">
+        <div class="stat-card"><div class="sc-lbl">Pending Approval</div><div class="sc-val" style="color:var(--amb)">12</div><div class="sc-chg">New product requests</div></div>
+        <div class="stat-card"><div class="sc-lbl">Approved Today</div><div class="sc-val" style="color:var(--grn)">34</div><div class="sc-chg up">+12 vs yesterday</div></div>
+        <div class="stat-card"><div class="sc-lbl">Total SKUs Live</div><div class="sc-val">4,820</div><div class="sc-chg up">+84 this week</div></div>
+        <div class="stat-card"><div class="sc-lbl">Rejected (Quality)</div><div class="sc-val" style="color:var(--red)">7</div><div class="sc-chg">Missing images/HSN</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">Product Approval Queue</div><button class="tb-btn" style="font-size:10px;padding:5px 11px"><i class="ti ti-upload" style="font-size:12px"></i> Bulk Import CSV</button></div>
+        <div class="chip-row">
+          <div class="chip on" onclick="cSel(this)">Pending (12)</div>
+          <div class="chip" onclick="cSel(this)">Approved</div>
+          <div class="chip" onclick="cSel(this)">Rejected</div>
+          <div class="chip" onclick="cSel(this)">Missing HSN</div>
+          <div class="chip" onclick="cSel(this)">No Image</div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Product</th><th>Seller</th><th>Category</th><th>Price</th><th>HSN</th><th>Image</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><div class="t-name">Homemade Pickle Mango</div><div class="t-sub">SKU-REQ-0482</div></td><td><span class="pill p-cor">NK</span> Nirmala's</td><td>Condiments</td><td style="font-family:'Sora',sans-serif;font-weight:600">₹180</td><td><span class="pill p-grn">2106</span></td><td><span class="pill p-grn">Uploaded</span></td><td><div style="display:flex;gap:4px"><button class="btn-grn">Approve</button><button class="btn-red">Reject</button></div></td></tr>
+            <tr><td><div class="t-name">Organic Turmeric Powder</div><div class="t-sub">SKU-REQ-0481</div></td><td><span class="pill p-amb">SM</span> Suresh M.</td><td>Spices</td><td style="font-family:'Sora',sans-serif;font-weight:600">₹95</td><td><span class="pill p-amb">Missing</span></td><td><span class="pill p-grn">Uploaded</span></td><td><button class="btn-red">Request HSN</button></td></tr>
+            <tr><td><div class="t-name">Green Tea Bags (25pc)</div><div class="t-sub">SKU-REQ-0479</div></td><td><span class="pill p-red">GT</span> Green Tea</td><td>Beverages</td><td style="font-family:'Sora',sans-serif;font-weight:600">₹120</td><td><span class="pill p-grn">0902</span></td><td><span class="pill p-red">Missing</span></td><td><button class="btn-red">Request Image</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ PAYOUTS ═══ -->
+    <div class="view" id="v-payouts">
+      <div class="stat-row">
+        <div class="stat-card"><div class="sc-lbl">Today's Payouts</div><div class="sc-val" style="color:var(--grn)">₹1.84L</div><div class="sc-chg up">486 sellers</div></div>
+        <div class="stat-card"><div class="sc-lbl">Pending Settlement</div><div class="sc-val" style="color:var(--amb)">₹42,000</div><div class="sc-chg">26 sellers</div></div>
+        <div class="stat-card"><div class="sc-lbl">Failed Transfers</div><div class="sc-val" style="color:var(--red)">3</div><div class="sc-chg dn">Bank errors</div></div>
+        <div class="stat-card"><div class="sc-lbl">Platform Commission</div><div class="sc-val">₹18,400</div><div class="sc-chg up">5% of GMV</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">Payout Ledger</div><button class="btn-grn" style="font-size:10px;padding:6px 13px;border-radius:8px">Run Auto-Payout</button></div>
+        <table class="tbl">
+          <thead><tr><th>Seller</th><th>Orders</th><th>Gross</th><th>Commission</th><th>Net Payout</th><th>Bank</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--grn2);color:var(--grn3)">RF</div><div class="t-name">Ram Fresh Farms</div></div></td><td>142</td><td style="font-family:'Sora',sans-serif;font-weight:600">₹28,400</td><td style="color:var(--t3)">₹1,420</td><td style="font-family:'Sora',sans-serif;font-weight:700;color:var(--grn)">₹26,980</td><td>HDFC ···· 4821</td><td><span class="pill p-grn">Settled</span></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--blu2);color:var(--blu3)">OD</div><div class="t-name">Om Dairy Hub</div></div></td><td>98</td><td style="font-family:'Sora',sans-serif;font-weight:600">₹22,100</td><td style="color:var(--t3)">₹1,105</td><td style="font-family:'Sora',sans-serif;font-weight:700;color:var(--grn)">₹20,995</td><td>SBI ···· 2341</td><td><span class="pill p-grn">Settled</span></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:7px"><div class="av" style="background:var(--red2);color:var(--red3)">KS</div><div class="t-name">Krishnan Stores</div></div></td><td>12</td><td style="font-family:'Sora',sans-serif;font-weight:600">₹4,200</td><td style="color:var(--t3)">₹210</td><td style="font-family:'Sora',sans-serif;font-weight:700;color:var(--amb)">₹3,990</td><td>ICICI ···· 7712</td><td><span class="pill p-red">Bank Error</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ COMPLIANCE ═══ -->
+    <div class="view" id="v-compliance">
+      <div class="stat-row">
+        <div class="stat-card"><div class="sc-lbl">FSSAI Valid</div><div class="sc-val" style="color:var(--grn)">489</div><div class="sc-chg up">95.5% compliant</div></div>
+        <div class="stat-card"><div class="sc-lbl">Expiring in 30 Days</div><div class="sc-val" style="color:var(--amb)">18</div><div class="sc-chg dn">Reminders sent</div></div>
+        <div class="stat-card"><div class="sc-lbl">GST Registered</div><div class="sc-val" style="color:var(--grn)">501</div><div class="sc-chg">97.9% coverage</div></div>
+        <div class="stat-card"><div class="sc-lbl">Non-Compliant</div><div class="sc-val" style="color:var(--red)">11</div><div class="sc-chg dn">Listings suspended</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">Compliance Monitor</div></div>
+        <div class="chip-row">
+          <div class="chip on" onclick="cSel(this)">All Sellers</div>
+          <div class="chip" onclick="cSel(this)">FSSAI Expiring</div>
+          <div class="chip" onclick="cSel(this)">GST Missing</div>
+          <div class="chip" onclick="cSel(this)">Legal Metrology</div>
+          <div class="chip" onclick="cSel(this)">Suspended</div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Seller</th><th>FSSAI</th><th>GST</th><th>PAN</th><th>Legal Metrology</th><th>Overall</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><div class="t-name">Ram Fresh Farms</div></td><td><span class="pill p-grn">Valid · Dec 25</span></td><td><span class="pill p-grn">Verified</span></td><td><span class="pill p-grn">Matched</span></td><td><span class="pill p-grn">Submitted</span></td><td><span class="pill p-grn">Fully Compliant</span></td><td><button class="btn-sec">View Docs</button></td></tr>
+            <tr><td><div class="t-name">Green Tea &amp; More</div></td><td><span class="pill p-amb">Expires in 22d</span></td><td><span class="pill p-grn">Verified</span></td><td><span class="pill p-grn">Matched</span></td><td><span class="pill p-red">Missing</span></td><td><span class="pill p-amb">Action Required</span></td><td><div style="display:flex;gap:4px"><button class="btn-sec">View</button><button class="btn-act">Remind</button></div></td></tr>
+            <tr><td><div class="t-name">Krishnan Stores</div></td><td><span class="pill p-red">Expired</span></td><td><span class="pill p-red">Missing</span></td><td><span class="pill p-grn">Matched</span></td><td><span class="pill p-red">Missing</span></td><td><span class="pill p-red">Suspended</span></td><td><div style="display:flex;gap:4px"><button class="btn-sec">View</button><button class="btn-red">Suspend</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+const barData = [980,1120,890,1340,1180,1420,1284];
+const titles = {
+  'v-overview':'Platform Overview','v-orders':'Order Monitor',
+  'v-verification':'Seller Verification','v-sellers':'All Sellers',
+  'v-refunds':'Refund Management','v-catalogue':'Catalogue Import',
+  'v-payouts':'Payout Ledger','v-compliance':'Compliance Monitor',
+  'v-delivery':'Delivery Batching'
+};
+
+function renderBars() {
+  const el = document.getElementById('ov-bars');
+  if (!el) return;
+  const max = Math.max(...barData);
+  el.innerHTML = barData.map((v,i) =>
+    `<div class="bar-col" style="height:${Math.round(v/max*60)}px;background:${i===barData.length-1?'#FF4B2B':'#534AB7'}"></div>`
+  ).join('');
+}
+
+function nav(el, viewId) {
+  document.querySelectorAll('.sb-item').forEach(s => s.classList.remove('on'));
+  if (el) el.classList.add('on');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  const v = document.getElementById(viewId);
+  if (v) { v.classList.add('on'); }
+  const t = document.getElementById('tb-title');
+  if (t) t.textContent = titles[viewId] || 'Dashboard';
+  if (viewId === 'v-overview') setTimeout(renderBars, 60);
+}
+
+function cSel(el) {
+  el.closest('.chip-row').querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function approveVerif() {
+  const s = document.getElementById('verifStatus');
+  if (s) { s.textContent = 'Approved'; s.className = 'pill p-grn'; }
+}
+
+function processRefund(btn) {
+  btn.textContent = '✓ Processed';
+  btn.style.background = 'var(--grn)';
+  btn.style.color = '#fff';
+  btn.style.borderColor = '#9FE1CB';
+  btn.disabled = true;
+  const row = btn.closest('tr');
+  const p = row ? row.querySelector('.pill') : null;
+  if (p) { p.textContent = 'Refunded'; p.className = 'pill p-grn'; }
+}
+
+function processRefundDetail() {
+  const btns = document.querySelectorAll('#v-refunds .detail-panel button');
+  if (btns[0]) {
+    btns[0].textContent = '✓ Refund Initiated';
+    btns[0].style.background = 'var(--grn)';
+    btns[0].style.color = '#fff';
+    btns[0].disabled = true;
+  }
+}
+
+setTimeout(renderBars, 400);
+</script>
+<script src="/shared/pwa.js"></script>
+</body>
+</html>

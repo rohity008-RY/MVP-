@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bazaar Setu Mobile</title>
+  <meta name="theme-color" content="#ff4b2b">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <img src="/assets/bazaar-setu-logo.svg" alt="Bazaar Setu">
+        <div><strong>Bazaar Setu</strong><small id="modeSubtitle">Customer app</small></div>
+      </div>
+      <button class="icon-btn" id="notificationButton" type="button"><span id="notificationCount">0</span>Bell</button>
+    </header>
+
+    <nav class="role-tabs" aria-label="Role switch">
+      <button class="active" data-role="customer" type="button">Customer</button>
+      <button data-role="seller" type="button">Seller</button>
+      <button data-role="admin" type="button">Admin</button>
+    </nav>
+
+    <section class="panel active" id="customerPanel">
+      <div class="customer-hero">
+        <p>Deliver to</p>
+        <button type="button" id="addressButton">Andheri (E)</button>
+        <label class="search"><span>Search</span><input id="searchInput" placeholder="Tomato, milk, rice"></label>
+      </div>
+      <div class="chip-row" id="categoryChips"></div>
+      <div class="section-title"><h2>Products near you</h2><button id="openCart" type="button">Cart <b id="cartCount">0</b></button></div>
+      <div class="product-grid" id="productGrid"></div>
+      <section class="card" id="cartPanel"></section>
+      <section class="card" id="addressPanel"></section>
+      <section class="card" id="customerOrders"></section>
+      <section class="card hidden" id="customerNotifications"></section>
+    </section>
+
+    <section class="panel" id="sellerPanel">
+      <section class="seller-head" id="sellerProfileCard"></section>
+      <nav class="subtabs" id="sellerTabs">
+        <button class="active" data-seller-tab="orders" type="button">Orders</button>
+        <button data-seller-tab="catalogue" type="button">Catalogue</button>
+        <button data-seller-tab="inventory" type="button">Inventory</button>
+        <button data-seller-tab="profile" type="button">Profile</button>
+      </nav>
+      <div id="sellerContent"></div>
+    </section>
+
+    <section class="panel" id="adminPanel">
+      <section class="card">
+        <h2>Publish Notification</h2>
+        <label>Audience<select id="adminAudience"><option value="customer">Customers</option><option value="seller">Sellers</option><option value="all">All</option></select></label>
+        <label>Type<select id="adminType"><option value="offer">Offer</option><option value="order">Order</option><option value="system">System</option></select></label>
+        <label>Title<input id="adminTitle" value="Fresh deals are live"></label>
+        <label>Message<textarea id="adminBody">Admin published notification from Bazaar Setu backend.</textarea></label>
+        <button class="primary" id="publishNotification" type="button">Publish</button>
+      </section>
+      <section class="card">
+        <h2>Product Requests</h2>
+        <div id="adminRequests"></div>
+      </section>
+      <section class="card">
+        <h2>Notifications Log</h2>
+        <div id="adminNotifications"></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bazaar Setu Self Test</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #111;
+      color: #f7f7f7;
+    }
+
+    main {
+      display: grid;
+      gap: 16px;
+      padding: 18px;
+    }
+
+    iframe {
+      width: 430px;
+      max-width: 100%;
+      height: 900px;
+      border: 0;
+      border-radius: 20px;
+      background: white;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 14px;
+      background: #1c1c1c;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Bazaar Setu Self Test</h1>
+    <iframe id="appFrame" src="index.html?self-test=catalogue1" title="Bazaar Setu app"></iframe>
+    <pre id="result">Running...</pre>
+  </main>
+  <script>
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    function assert(checks, name, value) {
+      checks.push({ name, pass: Boolean(value) });
+    }
+
+    async function run() {
+      localStorage.removeItem("bazaarSetuStaticState.v1");
+      const frame = document.getElementById("appFrame");
+      const result = document.getElementById("result");
+      if (!frame.contentDocument || frame.contentDocument.readyState !== "complete") {
+        await new Promise((resolve) => frame.addEventListener("load", resolve, { once: true }));
+      }
+      await wait(400);
+
+      const win = frame.contentWindow;
+      const doc = frame.contentDocument;
+      const checks = [];
+
+      win.showCustomerScreen("home");
+      await wait(100);
+      assert(checks, "Customer home opens", doc.querySelector("#customer-home").classList.contains("active"));
+      assert(checks, "Customer header uses notification bell", Boolean(doc.querySelector(".notification-icon-button")));
+      assert(checks, "Customer header cart button removed", doc.querySelector("#customer-home .cart-icon-button") === null);
+
+      win.showCustomerScreen("search");
+      await wait(100);
+      assert(checks, "Explore opens", doc.querySelector("#customer-search").classList.contains("active"));
+      assert(checks, "Curated catalogue loaded", win.__catalogueCount() >= 150);
+      doc.querySelector("#customerSearchInput").value = "milk";
+      doc.querySelector("#customerSearchInput").dispatchEvent(new Event("input", { bubbles: true }));
+      await wait(100);
+      assert(checks, "Search filters products", doc.querySelector("#productCountLabel").textContent !== "0 items");
+
+      win.addToCart("broccoli");
+      win.addToCart("milk");
+      await wait(100);
+      assert(checks, "Cart count updates", Object.values(win.__bazaarSetuState.cart).reduce((sum, qty) => sum + qty, 0) === 2);
+
+      win.showCustomerScreen("cart");
+      await wait(100);
+      assert(checks, "Cart opens with checkout", Boolean(doc.querySelector("[data-checkout]")));
+      assert(checks, "Checkout shows payment methods", doc.querySelector("#cartBody").textContent.includes("UPI"));
+
+      win.updateCartQty("broccoli", 1);
+      await wait(100);
+      assert(checks, "Quantity increment works", doc.querySelector("#cartItemLabel").textContent.includes("3"));
+
+      doc.querySelector("[data-checkout]").click();
+      await wait(120);
+      assert(checks, "Checkout opens orders", doc.querySelector("#customer-orders").classList.contains("active"));
+      assert(checks, "Active order appears", doc.querySelector("#customerOrders").textContent.includes("Delivery arriving"));
+
+      win.showCustomerScreen("profile");
+      await wait(100);
+      assert(checks, "Customer profile renders addresses", doc.querySelector("#customerProfileDetails").textContent.includes("Saved Addresses"));
+      win.saveCustomerAddress();
+      win.saveCustomerAddress();
+      const fifthAllowed = win.saveCustomerAddress();
+      const sixthAllowed = win.saveCustomerAddress();
+      await wait(100);
+      assert(checks, "Customer can save only up to five addresses", fifthAllowed === true && sixthAllowed === false);
+      win.editCustomerAddress("addr-home", { label: "Edited Home", line: "Edited delivery lane", lat: "19.1000", lng: "72.8000" });
+      await wait(100);
+      assert(checks, "Customer can edit saved address", doc.querySelector("#customerProfileDetails").textContent.includes("Edited delivery lane"));
+      win.removeCustomerAddress("addr-office");
+      await wait(100);
+      assert(checks, "Customer can remove saved address", !doc.querySelector("#customerProfileDetails").textContent.includes("BKC Office"));
+      win.submitSellerLead();
+      await wait(100);
+      assert(checks, "Become seller lead status appears", doc.querySelector("#customerProfileDetails").textContent.includes("Seller Lead"));
+
+      win.setMode("seller");
+      win.showSellerScreen("s-lang");
+      await wait(100);
+      doc.querySelector("#languageGrid button:nth-child(2)").click();
+      await wait(100);
+      assert(checks, "Language selection highlights", doc.querySelector("#languageGrid button:nth-child(2)").classList.contains("active"));
+
+      win.showSellerScreen("s-welcome");
+      await wait(100);
+      doc.querySelector("#tierList button:nth-child(2)").click();
+      await wait(100);
+      assert(checks, "Tier CTA updates", doc.querySelector("#tierButton").textContent.includes("Local Store"));
+
+      win.showSellerScreen("s-signup");
+      await wait(100);
+      doc.querySelector(".signup-step .pri-btn").click();
+      await wait(100);
+      assert(checks, "Signup progress advances", doc.querySelector("#stepNum").textContent === "2");
+
+      win.showSellerScreen("s-orders");
+      await wait(100);
+      win.acceptSellerOrder("ORD-1041");
+      await wait(100);
+      assert(checks, "Confirm order auto-invoices into packed lane", doc.querySelector("#sellerOrders").textContent.includes("Auto invoice"));
+      win.markSellerOrderPacked("ORD-1041");
+      await wait(100);
+      assert(checks, "Pack order updates status", doc.querySelector("#sellerOrders").textContent.includes("Packed"));
+      win.openPrintOptions("ORD-1041", "invoice");
+      await wait(100);
+      assert(checks, "Print options modal opens", doc.querySelector("#printModal").classList.contains("open"));
+      assert(checks, "Print formats render", doc.querySelector("#printFormatButtons").textContent.includes("80mm thermal"));
+      win.closePrintOptions();
+
+      win.showSellerScreen("s-inventory");
+      await wait(100);
+      win.showSellerCatalogueTab("products");
+      await wait(100);
+      assert(checks, "Seller Products tab shows HSN", doc.querySelector("#sellerInventory").textContent.includes("HSN"));
+      assert(checks, "Seller Profile removed from Products tabs", !doc.querySelector("#sellerInventory .seller-catalogue-tabs").textContent.includes("Profile"));
+      win.selectSellerCategory("electronics");
+      await wait(100);
+      assert(checks, "Seller category selection filters catalogue", doc.querySelector("#sellerInventory").textContent.includes("USB-C Cable"));
+      win.addSellerProduct("electronics-usb-c-cable-1");
+      await wait(100);
+      win.showSellerCatalogueTab("my-products");
+      await wait(100);
+      assert(checks, "Added product appears in My Products", doc.querySelector("#sellerInventory").textContent.includes("USB-C Cable"));
+      const beforeStock = doc.querySelector("#sellerInventory").textContent;
+      win.updateSellerStock("electronics-usb-c-cable-1", 1);
+      await wait(100);
+      assert(checks, "Stock increment re-renders", doc.querySelector("#sellerInventory").textContent !== beforeStock);
+      win.showSellerCatalogueTab("add-new");
+      await wait(100);
+      const requestId = win.submitProductRequest({ name: "Test Millet Cookies", category: "snacks", unit: "200 g", hsn: "1905" });
+      await wait(100);
+      assert(checks, "Seller product request is submitted", doc.querySelector("#sellerInventory").textContent.includes("Test Millet Cookies"));
+
+      win.showSellerScreen("s-profile");
+      await wait(100);
+      assert(checks, "Seller Profile opens from footer screen", doc.querySelector("#seller-profile").classList.contains("active"));
+      assert(checks, "Seller Profile has store timing fields", doc.querySelector("#sellerProfile").textContent.includes("Store start time"));
+      doc.querySelector("#sellerStoreStart").value = "00:00";
+      doc.querySelector("#sellerStoreEnd").value = "23:59";
+      doc.querySelector("#sellerSlaValue").value = "2";
+      doc.querySelector("#sellerSlaUnit").value = "hrs";
+      win.saveSellerProfileMock();
+      await wait(100);
+      win.showSellerScreen("s-orders");
+      await wait(100);
+      assert(checks, "Orders calculate SLA from seller profile", doc.querySelector("#sellerOrders").textContent.includes("Fulfil in 2 hrs"));
+      win.showSellerScreen("s-profile");
+      await wait(100);
+      win.toggleSellerStoreLive();
+      await wait(100);
+      assert(checks, "Seller store toggle disables platform live state", doc.querySelector("#sellerProfile").textContent.includes("Store disabled"));
+      win.toggleSellerStoreLive();
+
+      win.showSellerScreen("s-ai");
+      await wait(100);
+      win.sendSellerAiMessage("What should I restock?");
+      await wait(100);
+      assert(checks, "AI canned response appears", doc.querySelector("#aiChat").textContent.includes("Mango Pickle"));
+
+      win.showSellerScreen("s-analytics");
+      await wait(100);
+      assert(checks, "Analytics bars render", doc.querySelectorAll("#anBars i").length === 7);
+
+      win.setMode("ops");
+      await wait(150);
+      assert(checks, "Ops admin mode opens", doc.querySelector("#opsApp").classList.contains("active-mode"));
+      assert(checks, "Ops dashboard nav renders", doc.querySelectorAll("[data-ops-nav-item]").length > 0);
+      win.showOpsView("ops-leads");
+      await wait(100);
+      assert(checks, "Seller lead appears in Ops", doc.querySelector("#opsSellerLeads").textContent.includes("Rahul Kumar"));
+      win.showOpsView("ops-catalogue");
+      await wait(100);
+      assert(checks, "Product request appears in Ops", doc.querySelector("#opsCatalogueRequests").textContent.includes("Test Millet Cookies"));
+      win.approveProductRequest(requestId);
+      await wait(100);
+      assert(checks, "Approved product enters master catalogue", win.__catalogueCount() >= 151);
+      const rejectId = win.submitProductRequest({ name: "Reject Demo Product", category: "snacks", unit: "100 g", hsn: "" });
+      win.rejectProductRequest(rejectId, "Blurry image");
+      await wait(100);
+      assert(checks, "Rejected product stores reason", doc.querySelector("#opsCatalogueRequests").textContent.includes("Blurry image"));
+      win.showOpsView("ops-settings");
+      await wait(100);
+      assert(checks, "Admin payment settings render", doc.querySelector("#opsPaymentConfig").textContent.includes("Cashfree"));
+      win.togglePaymentMethod("cod");
+      await wait(100);
+      assert(checks, "Payment toggle updates config", win.__bazaarSetuState.paymentConfig.methods.cod.enabled === false);
+      win.updateRewardConfig({ enabled: true, earnRs: 100, points: 20 });
+      await wait(100);
+      assert(checks, "Reward config updates", win.__bazaarSetuState.rewardConfig.points === 20);
+      win.showOpsView("ops-notifications");
+      await wait(100);
+      assert(checks, "Admin notification publisher renders", doc.querySelector("#opsNotificationHistory") !== null);
+      win.publishAdminNotification({ audience: "customer", type: "offer", title: "Flash Sale Live", body: "Admin published offer for customers." });
+      await wait(100);
+      assert(checks, "Admin published notification appears in history", doc.querySelector("#opsNotificationHistory").textContent.includes("Flash Sale Live"));
+      win.setMode("customer");
+      win.showCustomerScreen("notifications");
+      await wait(100);
+      assert(checks, "Customer receives admin notification", doc.querySelector("#customerNotifications").textContent.includes("Flash Sale Live"));
+      win.markCustomerNotificationsRead();
+      await wait(100);
+      assert(checks, "Customer can mark notifications read", doc.querySelector("[data-notification-count]").classList.contains("is-zero"));
+
+      win.selectOpsRole("support");
+      await wait(150);
+      assert(checks, "Support role selected", doc.querySelector("#opsRoleName").textContent.includes("Support"));
+      assert(checks, "Support can see refunds", doc.querySelector("[data-ops-nav-item='ops-refunds']") !== null);
+      assert(checks, "Support cannot see payouts", doc.querySelector("[data-ops-nav-item='ops-payouts']") === null);
+      win.showOpsView("ops-payouts");
+      await wait(100);
+      assert(checks, "Blocked payout route falls back", !doc.querySelector("[data-ops-view='ops-payouts']").classList.contains("active"));
+
+      win.selectOpsRole("logistics");
+      await wait(150);
+      win.showOpsView("ops-delivery");
+      await wait(100);
+      assert(checks, "Logistics can open delivery", doc.querySelector("[data-ops-view='ops-delivery']").classList.contains("active"));
+      assert(checks, "Logistics cannot see sellers", doc.querySelector("[data-ops-nav-item='ops-sellers']") === null);
+
+      win.selectOpsRole("admin");
+      await wait(150);
+      assert(checks, "Admin can see payouts", doc.querySelector("[data-ops-nav-item='ops-payouts']") !== null);
+      assert(checks, "Admin action buttons enabled", !doc.querySelector("[data-action-roles='admin']").disabled);
+
+      const overflow = doc.documentElement.scrollWidth > doc.documentElement.clientWidth;
+      assert(checks, "No page horizontal overflow", !overflow);
+
+      const failed = checks.filter((check) => !check.pass);
+      result.textContent = JSON.stringify({
+        status: failed.length ? "failed" : "passed",
+        checks
+      }, null, 2);
+    }
+
+    run().catch((error) => {
+      document.getElementById("result").textContent = error.stack || String(error);
+    });
+  </script>
+</body>
+</html>

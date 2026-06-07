@@ -1,0 +1,305 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  SELLER
+  ADMIN
+  SUPPORT
+}
+
+enum DocumentType {
+  FSSAI
+  GSTIN
+  PAN
+  BANK
+  LEGAL_METROLOGY
+  ADDRESS_PROOF
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OrderStatus {
+  PLACED
+  CONFIRMED
+  INVOICE_REQUIRED
+  BAG_PACKED
+  HANDED_OVER
+  DELIVERED
+  REJECTED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentState {
+  PENDING
+  PAID
+  COD
+  REFUND_PENDING
+  REFUNDED
+  FAILED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  role      UserRole
+  name      String
+  phone     String   @unique
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  customerProfile CustomerProfile?
+  sellerProfile   SellerProfile?
+}
+
+model CustomerProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  rewardPoints Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user        User              @relation(fields: [userId], references: [id])
+  addresses   CustomerAddress[]
+  orders      ParentOrder[]
+  sellerLeads SellerLead[]
+}
+
+model CustomerAddress {
+  id         String   @id @default(cuid())
+  customerId String
+  type       String
+  label      String
+  line1      String
+  line2      String?
+  city       String
+  state      String
+  pincode    String
+  lat        Decimal  @db.Decimal(10, 7)
+  lng        Decimal  @db.Decimal(10, 7)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer CustomerProfile @relation(fields: [customerId], references: [id])
+  orders   ParentOrder[]
+}
+
+model SellerProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  ownerName           String
+  shopName            String
+  storeLive           Boolean  @default(false)
+  selectedCategoryIds String[] @default([])
+  defaultSlaValue     Int      @default(45)
+  defaultSlaUnit      String   @default("minutes")
+  autoInvoiceEnabled  Boolean  @default(true)
+  deliveryFee         Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user       User                 @relation(fields: [userId], references: [id])
+  locations  SellerLocation[]
+  documents  ComplianceDocument[]
+  products   SellerProduct[]
+  subOrders  SellerSubOrder[]
+  requests   ProductApprovalRequest[]
+}
+
+model SellerLocation {
+  id        String   @id @default(cuid())
+  sellerId  String
+  label     String
+  address   String
+  city      String
+  state     String
+  pincode   String
+  lat       Decimal  @db.Decimal(10, 7)
+  lng       Decimal  @db.Decimal(10, 7)
+  openTime  String
+  closeTime String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  seller SellerProfile @relation(fields: [sellerId], references: [id])
+}
+
+model ComplianceDocument {
+  id         String         @id @default(cuid())
+  sellerId   String
+  type       DocumentType
+  identifier String?
+  fileUrl    String?
+  status     ApprovalStatus @default(PENDING)
+  reason     String?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  seller SellerProfile @relation(fields: [sellerId], references: [id])
+}
+
+model Category {
+  id        String   @id
+  name      String
+  icon      String
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products ProductMaster[]
+}
+
+model ProductMaster {
+  id                String   @id
+  categoryId        String
+  subcategory       String?
+  name              String
+  brand             String?
+  unit              String
+  uqc               String?
+  hsn               String?
+  gstRate           Decimal? @db.Decimal(5, 2)
+  imageUrl          String?
+  aliases           String[] @default([])
+  fssaiApplicable   Boolean  @default(false)
+  legalMetrology    Json?
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  category       Category                 @relation(fields: [categoryId], references: [id])
+  sellerProducts SellerProduct[]
+  requests       ProductApprovalRequest[]
+}
+
+model SellerProduct {
+  id               String   @id @default(cuid())
+  sellerId         String
+  productId        String
+  locationId       String?
+  price            Int
+  qty              Int
+  active           Boolean  @default(false)
+  tags             String[] @default([])
+  slaOverrideValue Int?
+  slaOverrideUnit  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  seller  SellerProfile @relation(fields: [sellerId], references: [id])
+  product ProductMaster @relation(fields: [productId], references: [id])
+  items   OrderItem[]
+}
+
+model ProductApprovalRequest {
+  id                String         @id @default(cuid())
+  sellerId          String
+  productId         String?
+  categoryId        String
+  name              String
+  unit              String
+  hsn               String?
+  imageUrl          String?
+  aiExtractedFields Json?
+  status            ApprovalStatus @default(PENDING)
+  reason            String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  seller  SellerProfile  @relation(fields: [sellerId], references: [id])
+  product ProductMaster? @relation(fields: [productId], references: [id])
+}
+
+model ParentOrder {
+  id             String       @id @default(cuid())
+  customerId     String
+  addressId      String
+  status         OrderStatus  @default(PLACED)
+  paymentState   PaymentState @default(PENDING)
+  paymentMethod  String
+  total          Int
+  deliveryFee    Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  customer  CustomerProfile @relation(fields: [customerId], references: [id])
+  address   CustomerAddress @relation(fields: [addressId], references: [id])
+  subOrders SellerSubOrder[]
+}
+
+model SellerSubOrder {
+  id            String       @id @default(cuid())
+  parentOrderId String
+  sellerId      String
+  status        OrderStatus  @default(PLACED)
+  paymentState  PaymentState @default(PENDING)
+  invoiceNumber String?
+  invoiceMode   String?
+  rejectReason  String?
+  refundAmount  Int?
+  slaDueAt      DateTime?
+  timeline      Json         @default("[]")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  parentOrder ParentOrder   @relation(fields: [parentOrderId], references: [id])
+  seller      SellerProfile @relation(fields: [sellerId], references: [id])
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id              String @id @default(cuid())
+  subOrderId      String
+  productId       String
+  sellerProductId String
+  name            String
+  hsn             String?
+  unit            String
+  qty             Int
+  price           Int
+  taxAmount       Int    @default(0)
+
+  subOrder      SellerSubOrder @relation(fields: [subOrderId], references: [id])
+  sellerProduct SellerProduct  @relation(fields: [sellerProductId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  audience  String
+  title     String
+  body      String
+  type      String
+  readBy    String[] @default([])
+  createdAt DateTime @default(now())
+}
+
+model SellerLead {
+  id         String   @id @default(cuid())
+  customerId String?
+  name       String
+  phone      String
+  notes      String?
+  status     String   @default("NEW")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer CustomerProfile? @relation(fields: [customerId], references: [id])
+}
+
+model PlatformSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

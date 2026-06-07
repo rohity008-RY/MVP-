@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>BazaarSetu - Customer App</title>
+  <meta name="theme-color" content="#0f0f14">
+  <link rel="manifest" href="/customer/manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles.css">
+  <link rel="stylesheet" href="/customer/customer.css">
+</head>
+<body>
+  <main class="app-stage">
+    <div class="customer-scene">
+      <section class="customer-phone" aria-label="BazaarSetu Customer App">
+        <section class="screen active" id="customerHome">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div>
+          </div>
+          <header class="home-header">
+            <div class="home-top">
+              <button class="location-bar" id="activeAddressButton" type="button">
+                <i class="ti ti-map-pin" style="color:#ff4b2b;font-size:19px"></i>
+                <span><span class="loc-label">Deliver to</span><span class="loc-name"><span id="activeAddressText">Loading address</span><i class="ti ti-chevron-down"></i></span></span>
+              </button>
+              <div class="header-icons">
+                <button class="header-icon" id="customerNotificationButton" type="button" aria-label="Notifications"><i class="ti ti-bell"></i><span class="badge-dot" id="customerNotificationCount"></span></button>
+                <button class="header-icon" id="quickCartButton" type="button" aria-label="Cart"><i class="ti ti-shopping-cart"></i><span class="badge-dot" id="customerCartBadge"></span></button>
+              </div>
+            </div>
+            <label class="search-bar" for="customerSearch">
+              <i class="ti ti-search"></i>
+              <input id="customerSearch" type="search" placeholder="Search fruits, vegetables, dairy">
+              <button class="voice-btn" id="voiceSearchButton" type="button" aria-label="Voice search"><i class="ti ti-microphone"></i></button>
+            </label>
+          </header>
+          <div class="scroll-body">
+            <div class="hero-carousel">
+              <article class="hero-card hc1"><div class="hero-deco"></div><div class="hero-tag">Fresh arrivals</div><div class="hero-title">Farm fresh vegetables</div><button class="hero-cta" type="button">Shop now</button></article>
+              <article class="hero-card hc2"><div class="hero-deco"></div><div class="hero-tag">Today's deal</div><div class="hero-title">Local sellers upto 40% off</div><button class="hero-cta" type="button">Grab now</button></article>
+              <article class="hero-card hc3"><div class="hero-deco"></div><div class="hero-tag">Rewards live</div><div class="hero-title">Earn points on every order</div><button class="hero-cta" type="button">View rewards</button></article>
+            </div>
+            <div class="section-hdr"><div class="section-title">Shop by Category</div><button class="see-all" type="button">See all</button></div>
+            <div class="cat-scroll" id="customerCategories"></div>
+            <div class="section-gap"></div>
+            <div class="section-hdr"><div class="section-title">Top Sellers Near You</div><button class="see-all" type="button">View all</button></div>
+            <div class="seller-strip">
+              <article class="seller-card"><div class="seller-avatar">RF</div><div class="seller-name">Ram Fresh Farms</div><div class="seller-meta">Vegetables · Fruits</div><div class="seller-rating"><i class="ti ti-star-filled"></i> 4.8 · 2.3k orders</div></article>
+              <article class="seller-card"><div class="seller-avatar" style="background:#185fa5">OD</div><div class="seller-name">Om Dairy Hub</div><div class="seller-meta">Dairy · Eggs</div><div class="seller-rating"><i class="ti ti-star-filled"></i> 4.6 · 1.8k orders</div></article>
+              <article class="seller-card"><div class="seller-avatar" style="background:#0f6e56">NK</div><div class="seller-name">Nirmala's Kitchen</div><div class="seller-meta">Pickles · Snacks</div><div class="seller-rating"><i class="ti ti-star-filled"></i> 4.9 · 3.1k orders</div></article>
+            </div>
+            <div class="section-gap"></div>
+            <div class="section-hdr"><div class="section-title">Trending Products</div><button class="see-all" type="button"><span id="customerProductCount">0 items</span></button></div>
+            <div class="product-grid" id="customerProducts"></div>
+            <div class="pb-safe"></div>
+          </div>
+        </section>
+
+        <section class="screen" id="customerCart">
+          <div class="status-bar"><span>9:41</span><div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div></div>
+          <header class="page-header"><button class="back-btn" data-customer-view="customerHome" type="button"><i class="ti ti-arrow-left"></i></button><div class="page-title">Your Cart</div></header>
+          <div class="scroll-body">
+            <div id="cartLines"></div>
+            <div id="paymentMethods"></div>
+          </div>
+        </section>
+
+        <section class="screen" id="customerOrders">
+          <div class="status-bar"><span>9:41</span><div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div></div>
+          <header class="page-header"><button class="back-btn" data-customer-view="customerHome" type="button"><i class="ti ti-arrow-left"></i></button><div class="page-title">My Orders</div></header>
+          <div class="scroll-body" id="ordersList"></div>
+        </section>
+
+        <section class="screen" id="customerProfile">
+          <div class="status-bar"><span>9:41</span><div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div></div>
+          <div class="profile-header" id="profileSummary"></div>
+          <div class="scroll-body">
+            <div id="addressManager"></div>
+            <div id="becomeSellerCard"></div>
+            <div class="pb-safe"></div>
+          </div>
+        </section>
+
+        <section class="screen" id="customerNotifications">
+          <div class="status-bar"><span>9:41</span><div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div></div>
+          <header class="page-header"><button class="back-btn" data-customer-view="customerHome" type="button"><i class="ti ti-arrow-left"></i></button><div class="page-title">Notifications</div></header>
+          <div class="scroll-body" id="customerNotificationList"></div>
+        </section>
+
+        <nav class="customer-nav" aria-label="Customer navigation">
+          <button class="active" data-customer-view="customerHome" type="button"><i class="ti ti-home"></i><span>Home</span><span class="nav-dot"></span></button>
+          <button data-customer-view="customerCart" type="button"><i class="ti ti-shopping-cart"></i><span>Cart</span><span class="nav-dot"></span></button>
+          <button data-customer-view="customerOrders" type="button"><i class="ti ti-receipt"></i><span>Orders</span><span class="nav-dot"></span></button>
+          <button data-customer-view="customerProfile" type="button"><i class="ti ti-user"></i><span>Profile</span><span class="nav-dot"></span></button>
+        </nav>
+      </section>
+    </div>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script src="/shared/pwa.js"></script>
+  <script src="/customer/customer.js"></script>
+</body>
+</html>

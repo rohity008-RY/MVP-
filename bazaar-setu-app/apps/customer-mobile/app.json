@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Bazaar Setu Customer",
+    "slug": "bazaar-setu-customer",
+    "scheme": "bazaarsetu-customer",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FF4B2B"
+      }
+    },
+    "plugins": ["expo-router", "expo-location"]
+  }
+}

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bazaar Setu Apps</title>
+  <link rel="stylesheet" href="/shared/styles.css">
+</head>
+<body>
+  <main class="app-stage">
+    <section class="landing">
+      <div class="brand" style="color: var(--ink)">
+        <img src="/assets/bazaar-setu-logo.svg" alt="Bazaar Setu">
+        <div>
+          <strong>Bazaar Setu</strong>
+          <small style="color: var(--muted)">Separate apps for customers, sellers, and support</small>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow">Application Selector</p>
+        <h1>Choose your Bazaar Setu workspace</h1>
+      </div>
+      <div class="landing-grid">
+        <a class="landing-card" href="/customer">
+          <span class="pill">Mobile App</span>
+          <h2>Customer App</h2>
+          <p class="muted">Browse catalogue, search, manage cart, checkout, saved addresses, orders, rewards, and notifications.</p>
+          <button class="primary" type="button">Open Customer</button>
+        </a>
+        <a class="landing-card" href="/seller">
+          <span class="pill orange">Seller App</span>
+          <h2>Seller App</h2>
+          <p class="muted">Manage store live state, SLA, catalogue, inventory, order processing, invoice, label, and product requests.</p>
+          <button class="secondary" type="button">Open Seller</button>
+        </a>
+        <a class="landing-card" href="/admin">
+          <span class="pill red">Web Console</span>
+          <h2>Admin & Support</h2>
+          <p class="muted">Monitor orders, sellers, product requests, notifications, payment settings, and rewards configuration.</p>
+          <button class="ghost" type="button">Open Admin</button>
+        </a>
+      </div>
+    </section>
+  </main>
+  <script src="/shared/pwa.js"></script>
+</body>
+</html>

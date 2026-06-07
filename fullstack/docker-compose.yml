@@ -1,0 +1,19 @@
+services:
+  bazaar-setu:
+    build: .
+    container_name: bazaar-setu
+    env_file:
+      - .env
+    ports:
+      - "5010:5010"
+    volumes:
+      - bazaar_setu_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5010/api/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  bazaar_setu_data:

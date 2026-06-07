@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BazaarSetu — Seller App (Multi-Language + AI)</title>
+<link rel="manifest" href="/seller/manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--ink:#0D0D14;--ink2:#1A1A28;--ink3:#282840;--s1:#fff;--s2:#F6F5F2;--s3:#EDECEA;--t1:#0D0D14;--t2:#4A4A62;--t3:#8F8FAC;--acc:#FF4B2B;--grn:#1D9E75;--grn2:#E1F5EE;--grn3:#085041;--amb:#BA7517;--amb2:#FAEEDA;--amb3:#412402;--blu:#185FA5;--blu2:#E6F1FB;--blu3:#042C53;--pur:#534AB7;--pur2:#EEEDFE;--pur3:#26215C;--red:#E24B4A;--red2:#FCEBEB;--red3:#501313;--br:#E4E2DC}
+html,body{font-family:'DM Sans',sans-serif;background:#D0CEC9;min-height:100vh;display:flex;justify-content:center;padding:20px 0 48px}
+.phone{width:375px;background:var(--s1);border-radius:28px;overflow:hidden;box-shadow:0 20px 60px rgba(13,13,20,.22),0 0 0 7px rgba(13,13,20,.1);min-height:820px;display:flex;flex-direction:column;position:relative}
+.screen{display:none;flex-direction:column;flex:1;min-height:820px}.screen.on{display:flex}
+.sb{background:var(--ink);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:10px 18px 6px;font-size:11px;font-weight:500;flex-shrink:0}
+.sbi{display:flex;gap:5px;font-size:13px}
+.body{flex:1;overflow-y:auto;overflow-x:hidden}.body::-webkit-scrollbar{display:none}
+.bnav{background:var(--s1);border-top:1px solid var(--br);display:flex;padding:6px 0 14px;flex-shrink:0}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:5px 0}
+.ni i{font-size:20px;color:var(--t3)}.ni span{font-size:10px;color:var(--t3);font-family:'Sora',sans-serif;font-weight:500}
+.ni.on i,.ni.on span{color:var(--acc)}
+.nidot{width:4px;height:4px;border-radius:50%;background:var(--acc);opacity:0}.ni.on .nidot{opacity:1}
+.phdr{background:var(--s1);display:flex;align-items:center;gap:11px;padding:13px 16px;border-bottom:1px solid var(--br);flex-shrink:0;position:sticky;top:0;z-index:9}
+.bk{width:33px;height:33px;border-radius:9px;background:var(--s2);border:1px solid var(--br);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.bk i{font-size:17px;color:var(--t1)}
+.ptitle{font-family:'Sora',sans-serif;font-size:15px;font-weight:600;color:var(--t1)}
+.pill{font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px;font-family:'Sora',sans-serif}
+.p-grn{background:var(--grn2);color:var(--grn3)}.p-amb{background:var(--amb2);color:var(--amb3)}.p-red{background:var(--red2);color:var(--red3)}.p-blu{background:var(--blu2);color:var(--blu3)}.p-pur{background:var(--pur2);color:var(--pur3)}
+.card{background:var(--s1);border:1px solid var(--br);border-radius:14px;overflow:hidden}
+.row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--br)}.row:last-child{border-bottom:none}
+.pri-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--acc);color:#fff;border:none;border-radius:13px;padding:14px;width:100%;font-family:'Sora',sans-serif;font-size:14px;font-weight:600;cursor:pointer}
+.sec-btn{background:var(--s1);border:1.5px solid var(--br);border-radius:13px;padding:13px;width:100%;font-family:'Sora',sans-serif;font-size:14px;font-weight:500;color:var(--t2);cursor:pointer}
+.chip-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 16px 12px}.chip-row::-webkit-scrollbar{display:none}
+.chip{background:var(--s2);border:1px solid var(--br);border-radius:20px;padding:5px 13px;font-size:11px;font-weight:500;color:var(--t2);cursor:pointer;font-family:'Sora',sans-serif;white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.inp{width:100%;border:1.5px solid var(--br);border-radius:11px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--t1);outline:none;background:var(--s1)}
+.inp:focus{border-color:var(--acc)}.inp::placeholder{color:var(--t3)}
+.lbl{font-family:'Sora',sans-serif;font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px}
+.ai-bubble{background:var(--s2);border:1px solid var(--br);border-radius:0 14px 14px 14px;padding:11px 13px;max-width:88%;margin-bottom:10px;font-size:13px;color:var(--t1);line-height:1.55}
+.user-bubble{background:var(--acc);border-radius:14px 14px 0 14px;padding:11px 13px;max-width:80%;margin-left:auto;margin-bottom:10px;font-size:13px;color:#fff;line-height:1.55}
+.ai-avatar{width:28px;height:28px;border-radius:9px;background:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lang-card{border:2px solid var(--br);border-radius:14px;padding:14px 12px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:10px;background:var(--s1)}
+.lang-card.on{border-color:var(--acc);background:#fff8f7}
+.tier-card{border:2px solid var(--br);border-radius:18px;padding:16px;cursor:pointer;background:var(--s1);margin-bottom:10px}
+.tier-card.on{border-color:var(--acc)}
+.pb{height:24px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(29,158,117,.3)}50%{box-shadow:0 0 0 8px rgba(29,158,117,0)}}
+.screen.on{animation:fadeUp .25s ease}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+
+<!-- LANGUAGE SELECTION -->
+<div class="screen on" id="s-lang">
+  <div class="sb"><span>9:41</span><div class="sbi"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div></div>
+  <div class="body" style="background:var(--s1)">
+    <div style="padding:28px 16px 20px;text-align:center">
+      <div style="width:60px;height:60px;border-radius:18px;background:var(--ink);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><span style="font-family:Sora,sans-serif;font-size:20px;font-weight:700;color:#fff">B<span style="color:var(--acc)">S</span></span></div>
+      <div style="font-family:Sora,sans-serif;font-size:22px;font-weight:700;color:var(--t1)">अपनी भाषा चुनें</div>
+      <div style="font-size:13px;color:var(--t3);margin-top:5px">Choose your language to get started</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px">
+      <div class="lang-card" onclick="selLang(this)"><span style="font-size:22px">🇬🇧</span><div><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">English</div><div style="font-size:11px;color:var(--t3)">English</div></div></div>
+      <div class="lang-card on" onclick="selLang(this)"><span style="font-size:22px">🇮🇳</span><div><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">हिंदी</div><div style="font-size:11px;color:var(--t3)">Hindi</div></div></div>
+      <div class="lang-card" onclick="selLang(this)"><span style="font-size:22px">🇮🇳</span><div><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">मराठी</div><div style="font-size:11px;color:var(--t3)">Marathi</div></div></div>
+      <div class="lang-card" onclick="selLang(this)"><span style="font-size:22px">🇮🇳</span><div><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">ગુજરાતી</div><div style="font-size:11px;color:var(--t3)">Gujarati</div></div></div>
+      <div class="lang-card" onclick="selLang(this)"><span style="font-size:22px">🇮🇳</span><div><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">தமிழ்</div><div style="font-size:11px;color:var(--t3)">Tamil</div></div></div>
+      <div class="lang-card" onclick="selLang(this)"><span style="font-size:22px">🇮🇳</span><div><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">తెలుగు</div><div style="font-size:11px;color:var(--t3)">Telugu</div></div></div>
+      <div class="lang-card" onclick="selLang(this)"><span style="font-size:22px">🇮🇳</span><div><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">ಕನ್ನಡ</div><div style="font-size:11px;color:var(--t3)">Kannada</div></div></div>
+      <div class="lang-card" onclick="selLang(this)"><span style="font-size:22px">🇮🇳</span><div><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">বাংলা</div><div style="font-size:11px;color:var(--t3)">Bengali</div></div></div>
+    </div>
+    <div style="padding:20px 16px 0">
+      <button class="pri-btn" onclick="go('s-welcome')">आगे बढ़ें — Continue <i class="ti ti-arrow-right"></i></button>
+      <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--t3)">You can change language anytime in settings</div>
+    </div>
+    <div class="pb"></div>
+  </div>
+</div>
+
+<!-- TIER SELECTION -->
+<div class="screen" id="s-welcome">
+  <div class="sb"><span>9:41</span><div class="sbi"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div></div>
+  <div class="body" style="background:var(--s2)">
+    <div style="background:var(--ink);padding:20px 16px 22px">
+      <div style="font-size:11px;color:rgba(255,255,255,.4);font-weight:500;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">BazaarSetu Seller</div>
+      <div style="font-family:Sora,sans-serif;font-size:20px;font-weight:700;color:#fff;line-height:1.25">अपना बिज़नेस<br>शुरू करें</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:6px">Start selling in minutes — no tech expertise needed</div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:9px 12px;flex:1;text-align:center"><div style="font-family:Sora,sans-serif;font-size:17px;font-weight:700;color:#fff">500+</div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">Sellers</div></div>
+        <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:9px 12px;flex:1;text-align:center"><div style="font-family:Sora,sans-serif;font-size:17px;font-weight:700;color:#fff">0%</div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">Commission 30d</div></div>
+        <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:9px 12px;flex:1;text-align:center"><div style="font-family:Sora,sans-serif;font-size:17px;font-weight:700;color:#fff">5 min</div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">To go live</div></div>
+      </div>
+    </div>
+    <div style="padding:16px 16px 0">
+      <div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t2);margin-bottom:12px">Select your seller type</div>
+      <div class="tier-card on" onclick="selTier(this,'Micro Seller')">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px"><div><div style="font-family:Sora,sans-serif;font-size:15px;font-weight:700;color:var(--t1)">Micro Seller</div><div style="font-size:12px;color:var(--t3);margin-top:2px">Home cooks, small farms, solo vendors</div></div><span class="pill p-grn">Free</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2)"><i class="ti ti-check" style="font-size:14px;color:var(--grn)"></i>Up to 20 products</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2)"><i class="ti ti-check" style="font-size:14px;color:var(--grn)"></i>Basic OMS + invoice</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2)"><i class="ti ti-check" style="font-size:14px;color:var(--grn)"></i>AI assistant included</div>
+        </div>
+      </div>
+      <div class="tier-card" onclick="selTier(this,'Growth Seller')">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px"><div><div style="font-family:Sora,sans-serif;font-size:15px;font-weight:700;color:var(--t1)">Growth Seller</div><div style="font-size:12px;color:var(--t3);margin-top:2px">Small stores, local businesses</div></div><span class="pill p-amb">₹299/mo</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2)"><i class="ti ti-check" style="font-size:14px;color:var(--grn)"></i>Up to 200 products</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2)"><i class="ti ti-check" style="font-size:14px;color:var(--grn)"></i>Advanced OMS + SLA + Analytics</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2)"><i class="ti ti-check" style="font-size:14px;color:var(--grn)"></i>Priority AI support</div>
+        </div>
+      </div>
+      <div class="tier-card" onclick="selTier(this,'Enterprise Seller')">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px"><div><div style="font-family:Sora,sans-serif;font-size:15px;font-weight:700;color:var(--t1)">Enterprise Seller</div><div style="font-size:12px;color:var(--t3);margin-top:2px">Chains, wholesalers, large stores</div></div><span class="pill p-pur">Custom</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2)"><i class="ti ti-check" style="font-size:14px;color:var(--grn)"></i>Unlimited products & locations</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2)"><i class="ti ti-check" style="font-size:14px;color:var(--grn)"></i>Bulk catalogue import API</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2)"><i class="ti ti-check" style="font-size:14px;color:var(--grn)"></i>Dedicated account manager</div>
+        </div>
+      </div>
+      <button class="pri-btn" id="tierBtn" onclick="go('s-signup')">Register as Micro Seller <i class="ti ti-arrow-right"></i></button>
+    </div>
+    <div class="pb"></div>
+  </div>
+</div>
+
+<!-- SIGNUP FLOW (4 Steps) -->
+<div class="screen" id="s-signup">
+  <div class="sb"><span>9:41</span><div class="sbi"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div></div>
+  <div style="background:var(--s1);padding:12px 16px;border-bottom:1px solid var(--br);flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div class="bk" onclick="go('s-welcome')"><i class="ti ti-arrow-left"></i></div>
+      <div style="font-family:Sora,sans-serif;font-size:14px;font-weight:600;color:var(--t1)">Step <span id="stepNum">1</span> of 4</div>
+      <div style="display:flex;gap:5px;margin-left:auto">
+        <div id="dot1" style="width:20px;height:8px;border-radius:4px;background:var(--acc)"></div>
+        <div id="dot2" style="width:8px;height:8px;border-radius:50%;background:var(--s3)"></div>
+        <div id="dot3" style="width:8px;height:8px;border-radius:50%;background:var(--s3)"></div>
+        <div id="dot4" style="width:8px;height:8px;border-radius:50%;background:var(--s3)"></div>
+      </div>
+    </div>
+    <div style="height:3px;background:var(--s3);border-radius:2px;overflow:hidden"><div id="progressBar" style="height:100%;background:var(--acc);border-radius:2px;width:25%;transition:width .3s"></div></div>
+  </div>
+  <div class="body" style="background:var(--s2)">
+    <div id="step1" style="padding:16px">
+      <div style="font-family:Sora,sans-serif;font-size:18px;font-weight:700;color:var(--t1);margin-bottom:4px">आपकी दुकान का नाम?</div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:18px">What is your shop name?</div>
+      <div style="margin-bottom:14px"><div class="lbl">Shop / Business Name</div><input class="inp" type="text" placeholder="e.g. Nirmala's Kitchen" value="Nirmala's Kitchen"></div>
+      <div style="margin-bottom:14px"><div class="lbl">Your Full Name</div><input class="inp" type="text" value="Nirmala Devi"></div>
+      <div style="margin-bottom:14px"><div class="lbl">Mobile Number</div><div style="display:flex;gap:8px"><div style="width:70px;border:1.5px solid var(--br);border-radius:11px;padding:12px 10px;font-size:14px;color:var(--t2);text-align:center;background:var(--s2)">+91</div><input class="inp" type="tel" value="98812 34567" style="flex:1"></div></div>
+      <div style="margin-bottom:18px"><div class="lbl">Category</div><select style="width:100%;border:1.5px solid var(--br);border-radius:11px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--t1);outline:none;background:var(--s1)"><option selected>Food &amp; Homemade</option><option>Vegetables &amp; Fruits</option><option>Dairy &amp; Eggs</option><option>Bakery &amp; Sweets</option></select></div>
+      <div style="background:var(--pur2);border:1px solid #CECBF6;border-radius:12px;padding:11px 13px;display:flex;gap:10px;margin-bottom:18px"><i class="ti ti-robot" style="font-size:18px;color:var(--pur);flex-shrink:0;margin-top:1px"></i><div style="font-size:12px;color:var(--pur3);line-height:1.55"><strong>AI Tip:</strong> A clear business name with your specialty helps customers find you 3x faster in search.</div></div>
+      <button class="pri-btn" onclick="nextStep(2)">अगला — Next <i class="ti ti-arrow-right"></i></button>
+    </div>
+    <div id="step2" style="display:none;padding:16px">
+      <div style="font-family:Sora,sans-serif;font-size:18px;font-weight:700;color:var(--t1);margin-bottom:4px">आप कहाँ हैं?</div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:18px">Where is your store located?</div>
+      <div style="height:110px;background:var(--grn2);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1.5px dashed #9FE1CB;cursor:pointer;margin-bottom:14px"><i class="ti ti-map-pin" style="font-size:28px;color:var(--grn)"></i><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--grn3)">Use My Current Location</div><div style="font-size:11px;color:#0F6E56">Tap to auto-detect</div></div>
+      <div style="text-align:center;font-size:12px;color:var(--t3);margin-bottom:14px">— or enter manually —</div>
+      <div style="margin-bottom:14px"><div class="lbl">Shop Address</div><input class="inp" type="text" value="Shop 4, Gandhi Nagar, Kurla"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px"><div><div class="lbl">City</div><input class="inp" type="text" value="Mumbai"></div><div><div class="lbl">Pincode</div><input class="inp" type="text" value="400070"></div></div>
+      <div style="background:var(--grn2);border:1px solid #9FE1CB;border-radius:12px;padding:11px 13px;display:flex;gap:10px;margin-bottom:18px"><i class="ti ti-robot" style="font-size:18px;color:var(--grn);flex-shrink:0"></i><div style="font-size:12px;color:var(--grn3);line-height:1.55"><strong>AI Suggestion:</strong> Pincode 400070 (Kurla) has 1,400+ active customers. Peak ordering: 7–10 AM.</div></div>
+      <button class="pri-btn" onclick="nextStep(3)">अगला — Next <i class="ti ti-arrow-right"></i></button>
+    </div>
+    <div id="step3" style="display:none;padding:16px">
+      <div style="font-family:Sora,sans-serif;font-size:18px;font-weight:700;color:var(--t1);margin-bottom:4px">पहला प्रोडक्ट जोड़ें</div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:16px">Add your first product to go live</div>
+      <div style="border:1.5px dashed var(--br);border-radius:14px;padding:20px;text-align:center;cursor:pointer;margin-bottom:14px;background:var(--s1)"><i class="ti ti-camera-plus" style="font-size:30px;color:var(--t3)"></i><div style="font-family:Sora,sans-serif;font-size:12px;font-weight:500;color:var(--t2);margin-top:7px">Take photo or upload</div><div style="font-size:11px;color:var(--t3);margin-top:2px">AI will auto-fill name &amp; price from photo</div></div>
+      <div style="background:var(--pur2);border:1px solid #CECBF6;border-radius:12px;padding:11px 13px;display:flex;gap:10px;margin-bottom:14px"><i class="ti ti-sparkles" style="font-size:18px;color:var(--pur);flex-shrink:0"></i><div style="font-size:12px;color:var(--pur3);line-height:1.55"><strong>AI detected:</strong> Mango Pickle · Homemade · 250g. Suggested price: ₹120–180 based on 48 similar products near you.</div></div>
+      <div style="margin-bottom:12px"><div class="lbl">Product Name</div><input class="inp" type="text" value="Homemade Mango Pickle"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px"><div><div class="lbl">Price (₹)</div><input class="inp" type="number" value="150"></div><div><div class="lbl">Quantity</div><input class="inp" type="number" value="20"></div></div>
+      <div style="margin-bottom:16px"><div class="lbl">Unit</div><select style="width:100%;border:1.5px solid var(--br);border-radius:11px;padding:12px 14px;font-size:14px;color:var(--t1);outline:none;background:var(--s1)"><option selected>per 250g jar</option><option>per kg</option><option>per piece</option></select></div>
+      <button class="pri-btn" onclick="nextStep(4)">अगला — Next <i class="ti ti-arrow-right"></i></button>
+    </div>
+    <div id="step4" style="display:none;padding:16px">
+      <div style="font-family:Sora,sans-serif;font-size:18px;font-weight:700;color:var(--t1);margin-bottom:4px">लगभग हो गया!</div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:16px">Verify your mobile and go live</div>
+      <div style="background:var(--ink);border-radius:16px;padding:16px;margin-bottom:16px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="width:44px;height:44px;border-radius:13px;background:var(--acc);display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:700;color:#fff;font-size:16px">NK</div><div><div style="font-family:Sora,sans-serif;font-size:15px;font-weight:700;color:#fff">Nirmala's Kitchen</div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:2px">Micro Seller · Kurla, Mumbai</div></div></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px"><input class="inp" type="text" placeholder="Enter OTP" style="flex:1;letter-spacing:6px;font-family:Sora,sans-serif;font-size:18px;font-weight:600;text-align:center" maxlength="6"><button style="background:var(--s2);border:1.5px solid var(--br);border-radius:11px;padding:12px 14px;font-family:Sora,sans-serif;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;white-space:nowrap">Resend</button></div>
+      <button class="pri-btn" onclick="go('s-dash')"><i class="ti ti-rocket"></i> जाओ — Go Live!</button>
+    </div>
+    <div class="pb"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="screen" id="s-dash">
+  <div class="sb"><span>9:41</span><div class="sbi"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div></div>
+  <div style="background:var(--ink);padding:14px 16px 16px;flex-shrink:0">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+      <div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);font-weight:500;letter-spacing:.5px;text-transform:uppercase">Nirmala's Kitchen</div>
+        <div style="font-family:Sora,sans-serif;font-size:19px;font-weight:700;color:#fff;margin-top:3px">नमस्ते, Nirmala!</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--grn);display:inline-block"></span><span style="font-size:12px;color:rgba(255,255,255,.45)">Store Open · Kurla West</span></div>
+      </div>
+      <div style="background:rgba(255,75,43,.2);border:1px solid rgba(255,75,43,.3);border-radius:9px;padding:6px 10px;cursor:pointer;display:flex;align-items:center;gap:5px" onclick="go('s-ai')"><i class="ti ti-sparkles" style="font-size:15px;color:var(--acc)"></i><span style="font-family:Sora,sans-serif;font-size:11px;font-weight:600;color:var(--acc)">AI Help</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
+      <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:9px 10px"><div style="font-size:10px;color:rgba(255,255,255,.4)">Today's Sales</div><div style="font-family:Sora,sans-serif;font-size:17px;font-weight:700;color:#fff;margin-top:2px">₹1,840</div><div style="font-size:10px;color:var(--grn);margin-top:2px">+12 orders</div></div>
+      <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:9px 10px"><div style="font-size:10px;color:rgba(255,255,255,.4)">Pending</div><div style="font-family:Sora,sans-serif;font-size:17px;font-weight:700;color:#fff;margin-top:2px">3</div><div style="font-size:10px;color:var(--amb);margin-top:2px">Need action</div></div>
+      <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:9px 10px"><div style="font-size:10px;color:rgba(255,255,255,.4)">Rating</div><div style="font-family:Sora,sans-serif;font-size:17px;font-weight:700;color:#fff;margin-top:2px">4.8</div><div style="font-size:10px;color:var(--grn);margin-top:2px">18 reviews</div></div>
+    </div>
+  </div>
+  <div class="body" style="background:var(--s2)">
+    <div style="margin:14px 16px 0;background:var(--s1);border:1.5px solid var(--pur);border-radius:14px;overflow:hidden;cursor:pointer" onclick="go('s-ai')">
+      <div style="background:var(--pur2);padding:10px 13px;display:flex;align-items:center;gap:8px"><i class="ti ti-sparkles" style="font-size:16px;color:var(--pur)"></i><span style="font-family:Sora,sans-serif;font-size:11px;font-weight:600;color:var(--pur3)">AI Insight — आज का सुझाव</span><span style="margin-left:auto;font-size:11px;color:var(--pur);font-weight:500">View all →</span></div>
+      <div style="padding:11px 13px;font-size:12px;color:var(--t2);line-height:1.55">Mango Pickle sales up 40% this week. <strong style="color:var(--t1)">Stock is running low</strong> — add 10+ units to avoid missed orders.</div>
+    </div>
+    <div style="padding:14px 16px 0">
+      <div style="font-family:Sora,sans-serif;font-size:12px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Action Centre</div>
+      <div class="card">
+        <div class="row" style="cursor:pointer" onclick="go('s-orders')"><div style="width:34px;height:34px;border-radius:9px;background:var(--red2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-alert-circle" style="font-size:17px;color:var(--red)"></i></div><div style="flex:1"><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">3 new orders — confirm now</div><div style="font-size:11px;color:var(--t3)">Accept within 10 min to maintain SLA</div></div><span class="pill p-red">Urgent</span></div>
+        <div class="row" style="cursor:pointer" onclick="go('s-inventory')"><div style="width:34px;height:34px;border-radius:9px;background:var(--amb2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-package" style="font-size:17px;color:var(--amb)"></i></div><div style="flex:1"><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">Mango Pickle — only 4 left</div><div style="font-size:11px;color:var(--t3)">Update stock to avoid order failures</div></div><span class="pill p-amb">Low Stock</span></div>
+        <div class="row" style="border-bottom:none;cursor:pointer" onclick="go('s-ai')"><div style="width:34px;height:34px;border-radius:9px;background:var(--pur2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-sparkles" style="font-size:17px;color:var(--pur)"></i></div><div style="flex:1"><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">AI: Lemon pickle trending near you</div><div style="font-size:11px;color:var(--t3)">34 searches this week with no seller</div></div><i class="ti ti-chevron-right" style="font-size:17px;color:var(--t3)"></i></div>
+      </div>
+    </div>
+    <div style="padding:14px 16px 0">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:13px;cursor:pointer" onclick="go('s-orders')"><i class="ti ti-receipt" style="font-size:22px;color:var(--acc)"></i><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1);margin-top:7px">Orders</div><div style="font-size:11px;color:var(--t3)">3 pending</div></div>
+        <div style="background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:13px;cursor:pointer" onclick="go('s-inventory')"><i class="ti ti-package" style="font-size:22px;color:var(--grn)"></i><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1);margin-top:7px">Inventory</div><div style="font-size:11px;color:var(--t3)">2 products low</div></div>
+        <div style="background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:13px;cursor:pointer" onclick="go('s-ai')"><i class="ti ti-sparkles" style="font-size:22px;color:var(--pur)"></i><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1);margin-top:7px">AI Assistant</div><div style="font-size:11px;color:var(--t3)">Ask anything</div></div>
+        <div style="background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:13px;cursor:pointer" onclick="go('s-analytics')"><i class="ti ti-chart-bar" style="font-size:22px;color:var(--blu)"></i><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1);margin-top:7px">Analytics</div><div style="font-size:11px;color:var(--t3)">Weekly report</div></div>
+      </div>
+    </div>
+    <div class="pb"></div>
+  </div>
+  <div class="bnav">
+    <div class="ni on" onclick="go('s-dash')"><i class="ti ti-layout-dashboard"></i><span>Home</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-orders')"><i class="ti ti-receipt"></i><span>Orders</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-inventory')"><i class="ti ti-package"></i><span>Products</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-ai')"><i class="ti ti-sparkles"></i><span>AI Help</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-analytics')"><i class="ti ti-chart-bar"></i><span>Analytics</span><div class="nidot"></div></div>
+  </div>
+</div>
+
+<!-- AI ASSISTANT -->
+<div class="screen" id="s-ai">
+  <div class="sb"><span>9:41</span><div class="sbi"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div></div>
+  <div style="background:var(--s1);padding:12px 16px 12px;border-bottom:1px solid var(--br);flex-shrink:0;display:flex;align-items:center;gap:10px">
+    <div class="bk" onclick="go('s-dash')"><i class="ti ti-arrow-left"></i></div>
+    <div style="width:34px;height:34px;border-radius:10px;background:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-sparkles" style="font-size:16px;color:var(--acc)"></i></div>
+    <div style="flex:1"><div style="font-family:Sora,sans-serif;font-size:14px;font-weight:600;color:var(--t1)">BazaarSetu AI</div><div style="font-size:11px;color:var(--grn);font-weight:500">Online · हिंदी / English</div></div>
+    <div style="background:var(--pur2);border-radius:8px;padding:5px 9px;cursor:pointer;display:flex;align-items:center;gap:4px"><i class="ti ti-microphone" style="font-size:14px;color:var(--pur)"></i><span style="font-size:11px;font-weight:600;color:var(--pur3)">Voice</span></div>
+  </div>
+  <div style="background:var(--s1);padding:10px 0 8px;border-bottom:1px solid var(--br);flex-shrink:0">
+    <div class="chip-row" style="padding:0 14px 0">
+      <div class="chip on" onclick="chipSel(this);aiLoad(0)">Sales tips</div>
+      <div class="chip" onclick="chipSel(this);aiLoad(1)">Stock help</div>
+      <div class="chip" onclick="chipSel(this);aiLoad(2)">Pricing</div>
+      <div class="chip" onclick="chipSel(this);aiLoad(3)">GST help</div>
+      <div class="chip" onclick="chipSel(this);aiLoad(4)">Delivery tips</div>
+    </div>
+  </div>
+  <div class="body" style="background:var(--s2);padding:14px 14px 10px" id="aiChat">
+    <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:14px">
+      <div class="ai-avatar"><i class="ti ti-sparkles" style="font-size:13px;color:var(--acc)"></i></div>
+      <div class="ai-bubble">नमस्ते Nirmala! 🙏 I'm your BazaarSetu AI. Ask me anything in <strong>Hindi or English</strong> about your store, orders, pricing, or sales strategy.</div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:14px">
+      <div class="ai-avatar"><i class="ti ti-sparkles" style="font-size:13px;color:var(--acc)"></i></div>
+      <div class="ai-bubble" style="background:var(--pur2);border-color:#CECBF6">
+        <div style="font-family:Sora,sans-serif;font-size:11px;font-weight:600;color:var(--pur3);margin-bottom:6px">This week's smart insights:</div>
+        <div style="background:var(--s1);border-radius:9px;padding:10px;margin-bottom:6px"><div style="font-family:Sora,sans-serif;font-size:11px;font-weight:600;color:var(--t1);margin-bottom:3px">Mango Pickle sales up 40%</div><div style="font-size:11px;color:var(--t2)">High demand from Kurla, Ghatkopar, Chembur</div></div>
+        <div style="background:var(--s1);border-radius:9px;padding:10px"><div style="font-family:Sora,sans-serif;font-size:11px;font-weight:600;color:var(--t1);margin-bottom:3px">New opportunity: Lemon Pickle</div><div style="font-size:11px;color:var(--t2)">34 customers searched near you with no match</div></div>
+      </div>
+    </div>
+    <div class="user-bubble">मेरी sales कैसे बढ़ाऊं?</div>
+    <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:12px">
+      <div class="ai-avatar"><i class="ti ti-sparkles" style="font-size:13px;color:var(--acc)"></i></div>
+      <div class="ai-bubble" id="aiResp">3 proven ways for your store:<br><br><strong>1. Add more products</strong> — Sellers with 5+ products get 3x more orders. Try Lemon Pickle.<br><br><strong>2. Best timing</strong> — Your area orders most 7–9 AM. Be online then.<br><br><strong>3. Better photos</strong> — Products with clear photos sell 2x more.</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;padding-left:36px">
+      <div style="background:var(--s1);border:1px solid var(--br);border-radius:20px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--t2);cursor:pointer;font-family:Sora,sans-serif" onclick="sendReply('Photo tips दिखाओ')">Photo tips</div>
+      <div style="background:var(--s1);border:1px solid var(--br);border-radius:20px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--t2);cursor:pointer;font-family:Sora,sans-serif" onclick="sendReply('Pricing help')">Pricing help</div>
+      <div style="background:var(--s1);border:1px solid var(--br);border-radius:20px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--t2);cursor:pointer;font-family:Sora,sans-serif" onclick="sendReply('Add new product')">Add product</div>
+    </div>
+    <div class="pb"></div>
+  </div>
+  <div style="background:var(--s1);border-top:1px solid var(--br);padding:10px 14px 16px;flex-shrink:0">
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="flex:1;background:var(--s2);border:1.5px solid var(--br);border-radius:22px;display:flex;align-items:center;gap:8px;padding:10px 14px"><input id="chatInput" type="text" placeholder="Hindi या English में पूछें…" style="flex:1;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--t1);outline:none" onkeydown="if(event.key==='Enter')sendMsg()"><i class="ti ti-microphone" style="font-size:18px;color:var(--t3);cursor:pointer"></i></div>
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" onclick="sendMsg()"><i class="ti ti-send" style="font-size:17px;color:#fff"></i></div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDERS -->
+<div class="screen" id="s-orders">
+  <div class="sb"><span>9:41</span><div class="sbi"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div></div>
+  <div class="phdr"><div class="bk" onclick="go('s-dash')"><i class="ti ti-arrow-left"></i></div><div class="ptitle">Orders</div><span class="pill p-red" style="margin-left:auto">3 new</span></div>
+  <div class="body" style="background:var(--s2);padding-top:12px">
+    <div style="margin:0 16px 10px;background:var(--s1);border:1px solid var(--br);border-radius:14px;overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border-bottom:1px solid var(--br)"><div><div style="font-family:Sora,sans-serif;font-size:12px;font-weight:600;color:var(--t1)">#ORD-1041 — Priya Shah</div><div style="font-size:11px;color:var(--t3)">2 min ago · ₹150 · COD</div></div><span class="pill p-red">New</span></div>
+      <div style="padding:10px 13px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:8px"><div style="width:36px;height:36px;border-radius:9px;background:var(--amb2);display:flex;align-items:center;justify-content:center;font-size:18px">🥭</div><div style="flex:1"><div style="font-family:Sora,sans-serif;font-size:12px;font-weight:500;color:var(--t1)">Mango Pickle 250g × 1</div><div style="font-size:11px;color:var(--t3)">Deliver by 11 AM · SLA 45 min</div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 13px"><button style="background:var(--grn);color:#fff;border:none;border-radius:9px;padding:9px;font-family:Sora,sans-serif;font-size:12px;font-weight:600;cursor:pointer" onclick="this.textContent='✓ Accepted';this.style.background='#085041'">Accept Order</button><button style="background:var(--red2);border:1px solid #F7C1C1;border-radius:9px;padding:9px;font-family:Sora,sans-serif;font-size:12px;font-weight:600;color:var(--red3);cursor:pointer">Reject</button></div>
+    </div>
+    <div style="margin:0 16px;background:var(--s1);border:1px solid var(--br);border-radius:14px;overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border-bottom:1px solid var(--br)"><div><div style="font-family:Sora,sans-serif;font-size:12px;font-weight:600;color:var(--t1)">#ORD-1039 — Ravi Kumar</div><div style="font-size:11px;color:var(--t3)">1 hr ago · ₹300 · UPI</div></div><span class="pill p-amb">Confirmed</span></div>
+      <div style="padding:10px 13px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:8px"><div style="width:36px;height:36px;border-radius:9px;background:var(--grn2);display:flex;align-items:center;justify-content:center;font-size:18px">🫙</div><div style="flex:1"><div style="font-family:Sora,sans-serif;font-size:12px;font-weight:500;color:var(--t1)">Mixed Pickle 250g × 2</div><div style="font-size:11px;color:var(--t3)">Packing in progress</div></div></div>
+      <div style="padding:10px 13px"><button style="background:var(--amb2);border:1px solid #FAC775;border-radius:9px;padding:9px;font-family:Sora,sans-serif;font-size:12px;font-weight:600;color:var(--amb3);cursor:pointer;width:100%">Mark Bag Packed</button></div>
+    </div>
+    <div class="pb"></div>
+  </div>
+  <div class="bnav">
+    <div class="ni" onclick="go('s-dash')"><i class="ti ti-layout-dashboard"></i><span>Home</span><div class="nidot"></div></div>
+    <div class="ni on" onclick="go('s-orders')"><i class="ti ti-receipt"></i><span>Orders</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-inventory')"><i class="ti ti-package"></i><span>Products</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-ai')"><i class="ti ti-sparkles"></i><span>AI Help</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-analytics')"><i class="ti ti-chart-bar"></i><span>Analytics</span><div class="nidot"></div></div>
+  </div>
+</div>
+
+<!-- INVENTORY -->
+<div class="screen" id="s-inventory">
+  <div class="sb"><span>9:41</span><div class="sbi"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div></div>
+  <div class="phdr"><div class="bk" onclick="go('s-dash')"><i class="ti ti-arrow-left"></i></div><div class="ptitle">My Products</div><button style="margin-left:auto;background:var(--acc);color:#fff;border:none;border-radius:9px;padding:6px 12px;font-family:Sora,sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px"><i class="ti ti-plus" style="font-size:13px"></i>Add</button></div>
+  <div class="body" style="background:var(--s2)">
+    <div style="margin:12px 16px 0;background:var(--pur2);border:1px solid #CECBF6;border-radius:14px;padding:11px 13px;display:flex;gap:9px;cursor:pointer" onclick="go('s-ai')"><i class="ti ti-sparkles" style="font-size:17px;color:var(--pur);flex-shrink:0"></i><div style="font-size:12px;color:var(--pur3);line-height:1.5"><strong>AI:</strong> Add "Lemon Pickle" — 34 customers searched this week with no results. ~₹3,000/week opportunity.</div></div>
+    <div style="padding:12px 16px 0">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 13px;border-bottom:1px solid var(--br)"><div style="width:40px;height:40px;border-radius:10px;background:var(--amb2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🥭</div><div style="flex:1"><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">Mango Pickle</div><div style="font-size:11px;color:var(--t3)">₹150 · 250g jar</div></div><span style="background:var(--amb2);color:var(--amb3);font-size:10px;font-weight:600;padding:3px 8px;border-radius:8px;font-family:Sora,sans-serif">4 left</span></div>
+        <div style="padding:10px 13px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:8px"><div style="font-size:12px;color:var(--t3);flex:1">Update stock:</div><div style="display:flex;align-items:center;gap:7px"><div style="width:26px;height:26px;border-radius:7px;border:1px solid var(--br);display:flex;align-items:center;justify-content:center;cursor:pointer"><i class="ti ti-minus" style="font-size:12px;color:var(--t2)"></i></div><span id="stockVal" style="font-family:Sora,sans-serif;font-size:14px;font-weight:700;color:var(--t1);min-width:24px;text-align:center">4</span><div style="width:26px;height:26px;border-radius:7px;border:1px solid var(--br);display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="document.getElementById('stockVal').textContent=parseInt(document.getElementById('stockVal').textContent)+1"><i class="ti ti-plus" style="font-size:12px;color:var(--t2)"></i></div></div><button style="background:var(--grn);color:#fff;border:none;border-radius:8px;padding:6px 13px;font-family:Sora,sans-serif;font-size:12px;font-weight:600;cursor:pointer">Save</button></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 13px"><div style="width:40px;height:40px;border-radius:10px;background:var(--grn2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🫙</div><div style="flex:1"><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1)">Mixed Pickle</div><div style="font-size:11px;color:var(--t3)">₹150 · 250g jar</div></div><span class="pill p-grn">18 in stock</span></div>
+      </div>
+    </div>
+    <div class="pb"></div>
+  </div>
+  <div class="bnav">
+    <div class="ni" onclick="go('s-dash')"><i class="ti ti-layout-dashboard"></i><span>Home</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-orders')"><i class="ti ti-receipt"></i><span>Orders</span><div class="nidot"></div></div>
+    <div class="ni on" onclick="go('s-inventory')"><i class="ti ti-package"></i><span>Products</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-ai')"><i class="ti ti-sparkles"></i><span>AI Help</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-analytics')"><i class="ti ti-chart-bar"></i><span>Analytics</span><div class="nidot"></div></div>
+  </div>
+</div>
+
+<!-- ANALYTICS -->
+<div class="screen" id="s-analytics">
+  <div class="sb"><span>9:41</span><div class="sbi"><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></div></div>
+  <div class="phdr"><div class="bk" onclick="go('s-dash')"><i class="ti ti-arrow-left"></i></div><div class="ptitle">Analytics</div><div style="margin-left:auto;background:var(--pur2);border-radius:8px;padding:5px 10px;cursor:pointer;display:flex;align-items:center;gap:4px" onclick="go('s-ai')"><i class="ti ti-sparkles" style="font-size:13px;color:var(--pur)"></i><span style="font-family:Sora,sans-serif;font-size:11px;font-weight:600;color:var(--pur3)">AI Explain</span></div></div>
+  <div class="body" style="background:var(--s2)">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px 0">
+      <div style="background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:13px"><div style="font-size:11px;color:var(--t3);margin-bottom:5px">This Week</div><div style="font-family:Sora,sans-serif;font-size:20px;font-weight:700;color:var(--t1)">₹8,400</div><div style="font-size:11px;color:var(--grn);margin-top:3px;font-weight:500">+22% vs last week</div></div>
+      <div style="background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:13px"><div style="font-size:11px;color:var(--t3);margin-bottom:5px">Total Orders</div><div style="font-family:Sora,sans-serif;font-size:20px;font-weight:700;color:var(--t1)">56</div><div style="font-size:11px;color:var(--grn);margin-top:3px;font-weight:500">+14 orders</div></div>
+    </div>
+    <div style="padding:14px 16px 0">
+      <div style="background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:14px"><div style="font-family:Sora,sans-serif;font-size:13px;font-weight:600;color:var(--t1);margin-bottom:10px">Revenue — Last 7 Days</div><div style="display:flex;align-items:flex-end;gap:5px;height:70px" id="anBars"></div><div style="display:flex;justify-content:space-between;margin-top:5px"><span style="font-size:10px;color:var(--t3)">Mon</span><span style="font-size:10px;color:var(--t3)">Tue</span><span style="font-size:10px;color:var(--t3)">Wed</span><span style="font-size:10px;color:var(--t3)">Thu</span><span style="font-size:10px;color:var(--t3)">Fri</span><span style="font-size:10px;color:var(--t3)">Sat</span><span style="font-size:10px;color:var(--t3)">Sun</span></div></div>
+    </div>
+    <div style="margin:12px 16px 0;background:var(--pur2);border:1px solid #CECBF6;border-radius:14px;padding:13px"><div style="display:flex;align-items:center;gap:7px;margin-bottom:7px"><i class="ti ti-sparkles" style="font-size:15px;color:var(--pur)"></i><span style="font-family:Sora,sans-serif;font-size:12px;font-weight:600;color:var(--pur3)">AI Analytics Summary</span></div><div style="font-size:12px;color:var(--pur3);line-height:1.6">Sales peak on <strong>Saturday</strong>. Customers who buy Mango Pickle also search for Garlic Pickle — adding it could increase avg order by ₹60.</div><button style="margin-top:10px;background:var(--pur);color:#fff;border:none;border-radius:9px;padding:7px 14px;font-family:Sora,sans-serif;font-size:11px;font-weight:600;cursor:pointer;width:100%" onclick="go('s-ai')">Ask AI for more tips →</button></div>
+    <div class="pb"></div>
+  </div>
+  <div class="bnav">
+    <div class="ni" onclick="go('s-dash')"><i class="ti ti-layout-dashboard"></i><span>Home</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-orders')"><i class="ti ti-receipt"></i><span>Orders</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-inventory')"><i class="ti ti-package"></i><span>Products</span><div class="nidot"></div></div>
+    <div class="ni" onclick="go('s-ai')"><i class="ti ti-sparkles"></i><span>AI Help</span><div class="nidot"></div></div>
+    <div class="ni on" onclick="go('s-analytics')"><i class="ti ti-chart-bar"></i><span>Analytics</span><div class="nidot"></div></div>
+  </div>
+</div>
+
+</div>
+<script>
+const aiR=['3 proven ways to boost sales:\n1. Add more products — 5+ items = 3x more orders\n2. Peak time is 7–9 AM in your area\n3. Clear photos sell 2x more','Your Mango Pickle has only 4 left. At 8 orders/day you\'ll run out tomorrow. Add 20 units today.','₹140–160 is the sweet spot for 250g pickle in Kurla. Your ₹150 is well-positioned.','Under ₹20L/year turnover, GST registration is optional for you right now.','Peak delivery windows: 7–9 AM and 5–8 PM. Covering both increases orders by ~35%.'];
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));const el=document.getElementById(id);if(el){el.classList.add('on');el.querySelector&&el.querySelector('.body')&&el.querySelector('.body').scrollTo(0,0);}if(id==='s-analytics')setTimeout(renderBars,100);}
+function selLang(el){document.querySelectorAll('.lang-card').forEach(c=>c.classList.remove('on'));el.classList.add('on');}
+function selTier(el,name){document.querySelectorAll('.tier-card').forEach(c=>c.classList.remove('on'));el.classList.add('on');const b=document.getElementById('tierBtn');if(b)b.innerHTML='Register as '+name+' <i class="ti ti-arrow-right"></i>';}
+function nextStep(s){for(let i=1;i<=4;i++){const el=document.getElementById('step'+i);if(el)el.style.display=i===s?'block':'none';}document.getElementById('stepNum').textContent=s;document.getElementById('progressBar').style.width=(s/4*100)+'%';}
+function chipSel(el){el.closest('.chip-row').querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');}
+function aiLoad(i){const el=document.getElementById('aiResp');if(el)el.innerHTML=aiR[i].replace(/\n/g,'<br>');}
+function sendMsg(){const inp=document.getElementById('chatInput');if(!inp||!inp.value.trim())return;const chat=document.getElementById('aiChat');const um=document.createElement('div');um.className='user-bubble';um.textContent=inp.value;chat.insertBefore(um,chat.lastElementChild);const q=inp.value.toLowerCase();inp.value='';setTimeout(()=>{let r='Based on your store data: adding Garlic Pickle and Chilli Pickle could increase your weekly revenue by ₹2,000+.';if(q.includes('price')||q.includes('pricing'))r='₹140–170 for 250g homemade pickles in Kurla is optimal. Your ₹150 is perfect.';if(q.includes('stock'))r='Add 15–20 units of Mango Pickle today. At 8 orders/day you need 2–3 days buffer.';if(q.includes('gst'))r='Under ₹20L/year, GST registration is optional. Keep all sale records for future reference.';const am=document.createElement('div');am.style.cssText='display:flex;align-items:flex-start;gap:8px;margin-bottom:12px';am.innerHTML=`<div class="ai-avatar"><i class="ti ti-sparkles" style="font-size:13px;color:var(--acc)"></i></div><div class="ai-bubble">${r}</div>`;chat.insertBefore(am,chat.lastElementChild);},800);}
+function sendReply(t){const i=document.getElementById('chatInput');if(i){i.value=t;sendMsg();}}
+function renderBars(){const el=document.getElementById('anBars');if(!el)return;const d=[900,1200,800,1400,1100,1800,1840];const max=Math.max(...d);el.innerHTML=d.map((v,i)=>`<div style="flex:1;border-radius:3px 3px 0 0;height:${Math.round(v/max*64)}px;background:${i===d.length-1?'#FF4B2B':'#534AB7'}"></div>`).join('');}
+</script>
+<script src="/shared/pwa.js"></script>
+</body>
+</html>

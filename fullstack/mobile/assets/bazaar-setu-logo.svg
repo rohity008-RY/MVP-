@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Bazaar Setu logo</title>
+  <desc id="desc">Orange rounded square with a white bridge and sun motif.</desc>
+  <rect width="512" height="512" fill="transparent"/>
+  <rect x="54" y="54" width="404" height="404" rx="92" fill="#ff432f"/>
+  <path d="M112 320c41-84 96-126 144-126s103 42 144 126" fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="256" cy="240" r="27" fill="#fff"/>
+  <circle cx="256" cy="240" r="37" fill="none" stroke="#fff" stroke-opacity=".42" stroke-width="8"/>
+  <path d="M112 378c25-48 52-48 82 0c40-58 84-58 124 0c30-48 57-48 82 0" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity=".82"/>
+  <path d="M176 328v68M256 328v68M336 328v68" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".34"/>
+  <path d="M104 398h304" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity=".45"/>
+</svg>

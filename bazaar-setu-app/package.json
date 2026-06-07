@@ -1,0 +1,23 @@
+{
+  "name": "bazaar-setu-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bazaar Setu production monorepo for customer app, seller app, admin web, and backend API.",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm --workspace services/api run dev",
+    "dev:admin": "npm --workspace apps/admin-web run dev",
+    "dev:customer": "npm --workspace apps/customer-mobile run start",
+    "dev:seller": "npm --workspace apps/seller-mobile run start",
+    "typecheck": "npm --workspaces --if-present run typecheck",
+    "lint": "npm --workspaces --if-present run lint",
+    "test": "npm --workspaces --if-present run test"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

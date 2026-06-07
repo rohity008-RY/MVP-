@@ -1,0 +1,16 @@
+{
+  "name": "Bazaar Setu Admin Support",
+  "short_name": "Bazaar Admin",
+  "start_url": "/admin",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8f7f4",
+  "theme_color": "#111116",
+  "icons": [
+    {
+      "src": "/assets/bazaar-setu-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
