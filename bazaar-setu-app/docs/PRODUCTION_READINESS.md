@@ -58,6 +58,7 @@ These are not optional for public launch:
 - Add FSSAI/GST/legal metrology verification workflows with audit trails.
 - Add file/object storage for product photos and compliance documents.
 - Add production database migrations, backups, point-in-time recovery, and seed separation.
+- Add rollback rehearsal, backup restore drill, and migration runbook sign-off.
 - Add idempotency keys and payment/order webhooks.
 - Add structured logs, metrics, error monitoring, alerts, and audit logs.
 - Track remaining moderate framework advisories from Next's pinned `postcss` and Expo's `xcode`/`uuid` tooling chain until upstream patched releases are available; do not use npm's current downgrade recommendations.
@@ -75,3 +76,18 @@ Completed:
 Known residual:
 
 - `npm audit --omit=dev` still reports moderate advisories for Next's internally pinned `postcss@8.4.31` and Expo's `xcode -> uuid@7.0.3` path. The suggested npm force-fixes downgrade Next/Expo to old majors, so they are intentionally not applied.
+
+## Phase 4: Database Migrations, CI, Staging, E2E
+
+Completed:
+
+- Added a baseline Prisma migration for the marketplace schema before the auth-session migration.
+- Added `db:deploy` for production/staging migration rollout.
+- Added GitHub Actions CI with Postgres 16 and Redis 7 service containers.
+- Added API E2E tests that use real Postgres and Redis for OTP login, refresh rotation, logout, admin bootstrap, staff provisioning, unprovisioned staff blocking, and Redis rate limiting.
+- Added staging environment template, API Dockerfile, staging compose file, and staging deployment checklist.
+
+Known residual:
+
+- Staging still needs real cloud infrastructure/secrets, backup/PITR policy, and a restore drill before launch.
+- The API container is staging-oriented and intentionally simple; production deployment should use a hardened image, secret manager, managed Postgres/Redis, health checks, and observability sidecars or agents.

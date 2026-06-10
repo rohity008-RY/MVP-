@@ -6,6 +6,9 @@ build
 coverage
 .env
 .env.local
+.env.*
+!.env.example
+!.env.staging.example
 .DS_Store
 *.tsbuildinfo
 *.log

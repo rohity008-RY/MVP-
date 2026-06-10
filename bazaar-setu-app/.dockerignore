@@ -1,0 +1,13 @@
+.git
+.github
+node_modules
+**/node_modules
+**/.expo
+**/.next
+**/dist
+**/*.tsbuildinfo
+npm-debug.log*
+.env
+.env.*
+!.env.example
+!.env.staging.example

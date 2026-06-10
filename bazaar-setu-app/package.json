@@ -15,7 +15,8 @@
     "dev:seller": "npm --workspace apps/seller-mobile run start",
     "typecheck": "npm --workspaces --if-present run typecheck",
     "lint": "npm --workspaces --if-present run lint",
-    "test": "npm --workspaces --if-present run test"
+    "test": "npm --workspaces --if-present run test",
+    "test:e2e": "npm --workspace services/api run test:e2e"
   },
   "engines": {
     "node": ">=22"

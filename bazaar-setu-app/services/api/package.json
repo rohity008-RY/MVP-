@@ -9,9 +9,11 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --dir src",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "test:e2e": "RUN_E2E=true vitest run src/__tests__/auth.e2e.test.ts",
     "db:seed": "tsx src/seed.ts"
   },
   "dependencies": {

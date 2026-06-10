@@ -33,7 +33,14 @@ Validate the workspace:
 ```bash
 npm run typecheck
 npm test
+npm run test:e2e
 npm --workspace apps/admin-web run build
+```
+
+For staging/production-style databases, use immutable migrations instead of development sync:
+
+```bash
+npm --workspace services/api run db:deploy
 ```
 
 Default URLs:
@@ -74,4 +81,4 @@ This is source scaffolding, not a live-ready production deployment. The API boun
 - Catalogue import governance with licensed/admin-owned product images and HSN/GST review.
 - Object storage for product/document uploads.
 - Push notifications through FCM/APNs.
-- Observability, audit logs, backups, deployment CI/CD, staging/prod environments, dependency vulnerability resolution, and security testing.
+- Observability, audit logs, backups/PITR, production infrastructure hardening, dependency vulnerability resolution, and security testing.

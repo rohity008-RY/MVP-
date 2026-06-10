@@ -75,3 +75,9 @@ export async function incrementRateLimit(key: string, max: number, windowMs: num
     return memoryIncrement(key, max, windowMs);
   }
 }
+
+export function closeRateLimitStore() {
+  if (!redis) return;
+  redis.disconnect();
+  redis = undefined;
+}
