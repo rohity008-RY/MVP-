@@ -91,3 +91,19 @@ Known residual:
 
 - Staging still needs real cloud infrastructure/secrets, backup/PITR policy, and a restore drill before launch.
 - The API container is staging-oriented and intentionally simple; production deployment should use a hardened image, secret manager, managed Postgres/Redis, health checks, and observability sidecars or agents.
+
+## Phase 5: Staging Deploy Wiring
+
+Completed:
+
+- Verified the first GitHub CI run for `58a389f` completed successfully.
+- Added Admin web Dockerfile and Cloud Run-compatible start script.
+- Added manual `Staging Deploy` GitHub Actions workflow for Google Cloud Run.
+- Added Cloud Run migration job execution before API deploy.
+- Added staging smoke script for API health/readiness and Admin availability.
+- Documented required GitHub environment secrets, variables, Google Secret Manager names, and deploy service account permissions.
+
+Known residual:
+
+- A Google Cloud account is not logged in locally, so real Cloud Run resources were not created from this machine.
+- GitHub `staging` environment values and Google Cloud Secret Manager entries must be created before running the deploy workflow.

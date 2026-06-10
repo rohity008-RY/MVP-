@@ -10,6 +10,63 @@ This is the staging path for a production-shaped rehearsal before public launch.
 - Google Maps staging/restricted key
 - Razorpay test-mode keys
 - Object storage bucket for uploads
+- Google Cloud project with Cloud Run, Artifact Registry, Secret Manager, and IAM Workload Identity Federation enabled
+
+## GitHub Staging Environment
+
+Create a GitHub environment named `staging`, then add these secrets:
+
+- `GCP_PROJECT_ID`: Google Cloud project ID.
+- `GCP_WORKLOAD_IDENTITY_PROVIDER`: Workload Identity Provider resource name.
+- `GCP_SERVICE_ACCOUNT`: deploy service account email.
+
+Add these GitHub environment variables:
+
+- `GCP_REGION`: recommended `asia-south1`.
+- `GCP_ARTIFACT_REPOSITORY`: recommended `bazaar-setu`.
+- `STAGING_API_SERVICE`: recommended `bazaar-setu-api-staging`.
+- `STAGING_ADMIN_SERVICE`: recommended `bazaar-setu-admin-staging`.
+- `STAGING_MIGRATION_JOB`: recommended `bazaar-setu-api-migrate-staging`.
+- `STAGING_API_URL`: final Cloud Run API URL or staging API custom domain.
+- `STAGING_ADMIN_URL`: final Cloud Run Admin URL or staging Admin custom domain.
+- `STAGING_CORS_ORIGINS`: comma-separated staging customer, seller, and admin origins.
+
+Store runtime secrets in Google Secret Manager with these exact names:
+
+- `bazaar-setu-staging-database-url`
+- `bazaar-setu-staging-redis-url`
+- `bazaar-setu-staging-jwt-secret`
+- `bazaar-setu-staging-otp-provider-url`
+- `bazaar-setu-staging-otp-provider-api-key`
+- `bazaar-setu-staging-otp-code-pepper`
+- `bazaar-setu-staging-admin-bootstrap-token`
+- `bazaar-setu-staging-google-maps-api-key`
+- `bazaar-setu-staging-razorpay-key-id`
+- `bazaar-setu-staging-razorpay-key-secret`
+
+The deploy service account needs:
+
+- Artifact Registry Writer
+- Cloud Run Admin
+- Service Account User on the Cloud Run runtime service account
+- Secret Manager Secret Accessor for the staging secrets
+- Logs Writer
+
+## GitHub Actions Deploy
+
+Use the manual workflow:
+
+```text
+Actions -> Staging Deploy -> Run workflow
+```
+
+The workflow:
+
+1. Authenticates to Google Cloud through Workload Identity Federation.
+2. Builds and pushes API and Admin Docker images.
+3. Deploys and executes the Prisma migration Cloud Run Job.
+4. Deploys API and Admin Cloud Run services.
+5. Runs `scripts/staging-smoke.mjs` against `STAGING_API_URL` and `STAGING_ADMIN_URL`.
 
 ## First-Time Setup
 
@@ -58,3 +115,7 @@ npm --workspace apps/admin-web run build
 ```
 
 The E2E suite expects a migrated Postgres database and reachable Redis instance through `DATABASE_URL` and `REDIS_URL`.
+
+## Local Status
+
+The first CI run for commit `58a389f` passed on GitHub Actions. The staging workflow is ready, but it cannot run until the GitHub `staging` environment and Google Cloud secrets/identity are configured.
