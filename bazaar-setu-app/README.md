@@ -28,6 +28,14 @@ npm run dev:customer
 npm run dev:seller
 ```
 
+Validate the workspace:
+
+```bash
+npm run typecheck
+npm test
+npm --workspace apps/admin-web run build
+```
+
 Default URLs:
 
 - API: `http://127.0.0.1:5010`

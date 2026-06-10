@@ -60,5 +60,18 @@ These are not optional for public launch:
 - Add production database migrations, backups, point-in-time recovery, and seed separation.
 - Add idempotency keys and payment/order webhooks.
 - Add structured logs, metrics, error monitoring, alerts, and audit logs.
-- Resolve remaining framework dependency vulnerabilities with planned Expo/Next upgrades.
-- Add automated API integration tests and mobile/admin E2E smoke tests.
+- Track remaining moderate framework advisories from Next's pinned `postcss` and Expo's `xcode`/`uuid` tooling chain until upstream patched releases are available; do not use npm's current downgrade recommendations.
+- Add mobile/admin E2E smoke tests.
+
+## Phase 3: Framework Refresh And Auth Tests
+
+Completed:
+
+- Upgraded Customer and Seller mobile apps to Expo 56, Expo Router 56, React 19, React Native 0.86, and compatible native packages.
+- Upgraded Admin web to Next 16 and React 19.
+- Added API integration tests for OTP start/verify, refresh-token rotation, logout, admin bootstrap, admin staff provisioning, unprovisioned admin blocking, and rate limiting.
+- Added `npm --workspace services/api test` using Vitest and Supertest.
+
+Known residual:
+
+- `npm audit --omit=dev` still reports moderate advisories for Next's internally pinned `postcss@8.4.31` and Expo's `xcode -> uuid@7.0.3` path. The suggested npm force-fixes downgrade Next/Expo to old majors, so they are intentionally not applied.
