@@ -1,5 +1,23 @@
 export type UserRole = "customer" | "seller" | "admin" | "support";
 
+export interface AuthUser {
+  id: string;
+  role: "CUSTOMER" | "SELLER" | "ADMIN" | "SUPPORT";
+  name: string;
+  phone: string;
+  email?: string | null;
+}
+
+export interface AuthResponse {
+  token: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresInSeconds: number;
+  user: AuthUser;
+  customerProfile?: { id: string; rewardPoints: number } | null;
+  sellerProfile?: { id: string; ownerName: string; shopName: string } | null;
+}
+
 export type OrderStatus =
   | "placed"
   | "confirmed"

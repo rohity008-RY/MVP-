@@ -2,13 +2,16 @@ import { randomUUID } from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "./config.js";
+import { prisma } from "./db.js";
 import { ApiError, getParam } from "./http.js";
+import { incrementRateLimit } from "./rate-limit-store.js";
 
 export interface AuthUser {
   id: string;
   role: "CUSTOMER" | "SELLER" | "ADMIN" | "SUPPORT";
   customerId?: string;
   sellerId?: string;
+  sessionId?: string;
 }
 
 declare global {
@@ -35,12 +38,21 @@ function isAuthUser(payload: string | jwt.JwtPayload): payload is AuthUser {
   );
 }
 
-export function authOptional(req: Request, _res: Response, next: NextFunction) {
+export async function authOptional(req: Request, _res: Response, next: NextFunction) {
   const header = req.header("Authorization");
   if (!header?.startsWith("Bearer ")) return next();
   try {
     const payload = jwt.verify(header.slice(7), config.jwtSecret);
-    req.user = isAuthUser(payload) ? payload : undefined;
+    if (!isAuthUser(payload)) return next();
+    if (!payload.sessionId && config.demoAuthEnabled) {
+      req.user = payload;
+      return next();
+    }
+    if (!payload.sessionId) return next();
+
+    const session = await prisma.authSession.findUnique({ where: { id: payload.sessionId } });
+    if (!session || session.userId !== payload.id || session.revokedAt || session.expiresAt <= new Date()) return next();
+    req.user = payload;
   } catch {
     req.user = undefined;
   }
@@ -80,29 +92,23 @@ export function requireSellerAccess(paramName = "sellerId") {
   };
 }
 
-interface RateLimitBucket {
-  count: number;
-  resetAt: number;
-}
-
-const rateLimitBuckets = new Map<string, RateLimitBucket>();
-
 export function rateLimit(name: string, max = config.rateLimitMax, windowMs = config.rateLimitWindowMs) {
-  return (req: Request, _res: Response, next: NextFunction) => {
-    const now = Date.now();
-    const key = `${name}:${req.ip}`;
-    const bucket = rateLimitBuckets.get(key);
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const key = `rl:${name}:${req.ip}`;
+      const result = await incrementRateLimit(key, max, windowMs);
+      res.setHeader("x-ratelimit-limit", String(max));
+      res.setHeader("x-ratelimit-remaining", String(result.remaining));
+      res.setHeader("x-ratelimit-store", result.store);
 
-    if (!bucket || bucket.resetAt <= now) {
-      rateLimitBuckets.set(key, { count: 1, resetAt: now + windowMs });
+      if (!result.allowed) {
+        res.setHeader("retry-after", String(Math.ceil(result.retryAfterMs / 1000)));
+        return next(new ApiError(429, "Too many requests. Please try again shortly.", "RATE_LIMITED"));
+      }
+
       return next();
+    } catch (error) {
+      return next(error);
     }
-
-    bucket.count += 1;
-    if (bucket.count > max) {
-      return next(new ApiError(429, "Too many requests. Please try again shortly.", "RATE_LIMITED"));
-    }
-
-    return next();
   };
 }

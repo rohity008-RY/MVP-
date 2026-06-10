@@ -61,6 +61,41 @@ model User {
 
   customerProfile CustomerProfile?
   sellerProfile   SellerProfile?
+  sessions        AuthSession[]
+}
+
+model OtpChallenge {
+  id                String    @id @default(cuid())
+  phone             String
+  role              UserRole
+  codeHash          String
+  providerMessageId String?
+  attempts          Int       @default(0)
+  expiresAt         DateTime
+  consumedAt        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([phone, role, expiresAt])
+  @@index([createdAt])
+}
+
+model AuthSession {
+  id               String    @id @default(cuid())
+  userId           String
+  refreshTokenHash String    @unique
+  userAgent        String?
+  ipAddress        String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  lastUsedAt       DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model CustomerProfile {
@@ -109,12 +144,12 @@ model SellerProfile {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  user       User                 @relation(fields: [userId], references: [id])
-  locations  SellerLocation[]
-  documents  ComplianceDocument[]
-  products   SellerProduct[]
-  subOrders  SellerSubOrder[]
-  requests   ProductApprovalRequest[]
+  user      User                     @relation(fields: [userId], references: [id])
+  locations SellerLocation[]
+  documents ComplianceDocument[]
+  products  SellerProduct[]
+  subOrders SellerSubOrder[]
+  requests  ProductApprovalRequest[]
 }
 
 model SellerLocation {
@@ -162,22 +197,22 @@ model Category {
 }
 
 model ProductMaster {
-  id                String   @id
-  categoryId        String
-  subcategory       String?
-  name              String
-  brand             String?
-  unit              String
-  uqc               String?
-  hsn               String?
-  gstRate           Decimal? @db.Decimal(5, 2)
-  imageUrl          String?
-  aliases           String[] @default([])
-  fssaiApplicable   Boolean  @default(false)
-  legalMetrology    Json?
-  active            Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id              String   @id
+  categoryId      String
+  subcategory     String?
+  name            String
+  brand           String?
+  unit            String
+  uqc             String?
+  hsn             String?
+  gstRate         Decimal? @db.Decimal(5, 2)
+  imageUrl        String?
+  aliases         String[] @default([])
+  fssaiApplicable Boolean  @default(false)
+  legalMetrology  Json?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   category       Category                 @relation(fields: [categoryId], references: [id])
   sellerProducts SellerProduct[]
@@ -223,19 +258,19 @@ model ProductApprovalRequest {
 }
 
 model ParentOrder {
-  id             String       @id @default(cuid())
-  customerId     String
-  addressId      String
-  status         OrderStatus  @default(PLACED)
-  paymentState   PaymentState @default(PENDING)
-  paymentMethod  String
-  total          Int
-  deliveryFee    Int          @default(0)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id            String       @id @default(cuid())
+  customerId    String
+  addressId     String
+  status        OrderStatus  @default(PLACED)
+  paymentState  PaymentState @default(PENDING)
+  paymentMethod String
+  total         Int
+  deliveryFee   Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
-  customer  CustomerProfile @relation(fields: [customerId], references: [id])
-  address   CustomerAddress @relation(fields: [addressId], references: [id])
+  customer  CustomerProfile  @relation(fields: [customerId], references: [id])
+  address   CustomerAddress  @relation(fields: [addressId], references: [id])
   subOrders SellerSubOrder[]
 }
 
@@ -260,7 +295,7 @@ model SellerSubOrder {
 }
 
 model OrderItem {
-  id              String @id @default(cuid())
+  id              String  @id @default(cuid())
   subOrderId      String
   productId       String
   sellerProductId String
@@ -269,7 +304,7 @@ model OrderItem {
   unit            String
   qty             Int
   price           Int
-  taxAmount       Int    @default(0)
+  taxAmount       Int     @default(0)
 
   subOrder      SellerSubOrder @relation(fields: [subOrderId], references: [id])
   sellerProduct SellerProduct  @relation(fields: [sellerProductId], references: [id])

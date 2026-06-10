@@ -45,6 +45,28 @@ adminRouter.get("/sellers", asyncHandler(async (_req, res) => {
   return sendOk(res, sellers);
 }));
 
+adminRouter.post("/staff-users", requireRole("ADMIN"), asyncHandler(async (req, res) => {
+  const input = z.object({
+    phone: z.string().min(10).transform((phone) => phone.trim()),
+    name: z.string().min(2),
+    email: z.string().email().optional(),
+    role: z.enum(["ADMIN", "SUPPORT"])
+  }).parse(req.body);
+
+  const existing = await prisma.user.findUnique({ where: { phone: input.phone } });
+  if (existing && !["ADMIN", "SUPPORT"].includes(existing.role)) {
+    throw new ApiError(409, "This phone number already belongs to a customer or seller.", "PHONE_ROLE_CONFLICT");
+  }
+
+  const user = await prisma.user.upsert({
+    where: { phone: input.phone },
+    update: { name: input.name, email: input.email, role: input.role },
+    create: input
+  });
+
+  return sendOk(res, user, existing ? 200 : 201);
+}));
+
 adminRouter.get("/seller-leads", asyncHandler(async (_req, res) => {
   const leads = await prisma.sellerLead.findMany({ orderBy: { createdAt: "desc" } });
   return sendOk(res, leads);

@@ -18,6 +18,12 @@ healthRouter.get("/ready", (_req, res) => {
         customer: "apps/customer-mobile",
         seller: "apps/seller-mobile",
         admin: "apps/admin-web"
+      },
+      dependencies: {
+        redisConfigured: Boolean(config.redisUrl),
+        otpProviderConfigured: Boolean(config.otpProviderUrl && config.otpProviderApiKey),
+        adminBootstrapConfigured: Boolean(config.adminBootstrapToken),
+        demoAuthEnabled: config.demoAuthEnabled
       }
     }
   });

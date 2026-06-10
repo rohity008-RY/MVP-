@@ -17,10 +17,19 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().optional(),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().optional(),
   DEMO_AUTH_ENABLED: booleanEnv.optional(),
+  REDIS_URL: z.string().optional(),
+  ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().optional(),
+  REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().optional(),
+  OTP_TTL_SECONDS: z.coerce.number().int().positive().optional(),
+  OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().optional(),
+  OTP_PROVIDER_URL: z.string().url().optional(),
   GOOGLE_MAPS_API_KEY: z.string().optional(),
   RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_KEY_SECRET: z.string().optional(),
-  OTP_PROVIDER_API_KEY: z.string().optional()
+  OTP_PROVIDER_API_KEY: z.string().optional(),
+  OTP_PROVIDER_SENDER: z.string().optional(),
+  OTP_CODE_PEPPER: z.string().optional(),
+  ADMIN_BOOTSTRAP_TOKEN: z.string().optional()
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
@@ -52,22 +61,37 @@ export const config = {
   rateLimitWindowMs: env.RATE_LIMIT_WINDOW_MS ?? 60_000,
   rateLimitMax: env.RATE_LIMIT_MAX ?? 60,
   demoAuthEnabled: env.DEMO_AUTH_ENABLED ?? !isProduction,
+  redisUrl: env.REDIS_URL ?? "",
+  accessTokenTtlSeconds: env.ACCESS_TOKEN_TTL_SECONDS ?? 15 * 60,
+  refreshTokenTtlDays: env.REFRESH_TOKEN_TTL_DAYS ?? 30,
+  otpTtlSeconds: env.OTP_TTL_SECONDS ?? 5 * 60,
+  otpMaxAttempts: env.OTP_MAX_ATTEMPTS ?? 5,
+  otpProviderUrl: env.OTP_PROVIDER_URL ?? "",
   googleMapsApiKey: env.GOOGLE_MAPS_API_KEY ?? "",
   razorpayKeyId: env.RAZORPAY_KEY_ID ?? "",
   razorpayKeySecret: env.RAZORPAY_KEY_SECRET ?? "",
-  otpProviderApiKey: env.OTP_PROVIDER_API_KEY ?? ""
+  otpProviderApiKey: env.OTP_PROVIDER_API_KEY ?? "",
+  otpProviderSender: env.OTP_PROVIDER_SENDER ?? "Bazaar Setu",
+  otpCodePepper: env.OTP_CODE_PEPPER ?? "",
+  adminBootstrapToken: env.ADMIN_BOOTSTRAP_TOKEN ?? ""
 };
 
 export function readinessBlockers() {
   const blockers: string[] = [];
   if (!config.isProduction) return blockers;
   if (!config.databaseUrl) blockers.push("DATABASE_URL is required.");
+  if (!config.redisUrl) blockers.push("REDIS_URL is required for production rate limits.");
   if (config.demoAuthEnabled) blockers.push("DEMO_AUTH_ENABLED must be false in production.");
   if (!config.jwtSecret || config.jwtSecret.includes("change-me") || config.jwtSecret.length < 32) {
     blockers.push("JWT_SECRET must be a strong secret with at least 32 characters.");
   }
+  if (!config.otpProviderUrl) blockers.push("OTP_PROVIDER_URL is required.");
   if (!config.googleMapsApiKey) blockers.push("GOOGLE_MAPS_API_KEY is required.");
   if (!config.otpProviderApiKey) blockers.push("OTP_PROVIDER_API_KEY is required.");
+  if (!config.otpCodePepper || config.otpCodePepper.length < 32) blockers.push("OTP_CODE_PEPPER must be a strong secret with at least 32 characters.");
+  if (!config.adminBootstrapToken || config.adminBootstrapToken.length < 32) {
+    blockers.push("ADMIN_BOOTSTRAP_TOKEN must be a strong secret with at least 32 characters.");
+  }
   if (!config.razorpayKeyId || !config.razorpayKeySecret) blockers.push("Payment gateway keys are required.");
   return blockers;
 }
