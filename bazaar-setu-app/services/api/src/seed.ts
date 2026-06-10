@@ -1,51 +1,51 @@
 import { prisma } from "./db.js";
 
-const categories = [
-  ["fruits", "Fruits", "apple"],
-  ["vegetables", "Vegetables", "leaf"],
-  ["dairy", "Dairy & Eggs", "milk"],
-  ["meat-seafood", "Meat & Seafood", "meat"],
-  ["bakery", "Bakery", "bread"],
-  ["snacks", "Snacks", "snack"],
-  ["beverages", "Beverages", "drink"],
-  ["staples", "Staples", "rice"],
-  ["pulses", "Pulses & Dal", "dal"],
-  ["spices", "Masala & Spices", "spice"],
-  ["packaged-food", "Packaged Food", "jar"],
-  ["home-care", "Home Care", "clean"],
-  ["personal-care", "Personal Care", "care"],
-  ["baby-care", "Baby Care", "baby"],
-  ["pet-care", "Pet Care", "pet"],
-  ["pooja", "Pooja Items", "diya"]
+const categories: Array<{ id: string; name: string; icon: string }> = [
+  { id: "fruits", name: "Fruits", icon: "apple" },
+  { id: "vegetables", name: "Vegetables", icon: "leaf" },
+  { id: "dairy", name: "Dairy & Eggs", icon: "milk" },
+  { id: "meat-seafood", name: "Meat & Seafood", icon: "meat" },
+  { id: "bakery", name: "Bakery", icon: "bread" },
+  { id: "snacks", name: "Snacks", icon: "snack" },
+  { id: "beverages", name: "Beverages", icon: "drink" },
+  { id: "staples", name: "Staples", icon: "rice" },
+  { id: "pulses", name: "Pulses & Dal", icon: "dal" },
+  { id: "spices", name: "Masala & Spices", icon: "spice" },
+  { id: "packaged-food", name: "Packaged Food", icon: "jar" },
+  { id: "home-care", name: "Home Care", icon: "clean" },
+  { id: "personal-care", name: "Personal Care", icon: "care" },
+  { id: "baby-care", name: "Baby Care", icon: "baby" },
+  { id: "pet-care", name: "Pet Care", icon: "pet" },
+  { id: "pooja", name: "Pooja Items", icon: "diya" }
 ];
 
-const products = [
-  ["tomato", "Tomato Hybrid", "vegetables", "1 kg", "0702", 34],
-  ["potato", "Potato Agra", "vegetables", "1 kg", "0701", 31],
-  ["onion", "Onion Nashik", "vegetables", "1 kg", "0703", 42],
-  ["apple", "Apple Shimla", "fruits", "1 kg", "0808", 180],
-  ["banana", "Banana Robusta", "fruits", "1 dozen", "0803", 62],
-  ["milk", "Full Cream Milk", "dairy", "1 litre", "0401", 68],
-  ["paneer", "Paneer Fresh", "dairy", "200 g", "0406", 92],
-  ["chicken-curry-cut", "Chicken Curry Cut", "meat-seafood", "500 g", "0207", 190],
-  ["bread", "Multigrain Bread", "bakery", "400 g loaf", "1905", 55],
-  ["chips", "Classic Salted Chips", "snacks", "52 g", "2005", 20],
-  ["cola", "Cola Bottle", "beverages", "750 ml", "2202", 40],
-  ["rice", "Basmati Rice", "staples", "1 kg", "1006", 145],
-  ["toor-dal", "Toor Dal", "pulses", "1 kg", "0713", 168],
-  ["turmeric", "Turmeric Powder", "spices", "100 g", "0910", 44],
-  ["mango-pickle", "Homemade Mango Pickle", "packaged-food", "250 g jar", "2106", 149],
-  ["detergent", "Detergent Powder", "home-care", "1 kg", "3402", 112],
-  ["soap", "Bath Soap", "personal-care", "4 x 75 g", "3401", 96],
-  ["agarbatti", "Agarbatti Sandal", "pooja", "100 sticks", "3307", 65]
+const products: Array<{ id: string; name: string; categoryId: string; unit: string; hsn?: string; mrp: number }> = [
+  { id: "tomato", name: "Tomato Hybrid", categoryId: "vegetables", unit: "1 kg", hsn: "0702", mrp: 34 },
+  { id: "potato", name: "Potato Agra", categoryId: "vegetables", unit: "1 kg", hsn: "0701", mrp: 31 },
+  { id: "onion", name: "Onion Nashik", categoryId: "vegetables", unit: "1 kg", hsn: "0703", mrp: 42 },
+  { id: "apple", name: "Apple Shimla", categoryId: "fruits", unit: "1 kg", hsn: "0808", mrp: 180 },
+  { id: "banana", name: "Banana Robusta", categoryId: "fruits", unit: "1 dozen", hsn: "0803", mrp: 62 },
+  { id: "milk", name: "Full Cream Milk", categoryId: "dairy", unit: "1 litre", hsn: "0401", mrp: 68 },
+  { id: "paneer", name: "Paneer Fresh", categoryId: "dairy", unit: "200 g", hsn: "0406", mrp: 92 },
+  { id: "chicken-curry-cut", name: "Chicken Curry Cut", categoryId: "meat-seafood", unit: "500 g", hsn: "0207", mrp: 190 },
+  { id: "bread", name: "Multigrain Bread", categoryId: "bakery", unit: "400 g loaf", hsn: "1905", mrp: 55 },
+  { id: "chips", name: "Classic Salted Chips", categoryId: "snacks", unit: "52 g", hsn: "2005", mrp: 20 },
+  { id: "cola", name: "Cola Bottle", categoryId: "beverages", unit: "750 ml", hsn: "2202", mrp: 40 },
+  { id: "rice", name: "Basmati Rice", categoryId: "staples", unit: "1 kg", hsn: "1006", mrp: 145 },
+  { id: "toor-dal", name: "Toor Dal", categoryId: "pulses", unit: "1 kg", hsn: "0713", mrp: 168 },
+  { id: "turmeric", name: "Turmeric Powder", categoryId: "spices", unit: "100 g", hsn: "0910", mrp: 44 },
+  { id: "mango-pickle", name: "Homemade Mango Pickle", categoryId: "packaged-food", unit: "250 g jar", hsn: "2106", mrp: 149 },
+  { id: "detergent", name: "Detergent Powder", categoryId: "home-care", unit: "1 kg", hsn: "3402", mrp: 112 },
+  { id: "soap", name: "Bath Soap", categoryId: "personal-care", unit: "4 x 75 g", hsn: "3401", mrp: 96 },
+  { id: "agarbatti", name: "Agarbatti Sandal", categoryId: "pooja", unit: "100 sticks", hsn: "3307", mrp: 65 }
 ];
 
 async function main() {
-  for (const [id, name, icon] of categories) {
+  for (const { id, name, icon } of categories) {
     await prisma.category.upsert({ where: { id }, update: {}, create: { id, name, icon } });
   }
 
-  for (const [id, name, categoryId, unit, hsn, mrp] of products) {
+  for (const { id, name, categoryId, unit, hsn, mrp } of products) {
     await prisma.productMaster.upsert({
       where: { id },
       update: {},

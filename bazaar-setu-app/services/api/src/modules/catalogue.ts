@@ -1,15 +1,16 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db.js";
+import { asyncHandler, sendOk } from "../http.js";
 
 export const catalogueRouter = Router();
 
-catalogueRouter.get("/categories", async (_req, res) => {
+catalogueRouter.get("/categories", asyncHandler(async (_req, res) => {
   const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
-  res.json({ ok: true, data: categories });
-});
+  return sendOk(res, categories);
+}));
 
-catalogueRouter.get("/products", async (req, res) => {
+catalogueRouter.get("/products", asyncHandler(async (req, res) => {
   const query = z.object({
     q: z.string().optional(),
     categoryId: z.string().optional()
@@ -41,5 +42,5 @@ catalogueRouter.get("/products", async (req, res) => {
     take: 60
   });
 
-  res.json({ ok: true, data: products });
-});
+  return sendOk(res, products);
+}));

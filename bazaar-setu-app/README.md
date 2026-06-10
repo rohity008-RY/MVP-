@@ -57,13 +57,13 @@ Seed data creates stable records used by the first mobile screens:
 
 ## Production Gaps Before Launch
 
-This is source scaffolding, not a live-ready production deployment. Before public launch, Bazaar Setu still needs:
+This is source scaffolding, not a live-ready production deployment. The API boundary has a first hardening pass; see `docs/PRODUCTION_READINESS.md` for the active launch checklist. Before public launch, Bazaar Setu still needs:
 
-- Real OTP provider, auth hardening, RBAC enforcement, session refresh, and rate limits.
+- Real OTP provider, session refresh/revocation, and Redis-backed rate limits.
 - Google Maps Places/geocoding keys and address validation.
 - Payment gateway onboarding, refunds, COD reconciliation, seller payout KYC, and settlement jobs.
 - FSSAI/GST/legal metrology review and compliance document verification workflow.
 - Catalogue import governance with licensed/admin-owned product images and HSN/GST review.
 - Object storage for product/document uploads.
 - Push notifications through FCM/APNs.
-- Observability, audit logs, backups, deployment CI/CD, staging/prod environments, and security testing.
+- Observability, audit logs, backups, deployment CI/CD, staging/prod environments, dependency vulnerability resolution, and security testing.

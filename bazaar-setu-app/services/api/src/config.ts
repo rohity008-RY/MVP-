@@ -1,22 +1,73 @@
 import "dotenv/config";
+import { z } from "zod";
+
+const booleanEnv = z
+  .enum(["true", "false", "1", "0", "yes", "no", "on", "off"])
+  .transform((value) => ["true", "1", "yes", "on"].includes(value));
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  API_PORT: z.coerce.number().int().positive().optional(),
+  PORT: z.coerce.number().int().positive().optional(),
+  DATABASE_URL: z.string().optional(),
+  JWT_SECRET: z.string().optional(),
+  API_BASE_URL: z.string().url().optional(),
+  CORS_ORIGINS: z.string().optional(),
+  REQUEST_BODY_LIMIT: z.string().optional(),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().optional(),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().optional(),
+  DEMO_AUTH_ENABLED: booleanEnv.optional(),
+  GOOGLE_MAPS_API_KEY: z.string().optional(),
+  RAZORPAY_KEY_ID: z.string().optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional(),
+  OTP_PROVIDER_API_KEY: z.string().optional()
+});
+
+const parsedEnv = envSchema.safeParse(process.env);
+
+if (!parsedEnv.success) {
+  throw new Error(`Invalid API environment: ${parsedEnv.error.message}`);
+}
+
+const env = parsedEnv.data;
+const isProduction = env.NODE_ENV === "production";
+
+function parseCorsOrigins(value?: string) {
+  if (!value || value.trim() === "*") return ["*"];
+  return value
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
 
 export const config = {
-  nodeEnv: process.env.NODE_ENV ?? "development",
-  port: Number(process.env.API_PORT ?? process.env.PORT ?? 5010),
-  databaseUrl: process.env.DATABASE_URL ?? "",
-  jwtSecret: process.env.JWT_SECRET ?? "dev-secret-change-me",
-  apiBaseUrl: process.env.API_BASE_URL ?? "http://127.0.0.1:5010",
-  googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY ?? "",
-  razorpayKeyId: process.env.RAZORPAY_KEY_ID ?? "",
-  razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET ?? "",
-  otpProviderApiKey: process.env.OTP_PROVIDER_API_KEY ?? ""
+  nodeEnv: env.NODE_ENV,
+  isProduction,
+  port: env.API_PORT ?? env.PORT ?? 5010,
+  databaseUrl: env.DATABASE_URL ?? "",
+  jwtSecret: env.JWT_SECRET ?? "dev-secret-change-me",
+  apiBaseUrl: env.API_BASE_URL ?? "http://127.0.0.1:5010",
+  corsOrigins: parseCorsOrigins(env.CORS_ORIGINS),
+  requestBodyLimit: env.REQUEST_BODY_LIMIT ?? "2mb",
+  rateLimitWindowMs: env.RATE_LIMIT_WINDOW_MS ?? 60_000,
+  rateLimitMax: env.RATE_LIMIT_MAX ?? 60,
+  demoAuthEnabled: env.DEMO_AUTH_ENABLED ?? !isProduction,
+  googleMapsApiKey: env.GOOGLE_MAPS_API_KEY ?? "",
+  razorpayKeyId: env.RAZORPAY_KEY_ID ?? "",
+  razorpayKeySecret: env.RAZORPAY_KEY_SECRET ?? "",
+  otpProviderApiKey: env.OTP_PROVIDER_API_KEY ?? ""
 };
 
 export function readinessBlockers() {
   const blockers: string[] = [];
-  if (config.nodeEnv === "production" && config.jwtSecret.includes("change-me")) blockers.push("JWT_SECRET must be set.");
-  if (config.nodeEnv === "production" && !config.googleMapsApiKey) blockers.push("GOOGLE_MAPS_API_KEY is required.");
-  if (config.nodeEnv === "production" && !config.otpProviderApiKey) blockers.push("OTP_PROVIDER_API_KEY is required.");
-  if (config.nodeEnv === "production" && (!config.razorpayKeyId || !config.razorpayKeySecret)) blockers.push("Payment gateway keys are required.");
+  if (!config.isProduction) return blockers;
+  if (!config.databaseUrl) blockers.push("DATABASE_URL is required.");
+  if (config.demoAuthEnabled) blockers.push("DEMO_AUTH_ENABLED must be false in production.");
+  if (!config.jwtSecret || config.jwtSecret.includes("change-me") || config.jwtSecret.length < 32) {
+    blockers.push("JWT_SECRET must be a strong secret with at least 32 characters.");
+  }
+  if (!config.googleMapsApiKey) blockers.push("GOOGLE_MAPS_API_KEY is required.");
+  if (!config.otpProviderApiKey) blockers.push("OTP_PROVIDER_API_KEY is required.");
+  if (!config.razorpayKeyId || !config.razorpayKeySecret) blockers.push("Payment gateway keys are required.");
   return blockers;
 }
