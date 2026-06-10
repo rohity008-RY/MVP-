@@ -4,9 +4,10 @@ This is the staging path for a production-shaped rehearsal before public launch.
 
 ## Required Services
 
-- Postgres 16
-- Redis 7
-- OTP provider staging account
+- Google Cloud Run in a dedicated Bazaar Setu Google Cloud project
+- Neon Postgres for staging database
+- Upstash Redis for rate limits and session/cache support
+- Mock/test OTP mode for staging login
 - Google Maps staging/restricted key
 - Razorpay test-mode keys
 - Object storage bucket for uploads
@@ -32,19 +33,38 @@ Add these GitHub environment variables:
 - `STAGING_API_URL`: final Cloud Run API URL or staging API custom domain.
 - `STAGING_ADMIN_URL`: final Cloud Run Admin URL or staging Admin custom domain.
 - `STAGING_CORS_ORIGINS`: comma-separated staging customer, seller, and admin origins.
+- `STAGING_OTP_DELIVERY_MODE`: use `mock` for free staging; use `provider` when a real SMS provider is configured.
+- `STAGING_CLOUDSQL_INSTANCE`: leave empty for Neon. Set only if using Cloud SQL later.
+- `STAGING_VPC_CONNECTOR`: leave empty for public Neon/Upstash. Set only if private networking is added later.
 
 Store runtime secrets in Google Secret Manager with these exact names:
 
 - `bazaar-setu-staging-database-url`
 - `bazaar-setu-staging-redis-url`
 - `bazaar-setu-staging-jwt-secret`
-- `bazaar-setu-staging-otp-provider-url`
-- `bazaar-setu-staging-otp-provider-api-key`
 - `bazaar-setu-staging-otp-code-pepper`
 - `bazaar-setu-staging-admin-bootstrap-token`
 - `bazaar-setu-staging-google-maps-api-key`
 - `bazaar-setu-staging-razorpay-key-id`
 - `bazaar-setu-staging-razorpay-key-secret`
+
+Only create these OTP provider secrets when `STAGING_OTP_DELIVERY_MODE=provider`:
+
+- `bazaar-setu-staging-otp-provider-url`
+- `bazaar-setu-staging-otp-provider-api-key`
+
+## Low-Cost Staging Stack
+
+Use this for the first Bazaar Setu staging environment:
+
+1. Create a dedicated Google Cloud project owned for Bazaar Setu, for example `bazaar-setu-staging`. Do not use Fynd, GoFynd, or any shared company project.
+2. Enable Cloud Run, Artifact Registry, Secret Manager, Cloud Build, IAM Credentials, and Workload Identity Federation in that project.
+3. Create a Neon Postgres project/database for staging. Store its SSL connection string in Secret Manager as `bazaar-setu-staging-database-url`.
+4. Create an Upstash Redis database for staging. Store its `rediss://...` URL in Secret Manager as `bazaar-setu-staging-redis-url`.
+5. Create a Google Maps Platform key with only the APIs Bazaar Setu needs enabled. Store it as `bazaar-setu-staging-google-maps-api-key`.
+6. Use mock OTP first: set `STAGING_OTP_DELIVERY_MODE=mock`. The API returns `demoOtp` from `/api/auth/otp/start` only for this staging/test delivery mode.
+7. Add Razorpay test-mode keys or temporary staging placeholders before starting the API, because production-mode readiness checks require payment keys.
+8. Add the GitHub `staging` environment secrets and variables listed above.
 
 The deploy service account needs:
 

@@ -21,7 +21,8 @@ healthRouter.get("/ready", (_req, res) => {
       },
       dependencies: {
         redisConfigured: Boolean(config.redisUrl),
-        otpProviderConfigured: Boolean(config.otpProviderUrl && config.otpProviderApiKey),
+        otpDeliveryMode: config.otpDeliveryMode,
+        otpProviderConfigured: config.otpDeliveryMode === "mock" || Boolean(config.otpProviderUrl && config.otpProviderApiKey),
         adminBootstrapConfigured: Boolean(config.adminBootstrapToken),
         demoAuthEnabled: config.demoAuthEnabled
       }

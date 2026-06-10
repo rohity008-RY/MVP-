@@ -21,7 +21,7 @@ Completed:
 Completed:
 
 - Added database-backed OTP challenges with hashed OTP storage, expiry, max attempts, and consumed state.
-- Added configurable OTP delivery adapter via `OTP_PROVIDER_URL` and `OTP_PROVIDER_API_KEY`.
+- Added configurable OTP delivery adapter via `OTP_DELIVERY_MODE`, `OTP_PROVIDER_URL`, and `OTP_PROVIDER_API_KEY`.
 - Added short-lived access tokens plus refresh-token sessions stored as hashes.
 - Added refresh-token rotation, current-session logout, and all-device logout.
 - Added session validation in API auth middleware so revoked/expired sessions no longer authorize protected routes.
@@ -35,12 +35,14 @@ Completed:
 Set these before a production deploy:
 
 - `NODE_ENV=production`
+- `DEPLOYMENT_ENV=production`
 - `DATABASE_URL`
 - `JWT_SECRET` with at least 32 random characters
 - `DEMO_AUTH_ENABLED=false`
 - `CORS_ORIGINS` with exact customer, seller, and admin origins
 - `GOOGLE_MAPS_API_KEY`
 - `REDIS_URL`
+- `OTP_DELIVERY_MODE=provider`
 - `OTP_PROVIDER_URL`
 - `OTP_PROVIDER_API_KEY`
 - `OTP_CODE_PEPPER` with at least 32 random characters
@@ -102,8 +104,10 @@ Completed:
 - Added Cloud Run migration job execution before API deploy.
 - Added staging smoke script for API health/readiness and Admin availability.
 - Documented required GitHub environment secrets, variables, Google Secret Manager names, and deploy service account permissions.
+- Added low-cost staging support for Cloud Run + Neon Postgres + Upstash Redis + Google Maps restricted key + mock/test OTP.
+- Added deploy guard that refuses Fynd/GoFynd/shared company GCP project IDs.
 
 Known residual:
 
 - A Google Cloud account is not logged in locally, so real Cloud Run resources were not created from this machine.
-- GitHub `staging` environment values and Google Cloud Secret Manager entries must be created before running the deploy workflow.
+- A dedicated non-Fynd Bazaar Setu Google Cloud project, GitHub `staging` environment values, and Google Cloud Secret Manager entries must be created before running the deploy workflow.

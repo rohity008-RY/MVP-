@@ -13,8 +13,8 @@ interface SendOtpResult {
 }
 
 export async function sendOtp(input: SendOtpInput): Promise<SendOtpResult> {
-  if (config.demoAuthEnabled && !config.otpProviderUrl) {
-    return { providerMessageId: `demo-${input.requestId}`, demoOtp: input.code };
+  if (config.otpDeliveryMode === "mock" || (config.demoAuthEnabled && !config.otpProviderUrl)) {
+    return { providerMessageId: `mock-${input.requestId}`, demoOtp: input.code };
   }
 
   if (!config.otpProviderUrl || !config.otpProviderApiKey) {

@@ -27,6 +27,7 @@ jobs:
       STAGING_API_URL: ${{ vars.STAGING_API_URL }}
       STAGING_ADMIN_URL: ${{ vars.STAGING_ADMIN_URL }}
       STAGING_CORS_ORIGINS: ${{ vars.STAGING_CORS_ORIGINS }}
+      STAGING_OTP_DELIVERY_MODE: ${{ vars.STAGING_OTP_DELIVERY_MODE || 'mock' }}
       STAGING_CLOUDSQL_INSTANCE: ${{ vars.STAGING_CLOUDSQL_INSTANCE }}
       STAGING_VPC_CONNECTOR: ${{ vars.STAGING_VPC_CONNECTOR }}
 
@@ -114,6 +115,7 @@ jobs:
 
           cat > /tmp/bazaar-setu-api-env.yaml <<EOF
           NODE_ENV: "production"
+          DEPLOYMENT_ENV: "staging"
           API_PORT: "8080"
           API_BASE_URL: "${STAGING_API_URL}"
           CORS_ORIGINS: "${STAGING_CORS_ORIGINS}"
@@ -125,8 +127,14 @@ jobs:
           REFRESH_TOKEN_TTL_DAYS: "30"
           OTP_TTL_SECONDS: "300"
           OTP_MAX_ATTEMPTS: "5"
+          OTP_DELIVERY_MODE: "${STAGING_OTP_DELIVERY_MODE}"
           OTP_PROVIDER_SENDER: "Bazaar Setu"
           EOF
+
+          API_SECRETS="DATABASE_URL=bazaar-setu-staging-database-url:latest,REDIS_URL=bazaar-setu-staging-redis-url:latest,JWT_SECRET=bazaar-setu-staging-jwt-secret:latest,OTP_CODE_PEPPER=bazaar-setu-staging-otp-code-pepper:latest,ADMIN_BOOTSTRAP_TOKEN=bazaar-setu-staging-admin-bootstrap-token:latest,GOOGLE_MAPS_API_KEY=bazaar-setu-staging-google-maps-api-key:latest,RAZORPAY_KEY_ID=bazaar-setu-staging-razorpay-key-id:latest,RAZORPAY_KEY_SECRET=bazaar-setu-staging-razorpay-key-secret:latest"
+          if [ "${STAGING_OTP_DELIVERY_MODE}" = "provider" ]; then
+            API_SECRETS="${API_SECRETS},OTP_PROVIDER_URL=bazaar-setu-staging-otp-provider-url:latest,OTP_PROVIDER_API_KEY=bazaar-setu-staging-otp-provider-api-key:latest"
+          fi
 
           gcloud run deploy "${API_SERVICE}" \
             --project "${PROJECT_ID}" \
@@ -135,7 +143,7 @@ jobs:
             --allow-unauthenticated \
             --port 8080 \
             --env-vars-file /tmp/bazaar-setu-api-env.yaml \
-            --update-secrets "DATABASE_URL=bazaar-setu-staging-database-url:latest,REDIS_URL=bazaar-setu-staging-redis-url:latest,JWT_SECRET=bazaar-setu-staging-jwt-secret:latest,OTP_PROVIDER_URL=bazaar-setu-staging-otp-provider-url:latest,OTP_PROVIDER_API_KEY=bazaar-setu-staging-otp-provider-api-key:latest,OTP_CODE_PEPPER=bazaar-setu-staging-otp-code-pepper:latest,ADMIN_BOOTSTRAP_TOKEN=bazaar-setu-staging-admin-bootstrap-token:latest,GOOGLE_MAPS_API_KEY=bazaar-setu-staging-google-maps-api-key:latest,RAZORPAY_KEY_ID=bazaar-setu-staging-razorpay-key-id:latest,RAZORPAY_KEY_SECRET=bazaar-setu-staging-razorpay-key-secret:latest" \
+            --update-secrets "${API_SECRETS}" \
             "${API_NETWORK_ARGS[@]}"
 
       - name: Deploy Admin service

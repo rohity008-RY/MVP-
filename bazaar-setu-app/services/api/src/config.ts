@@ -5,13 +5,19 @@ const booleanEnv = z
   .enum(["true", "false", "1", "0", "yes", "no", "on", "off"])
   .transform((value) => ["true", "1", "yes", "on"].includes(value));
 
+const optionalUrlEnv = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+  z.string().url().optional()
+);
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  DEPLOYMENT_ENV: z.enum(["local", "test", "staging", "production"]).optional(),
   API_PORT: z.coerce.number().int().positive().optional(),
   PORT: z.coerce.number().int().positive().optional(),
   DATABASE_URL: z.string().optional(),
   JWT_SECRET: z.string().optional(),
-  API_BASE_URL: z.string().url().optional(),
+  API_BASE_URL: optionalUrlEnv,
   CORS_ORIGINS: z.string().optional(),
   REQUEST_BODY_LIMIT: z.string().optional(),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().optional(),
@@ -22,7 +28,8 @@ const envSchema = z.object({
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().optional(),
   OTP_TTL_SECONDS: z.coerce.number().int().positive().optional(),
   OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().optional(),
-  OTP_PROVIDER_URL: z.string().url().optional(),
+  OTP_DELIVERY_MODE: z.enum(["provider", "mock"]).optional(),
+  OTP_PROVIDER_URL: optionalUrlEnv,
   GOOGLE_MAPS_API_KEY: z.string().optional(),
   RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_KEY_SECRET: z.string().optional(),
@@ -40,6 +47,8 @@ if (!parsedEnv.success) {
 
 const env = parsedEnv.data;
 const isProduction = env.NODE_ENV === "production";
+const deploymentEnv = env.DEPLOYMENT_ENV ?? (isProduction ? "production" : env.NODE_ENV);
+const otpDeliveryMode = env.OTP_DELIVERY_MODE ?? (env.OTP_PROVIDER_URL ? "provider" : "mock");
 
 function parseCorsOrigins(value?: string) {
   if (!value || value.trim() === "*") return ["*"];
@@ -51,6 +60,7 @@ function parseCorsOrigins(value?: string) {
 
 export const config = {
   nodeEnv: env.NODE_ENV,
+  deploymentEnv,
   isProduction,
   port: env.API_PORT ?? env.PORT ?? 5010,
   databaseUrl: env.DATABASE_URL ?? "",
@@ -66,6 +76,7 @@ export const config = {
   refreshTokenTtlDays: env.REFRESH_TOKEN_TTL_DAYS ?? 30,
   otpTtlSeconds: env.OTP_TTL_SECONDS ?? 5 * 60,
   otpMaxAttempts: env.OTP_MAX_ATTEMPTS ?? 5,
+  otpDeliveryMode,
   otpProviderUrl: env.OTP_PROVIDER_URL ?? "",
   googleMapsApiKey: env.GOOGLE_MAPS_API_KEY ?? "",
   razorpayKeyId: env.RAZORPAY_KEY_ID ?? "",
@@ -85,9 +96,14 @@ export function readinessBlockers() {
   if (!config.jwtSecret || config.jwtSecret.includes("change-me") || config.jwtSecret.length < 32) {
     blockers.push("JWT_SECRET must be a strong secret with at least 32 characters.");
   }
-  if (!config.otpProviderUrl) blockers.push("OTP_PROVIDER_URL is required.");
+  if (config.otpDeliveryMode === "mock" && config.deploymentEnv === "production") {
+    blockers.push("OTP_DELIVERY_MODE=mock is allowed only for staging/test, not production launch.");
+  }
+  if (config.otpDeliveryMode === "provider") {
+    if (!config.otpProviderUrl) blockers.push("OTP_PROVIDER_URL is required.");
+    if (!config.otpProviderApiKey) blockers.push("OTP_PROVIDER_API_KEY is required.");
+  }
   if (!config.googleMapsApiKey) blockers.push("GOOGLE_MAPS_API_KEY is required.");
-  if (!config.otpProviderApiKey) blockers.push("OTP_PROVIDER_API_KEY is required.");
   if (!config.otpCodePepper || config.otpCodePepper.length < 32) blockers.push("OTP_CODE_PEPPER must be a strong secret with at least 32 characters.");
   if (!config.adminBootstrapToken || config.adminBootstrapToken.length < 32) {
     blockers.push("ADMIN_BOOTSTRAP_TOKEN must be a strong secret with at least 32 characters.");
