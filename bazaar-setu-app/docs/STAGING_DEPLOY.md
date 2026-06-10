@@ -10,7 +10,9 @@ This is the staging path for a production-shaped rehearsal before public launch.
 - Google Maps staging/restricted key
 - Razorpay test-mode keys
 - Object storage bucket for uploads
-- Google Cloud project with Cloud Run, Artifact Registry, Secret Manager, and IAM Workload Identity Federation enabled
+- Dedicated Bazaar Setu Google Cloud project with Cloud Run, Artifact Registry, Secret Manager, and IAM Workload Identity Federation enabled.
+
+Do not use Fynd, GoFynd, or any shared/company projects for Bazaar Setu staging. Staging should live in a separate project owned for this product, for example `bazaar-setu-staging`.
 
 ## GitHub Staging Environment
 

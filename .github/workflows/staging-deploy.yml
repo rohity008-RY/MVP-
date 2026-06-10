@@ -27,10 +27,19 @@ jobs:
       STAGING_API_URL: ${{ vars.STAGING_API_URL }}
       STAGING_ADMIN_URL: ${{ vars.STAGING_ADMIN_URL }}
       STAGING_CORS_ORIGINS: ${{ vars.STAGING_CORS_ORIGINS }}
+      STAGING_CLOUDSQL_INSTANCE: ${{ vars.STAGING_CLOUDSQL_INSTANCE }}
+      STAGING_VPC_CONNECTOR: ${{ vars.STAGING_VPC_CONNECTOR }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Block shared/company projects
+        run: |
+          if echo "${PROJECT_ID}" | grep -Eiq '(fynd|gofynd)'; then
+            echo "Refusing to deploy Bazaar Setu staging into a Fynd/GoFynd/shared company GCP project. Use a dedicated Bazaar Setu GCP project."
+            exit 1
+          fi
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
@@ -71,6 +80,11 @@ jobs:
 
       - name: Deploy migration job
         run: |
+          MIGRATION_NETWORK_ARGS=()
+          if [ -n "${STAGING_CLOUDSQL_INSTANCE}" ]; then
+            MIGRATION_NETWORK_ARGS+=(--set-cloudsql-instances "${STAGING_CLOUDSQL_INSTANCE}")
+          fi
+
           gcloud run jobs deploy "${MIGRATION_JOB}" \
             --project "${PROJECT_ID}" \
             --region "${REGION}" \
@@ -78,7 +92,8 @@ jobs:
             --command npm \
             --args "--workspace,services/api,run,db:deploy" \
             --set-env-vars "NODE_ENV=production" \
-            --update-secrets "DATABASE_URL=bazaar-setu-staging-database-url:latest"
+            --update-secrets "DATABASE_URL=bazaar-setu-staging-database-url:latest" \
+            "${MIGRATION_NETWORK_ARGS[@]}"
 
       - name: Run migrations
         run: |
@@ -89,6 +104,14 @@ jobs:
 
       - name: Deploy API service
         run: |
+          API_NETWORK_ARGS=()
+          if [ -n "${STAGING_CLOUDSQL_INSTANCE}" ]; then
+            API_NETWORK_ARGS+=(--add-cloudsql-instances "${STAGING_CLOUDSQL_INSTANCE}")
+          fi
+          if [ -n "${STAGING_VPC_CONNECTOR}" ]; then
+            API_NETWORK_ARGS+=(--vpc-connector "${STAGING_VPC_CONNECTOR}" --vpc-egress private-ranges-only)
+          fi
+
           cat > /tmp/bazaar-setu-api-env.yaml <<EOF
           NODE_ENV: "production"
           API_PORT: "8080"
@@ -112,7 +135,8 @@ jobs:
             --allow-unauthenticated \
             --port 8080 \
             --env-vars-file /tmp/bazaar-setu-api-env.yaml \
-            --update-secrets "DATABASE_URL=bazaar-setu-staging-database-url:latest,REDIS_URL=bazaar-setu-staging-redis-url:latest,JWT_SECRET=bazaar-setu-staging-jwt-secret:latest,OTP_PROVIDER_URL=bazaar-setu-staging-otp-provider-url:latest,OTP_PROVIDER_API_KEY=bazaar-setu-staging-otp-provider-api-key:latest,OTP_CODE_PEPPER=bazaar-setu-staging-otp-code-pepper:latest,ADMIN_BOOTSTRAP_TOKEN=bazaar-setu-staging-admin-bootstrap-token:latest,GOOGLE_MAPS_API_KEY=bazaar-setu-staging-google-maps-api-key:latest,RAZORPAY_KEY_ID=bazaar-setu-staging-razorpay-key-id:latest,RAZORPAY_KEY_SECRET=bazaar-setu-staging-razorpay-key-secret:latest"
+            --update-secrets "DATABASE_URL=bazaar-setu-staging-database-url:latest,REDIS_URL=bazaar-setu-staging-redis-url:latest,JWT_SECRET=bazaar-setu-staging-jwt-secret:latest,OTP_PROVIDER_URL=bazaar-setu-staging-otp-provider-url:latest,OTP_PROVIDER_API_KEY=bazaar-setu-staging-otp-provider-api-key:latest,OTP_CODE_PEPPER=bazaar-setu-staging-otp-code-pepper:latest,ADMIN_BOOTSTRAP_TOKEN=bazaar-setu-staging-admin-bootstrap-token:latest,GOOGLE_MAPS_API_KEY=bazaar-setu-staging-google-maps-api-key:latest,RAZORPAY_KEY_ID=bazaar-setu-staging-razorpay-key-id:latest,RAZORPAY_KEY_SECRET=bazaar-setu-staging-razorpay-key-secret:latest" \
+            "${API_NETWORK_ARGS[@]}"
 
       - name: Deploy Admin service
         run: |
