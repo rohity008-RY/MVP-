@@ -2,6 +2,8 @@
 
 This is the staging path for a production-shaped rehearsal before public launch.
 
+For the current free/no-card-first path, use `docs/FREE_STAGING_DEPLOY.md` instead. This Cloud Run guide is the later production-shaped staging path.
+
 ## Required Services
 
 - Google Cloud Run in a dedicated Bazaar Setu Google Cloud project

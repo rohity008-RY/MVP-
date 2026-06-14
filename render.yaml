@@ -1,0 +1,69 @@
+services:
+  - type: web
+    name: bazaar-setu-api-free
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: bazaar-setu-app/services/api/Dockerfile
+    dockerContext: bazaar-setu-app
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass
+    preDeployCommand: npm --workspace services/api run db:deploy
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEPLOYMENT_ENV
+        value: staging
+      - key: API_BASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: REQUEST_BODY_LIMIT
+        value: 2mb
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "60000"
+      - key: RATE_LIMIT_MAX
+        value: "60"
+      - key: DEMO_AUTH_ENABLED
+        value: "false"
+      - key: ACCESS_TOKEN_TTL_SECONDS
+        value: "900"
+      - key: REFRESH_TOKEN_TTL_DAYS
+        value: "30"
+      - key: OTP_TTL_SECONDS
+        value: "300"
+      - key: OTP_MAX_ATTEMPTS
+        value: "5"
+      - key: OTP_DELIVERY_MODE
+        value: mock
+      - key: OTP_PROVIDER_SENDER
+        value: Bazaar Setu
+      - key: MAPS_PROVIDER
+        value: browser
+      - key: PAYMENTS_PROVIDER
+        value: mock
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: OTP_CODE_PEPPER
+        sync: false
+      - key: ADMIN_BOOTSTRAP_TOKEN
+        sync: false
+
+  - type: web
+    name: bazaar-setu-admin-free
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: bazaar-setu-app/apps/admin-web/Dockerfile
+    dockerContext: bazaar-setu-app
+    healthCheckPath: /health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_BASE_URL
+        sync: false

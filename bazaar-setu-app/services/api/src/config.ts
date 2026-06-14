@@ -30,7 +30,9 @@ const envSchema = z.object({
   OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().optional(),
   OTP_DELIVERY_MODE: z.enum(["provider", "mock"]).optional(),
   OTP_PROVIDER_URL: optionalUrlEnv,
+  MAPS_PROVIDER: z.enum(["google", "browser"]).optional(),
   GOOGLE_MAPS_API_KEY: z.string().optional(),
+  PAYMENTS_PROVIDER: z.enum(["razorpay", "mock"]).optional(),
   RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_KEY_SECRET: z.string().optional(),
   OTP_PROVIDER_API_KEY: z.string().optional(),
@@ -49,6 +51,8 @@ const env = parsedEnv.data;
 const isProduction = env.NODE_ENV === "production";
 const deploymentEnv = env.DEPLOYMENT_ENV ?? (isProduction ? "production" : env.NODE_ENV);
 const otpDeliveryMode = env.OTP_DELIVERY_MODE ?? (env.OTP_PROVIDER_URL ? "provider" : "mock");
+const mapsProvider = env.MAPS_PROVIDER ?? (env.GOOGLE_MAPS_API_KEY ? "google" : "browser");
+const paymentsProvider = env.PAYMENTS_PROVIDER ?? (env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET ? "razorpay" : "mock");
 
 function parseCorsOrigins(value?: string) {
   if (!value || value.trim() === "*") return ["*"];
@@ -78,7 +82,9 @@ export const config = {
   otpMaxAttempts: env.OTP_MAX_ATTEMPTS ?? 5,
   otpDeliveryMode,
   otpProviderUrl: env.OTP_PROVIDER_URL ?? "",
+  mapsProvider,
   googleMapsApiKey: env.GOOGLE_MAPS_API_KEY ?? "",
+  paymentsProvider,
   razorpayKeyId: env.RAZORPAY_KEY_ID ?? "",
   razorpayKeySecret: env.RAZORPAY_KEY_SECRET ?? "",
   otpProviderApiKey: env.OTP_PROVIDER_API_KEY ?? "",
@@ -103,11 +109,19 @@ export function readinessBlockers() {
     if (!config.otpProviderUrl) blockers.push("OTP_PROVIDER_URL is required.");
     if (!config.otpProviderApiKey) blockers.push("OTP_PROVIDER_API_KEY is required.");
   }
-  if (!config.googleMapsApiKey) blockers.push("GOOGLE_MAPS_API_KEY is required.");
+  if (config.mapsProvider === "browser" && config.deploymentEnv === "production") {
+    blockers.push("MAPS_PROVIDER=browser is allowed only for staging/test, not production launch.");
+  }
+  if (config.mapsProvider === "google" && !config.googleMapsApiKey) blockers.push("GOOGLE_MAPS_API_KEY is required.");
   if (!config.otpCodePepper || config.otpCodePepper.length < 32) blockers.push("OTP_CODE_PEPPER must be a strong secret with at least 32 characters.");
   if (!config.adminBootstrapToken || config.adminBootstrapToken.length < 32) {
     blockers.push("ADMIN_BOOTSTRAP_TOKEN must be a strong secret with at least 32 characters.");
   }
-  if (!config.razorpayKeyId || !config.razorpayKeySecret) blockers.push("Payment gateway keys are required.");
+  if (config.paymentsProvider === "mock" && config.deploymentEnv === "production") {
+    blockers.push("PAYMENTS_PROVIDER=mock is allowed only for staging/test, not production launch.");
+  }
+  if (config.paymentsProvider === "razorpay" && (!config.razorpayKeyId || !config.razorpayKeySecret)) {
+    blockers.push("Payment gateway keys are required.");
+  }
   return blockers;
 }

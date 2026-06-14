@@ -16,7 +16,8 @@
     "typecheck": "npm --workspaces --if-present run typecheck",
     "lint": "npm --workspaces --if-present run lint",
     "test": "npm --workspaces --if-present run test",
-    "test:e2e": "npm --workspace services/api run test:e2e"
+    "test:e2e": "npm --workspace services/api run test:e2e",
+    "secrets:free-staging": "node scripts/generate-free-staging-secrets.mjs"
   },
   "engines": {
     "node": ">=22"

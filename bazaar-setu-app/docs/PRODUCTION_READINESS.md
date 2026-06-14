@@ -40,6 +40,7 @@ Set these before a production deploy:
 - `JWT_SECRET` with at least 32 random characters
 - `DEMO_AUTH_ENABLED=false`
 - `CORS_ORIGINS` with exact customer, seller, and admin origins
+- `MAPS_PROVIDER=google`
 - `GOOGLE_MAPS_API_KEY`
 - `REDIS_URL`
 - `OTP_DELIVERY_MODE=provider`
@@ -47,6 +48,7 @@ Set these before a production deploy:
 - `OTP_PROVIDER_API_KEY`
 - `OTP_CODE_PEPPER` with at least 32 random characters
 - `ADMIN_BOOTSTRAP_TOKEN` with at least 32 random characters for initial admin bootstrap
+- `PAYMENTS_PROVIDER=razorpay`
 - `RAZORPAY_KEY_ID`
 - `RAZORPAY_KEY_SECRET`
 
@@ -106,8 +108,10 @@ Completed:
 - Documented required GitHub environment secrets, variables, Google Secret Manager names, and deploy service account permissions.
 - Added low-cost staging support for Cloud Run + Neon Postgres + Upstash Redis + Google Maps restricted key + mock/test OTP.
 - Added deploy guard that refuses Fynd/GoFynd/shared company GCP project IDs.
+- Added free-first staging mode for Render + Neon + Upstash with `OTP_DELIVERY_MODE=mock`, `MAPS_PROVIDER=browser`, and `PAYMENTS_PROVIDER=mock`.
 
 Known residual:
 
 - A Google Cloud account is not logged in locally, so real Cloud Run resources were not created from this machine.
 - A dedicated non-Fynd Bazaar Setu Google Cloud project, GitHub `staging` environment values, and Google Cloud Secret Manager entries must be created before running the deploy workflow.
+- Free Render/Neon/Upstash staging can be used before paid cloud resources, but it has cold starts and free-tier limits.

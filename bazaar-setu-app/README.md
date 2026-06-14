@@ -43,6 +43,14 @@ For staging/production-style databases, use immutable migrations instead of deve
 npm --workspace services/api run db:deploy
 ```
 
+For the current free staging path, use Render + Neon + Upstash with mock OTP:
+
+```bash
+npm run secrets:free-staging
+```
+
+Then follow `docs/FREE_STAGING_DEPLOY.md`.
+
 Default URLs:
 
 - API: `http://127.0.0.1:5010`

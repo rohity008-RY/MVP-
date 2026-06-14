@@ -21,6 +21,10 @@ healthRouter.get("/ready", (_req, res) => {
       },
       dependencies: {
         redisConfigured: Boolean(config.redisUrl),
+        mapsProvider: config.mapsProvider,
+        googleMapsConfigured: config.mapsProvider === "browser" || Boolean(config.googleMapsApiKey),
+        paymentsProvider: config.paymentsProvider,
+        paymentsConfigured: config.paymentsProvider === "mock" || Boolean(config.razorpayKeyId && config.razorpayKeySecret),
         otpDeliveryMode: config.otpDeliveryMode,
         otpProviderConfigured: config.otpDeliveryMode === "mock" || Boolean(config.otpProviderUrl && config.otpProviderApiKey),
         adminBootstrapConfigured: Boolean(config.adminBootstrapToken),
