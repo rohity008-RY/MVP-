@@ -55,7 +55,9 @@ customerRouter.post("/:customerId/addresses", asyncHandler(async (req, res) => {
   const count = await prisma.customerAddress.count({ where: { customerId } });
   if (count >= 5) throw new ApiError(400, "Maximum 5 addresses allowed.", "ADDRESS_LIMIT_REACHED");
 
-  const address = await prisma.customerAddress.create({ data: { ...input, customerId } });
+  const address = await prisma.customerAddress.create({
+    data: { ...input, customer: { connect: { id: customerId } } }
+  });
   return sendOk(res, address, 201);
 }));
 
@@ -105,7 +107,9 @@ customerRouter.post("/:customerId/seller-leads", asyncHandler(async (req, res) =
     phone: z.string(),
     notes: z.string().optional()
   }).parse(req.body);
-  const lead = await prisma.sellerLead.create({ data: { ...input, customerId } });
+  const lead = await prisma.sellerLead.create({
+    data: { ...input, customer: { connect: { id: customerId } } }
+  });
   return sendOk(res, lead, 201);
 }));
 
@@ -164,8 +168,8 @@ customerRouter.post("/:customerId/orders", asyncHandler(async (req, res) => {
 
     return tx.parentOrder.create({
       data: {
-        customerId,
-        addressId: input.addressId,
+        customer: { connect: { id: customerId } },
+        address: { connect: { id: input.addressId } },
         paymentMethod: input.paymentMethod,
         paymentState: input.paymentMethod === "cod" ? "COD" : "PENDING",
         total,
@@ -174,7 +178,7 @@ customerRouter.post("/:customerId/orders", asyncHandler(async (req, res) => {
           create: Array.from(bySeller.entries()).map(([sellerId, items]) => {
             const seller = items[0]?.sellerProduct.seller;
             return {
-              sellerId,
+              seller: { connect: { id: sellerId } },
               paymentState: input.paymentMethod === "cod" ? "COD" : "PENDING",
               slaDueAt: seller ? addSlaToDate(seller.defaultSlaValue, seller.defaultSlaUnit) : undefined,
               timeline: [{ status: "placed", at: new Date().toISOString() }],
@@ -182,7 +186,7 @@ customerRouter.post("/:customerId/orders", asyncHandler(async (req, res) => {
                 create: items.map(({ sellerProduct, qty }) => {
                   return {
                     productId: sellerProduct.productId,
-                    sellerProductId: sellerProduct.id,
+                    sellerProduct: { connect: { id: sellerProduct.id } },
                     name: sellerProduct.product.name,
                     hsn: sellerProduct.product.hsn,
                     unit: sellerProduct.product.unit,

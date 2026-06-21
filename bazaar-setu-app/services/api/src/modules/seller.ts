@@ -78,9 +78,16 @@ sellerRouter.post("/:sellerId/products", asyncHandler(async (req, res) => {
     throw new ApiError(400, "Product category is not enabled for this seller.", "SELLER_CATEGORY_NOT_ENABLED");
   }
 
+  const { productId, ...sellerProductInput } = input;
   const product = existing
-    ? await prisma.sellerProduct.update({ where: { id: existing.id }, data: input })
-    : await prisma.sellerProduct.create({ data: { ...input, sellerId } });
+    ? await prisma.sellerProduct.update({ where: { id: existing.id }, data: sellerProductInput })
+    : await prisma.sellerProduct.create({
+        data: {
+          ...sellerProductInput,
+          seller: { connect: { id: sellerId } },
+          product: { connect: { id: productId } }
+        }
+      });
   return sendOk(res, product, existing ? 200 : 201);
 }));
 
@@ -180,6 +187,11 @@ sellerRouter.post("/:sellerId/product-requests", asyncHandler(async (req, res) =
   const seller = await prisma.sellerProfile.findUnique({ where: { id: sellerId } });
   if (!seller) throw new ApiError(404, "Seller not found.", "SELLER_NOT_FOUND");
 
-  const request = await prisma.productApprovalRequest.create({ data: { ...input, sellerId } });
+  const request = await prisma.productApprovalRequest.create({
+    data: {
+      ...input,
+      seller: { connect: { id: sellerId } }
+    }
+  });
   return sendOk(res, request, 201);
 }));
