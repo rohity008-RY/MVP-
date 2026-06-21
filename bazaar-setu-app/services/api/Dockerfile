@@ -24,4 +24,4 @@ COPY --from=build /app/services/api/prisma ./services/api/prisma
 
 EXPOSE 5010
 
-CMD ["node", "services/api/dist/server.js"]
+CMD ["sh", "-c", "npm --workspace services/api run db:deploy && node services/api/dist/server.js"]

@@ -8,7 +8,6 @@ services:
     dockerContext: bazaar-setu-app
     healthCheckPath: /api/health
     autoDeployTrigger: checksPass
-    preDeployCommand: npm --workspace services/api run db:deploy
     envVars:
       - key: NODE_ENV
         value: production

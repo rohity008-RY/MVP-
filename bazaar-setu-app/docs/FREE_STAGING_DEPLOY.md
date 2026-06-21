@@ -69,7 +69,7 @@ Keep `ADMIN_BOOTSTRAP_TOKEN` private. Rotate/remove it after the first Admin use
    - `bazaar-setu-api-free`
    - `bazaar-setu-admin-free`
 
-The blueprint uses `plan: free`, Docker builds, Singapore region, and runs Prisma migrations before API start.
+The blueprint uses `plan: free`, Docker builds, Singapore region, and the API container runs Prisma migrations before starting the server.
 
 ## 5. Render API Environment Variables
 
