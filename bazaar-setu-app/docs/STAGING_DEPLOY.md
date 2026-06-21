@@ -8,7 +8,7 @@ For the current free/no-card-first path, use `docs/FREE_STAGING_DEPLOY.md` inste
 
 - Google Cloud Run in a dedicated Bazaar Setu Google Cloud project
 - Neon Postgres for staging database
-- Upstash Redis for rate limits and session/cache support
+- Upstash Redis for rate limits, using either TCP `REDIS_URL` or REST URL/token
 - Mock/test OTP mode for staging login
 - Google Maps staging/restricted key
 - Razorpay test-mode keys
@@ -42,7 +42,7 @@ Add these GitHub environment variables:
 Store runtime secrets in Google Secret Manager with these exact names:
 
 - `bazaar-setu-staging-database-url`
-- `bazaar-setu-staging-redis-url`
+- `bazaar-setu-staging-redis-url` or equivalent Upstash REST URL/token secrets
 - `bazaar-setu-staging-jwt-secret`
 - `bazaar-setu-staging-otp-code-pepper`
 - `bazaar-setu-staging-admin-bootstrap-token`

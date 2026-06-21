@@ -20,7 +20,8 @@ healthRouter.get("/ready", (_req, res) => {
         admin: "apps/admin-web"
       },
       dependencies: {
-        redisConfigured: Boolean(config.redisUrl),
+        redisConfigured: Boolean(config.redisUrl || (config.upstashRedisRestUrl && config.upstashRedisRestToken)),
+        redisMode: config.redisUrl ? "tcp" : config.upstashRedisRestUrl && config.upstashRedisRestToken ? "upstash-rest" : "memory",
         mapsProvider: config.mapsProvider,
         googleMapsConfigured: config.mapsProvider === "browser" || Boolean(config.googleMapsApiKey),
         paymentsProvider: config.paymentsProvider,

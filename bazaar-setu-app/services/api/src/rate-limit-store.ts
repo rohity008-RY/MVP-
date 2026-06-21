@@ -18,6 +18,11 @@ interface RateLimitResult {
 const memoryBuckets = new Map<string, RateLimitBucket>();
 let redis: Redis | undefined;
 
+type UpstashResponse<T> = {
+  result?: T;
+  error?: string;
+};
+
 function getRedis() {
   if (!config.redisUrl) return undefined;
   if (!redis) {
@@ -52,11 +57,42 @@ function memoryIncrement(key: string, max: number, windowMs: number): RateLimitR
   };
 }
 
+async function upstashRestCommand<T>(command: Array<string | number>): Promise<T> {
+  const response = await fetch(config.upstashRedisRestUrl, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${config.upstashRedisRestToken}`,
+      "content-type": "application/json"
+    },
+    body: JSON.stringify(command)
+  });
+
+  const payload = (await response.json().catch(() => ({}))) as UpstashResponse<T>;
+  if (!response.ok || payload.error) {
+    throw new Error(payload.error || `Upstash Redis REST command failed with ${response.status}`);
+  }
+  return payload.result as T;
+}
+
+async function upstashRestIncrement(key: string, max: number, windowMs: number): Promise<RateLimitResult> {
+  const count = Number(await upstashRestCommand<number>(["INCR", key]));
+  if (count === 1) await upstashRestCommand<number>(["PEXPIRE", key, windowMs]);
+  const ttl = Number(await upstashRestCommand<number>(["PTTL", key]));
+  return {
+    allowed: count <= max,
+    count,
+    remaining: Math.max(max - count, 0),
+    retryAfterMs: ttl > 0 ? ttl : windowMs,
+    store: "redis"
+  };
+}
+
 export async function incrementRateLimit(key: string, max: number, windowMs: number): Promise<RateLimitResult> {
   const redisClient = getRedis();
-  if (!redisClient) return memoryIncrement(key, max, windowMs);
+  if (!redisClient && !(config.upstashRedisRestUrl && config.upstashRedisRestToken)) return memoryIncrement(key, max, windowMs);
 
   try {
+    if (!redisClient) return await upstashRestIncrement(key, max, windowMs);
     if (redisClient.status === "wait") await redisClient.connect();
     const count = await redisClient.incr(key);
     if (count === 1) await redisClient.pexpire(key, windowMs);

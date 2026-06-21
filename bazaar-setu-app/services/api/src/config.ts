@@ -24,6 +24,8 @@ const envSchema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().int().positive().optional(),
   DEMO_AUTH_ENABLED: booleanEnv.optional(),
   REDIS_URL: z.string().optional(),
+  UPSTASH_REDIS_REST_URL: optionalUrlEnv,
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
   ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().optional(),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().optional(),
   OTP_TTL_SECONDS: z.coerce.number().int().positive().optional(),
@@ -76,6 +78,8 @@ export const config = {
   rateLimitMax: env.RATE_LIMIT_MAX ?? 60,
   demoAuthEnabled: env.DEMO_AUTH_ENABLED ?? !isProduction,
   redisUrl: env.REDIS_URL ?? "",
+  upstashRedisRestUrl: env.UPSTASH_REDIS_REST_URL ?? "",
+  upstashRedisRestToken: env.UPSTASH_REDIS_REST_TOKEN ?? "",
   accessTokenTtlSeconds: env.ACCESS_TOKEN_TTL_SECONDS ?? 15 * 60,
   refreshTokenTtlDays: env.REFRESH_TOKEN_TTL_DAYS ?? 30,
   otpTtlSeconds: env.OTP_TTL_SECONDS ?? 5 * 60,
@@ -97,7 +101,9 @@ export function readinessBlockers() {
   const blockers: string[] = [];
   if (!config.isProduction) return blockers;
   if (!config.databaseUrl) blockers.push("DATABASE_URL is required.");
-  if (!config.redisUrl) blockers.push("REDIS_URL is required for production rate limits.");
+  if (!config.redisUrl && !(config.upstashRedisRestUrl && config.upstashRedisRestToken)) {
+    blockers.push("REDIS_URL or UPSTASH_REDIS_REST_URL/UPSTASH_REDIS_REST_TOKEN is required for production rate limits.");
+  }
   if (config.demoAuthEnabled) blockers.push("DEMO_AUTH_ENABLED must be false in production.");
   if (!config.jwtSecret || config.jwtSecret.includes("change-me") || config.jwtSecret.length < 32) {
     blockers.push("JWT_SECRET must be a strong secret with at least 32 characters.");

@@ -42,7 +42,7 @@ Set these before a production deploy:
 - `CORS_ORIGINS` with exact customer, seller, and admin origins
 - `MAPS_PROVIDER=google`
 - `GOOGLE_MAPS_API_KEY`
-- `REDIS_URL`
+- `REDIS_URL` or `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`
 - `OTP_DELIVERY_MODE=provider`
 - `OTP_PROVIDER_URL`
 - `OTP_PROVIDER_API_KEY`
@@ -109,6 +109,7 @@ Completed:
 - Added low-cost staging support for Cloud Run + Neon Postgres + Upstash Redis + Google Maps restricted key + mock/test OTP.
 - Added deploy guard that refuses Fynd/GoFynd/shared company GCP project IDs.
 - Added free-first staging mode for Render + Neon + Upstash with `OTP_DELIVERY_MODE=mock`, `MAPS_PROVIDER=browser`, and `PAYMENTS_PROVIDER=mock`.
+- Added Upstash Redis REST support for free staging rate limits.
 
 Known residual:
 
