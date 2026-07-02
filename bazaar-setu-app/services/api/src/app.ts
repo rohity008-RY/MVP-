@@ -1,4 +1,4 @@
-import cors from "cors";
+import cors, { type CorsOptions } from "cors";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -12,6 +12,17 @@ import { customerRouter } from "./modules/customer.js";
 import { healthRouter } from "./modules/health.js";
 import { sellerRouter } from "./modules/seller.js";
 
+const corsOptions: CorsOptions = {
+  origin(origin, callback) {
+    if (!origin || config.corsOrigins.includes("*") || config.corsOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(null, false);
+  },
+  credentials: true
+};
+
 export function createApp() {
   const app = express();
 
@@ -19,15 +30,10 @@ export function createApp() {
   app.set("trust proxy", 1);
 
   app.use(helmet());
-  app.use(
-    cors({
-      origin: config.corsOrigins.includes("*") ? true : config.corsOrigins,
-      credentials: true
-    })
-  );
+  app.use(cors(corsOptions));
   app.use(express.json({ limit: config.requestBodyLimit }));
   app.use(requestContext);
-  app.use(morgan("dev"));
+  app.use(morgan(config.isProduction ? "combined" : "dev", { skip: (req) => req.path === "/api/health" }));
   app.use(authOptional);
 
   app.use("/api", healthRouter);

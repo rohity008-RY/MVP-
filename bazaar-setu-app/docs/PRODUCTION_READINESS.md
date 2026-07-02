@@ -29,6 +29,11 @@ Completed:
 - Added secure first-admin bootstrap using `ADMIN_BOOTSTRAP_TOKEN`.
 - Added authenticated admin-only staff provisioning for Admin and Support users.
 - Blocked public self-signup as Admin or Support; those roles must be provisioned first.
+- Added dependency-aware `/api/ready` checks for Postgres and Redis/Upstash.
+- Added stricter production environment blockers for exact CORS origins and API base URL.
+- Added OTP provider timeout handling.
+- Added graceful shutdown with Prisma/Redis disconnects.
+- Hardened the API Docker runtime by installing OpenSSL for Prisma and running as a non-root user.
 
 ## Required Production Environment
 
@@ -46,6 +51,7 @@ Set these before a production deploy:
 - `OTP_DELIVERY_MODE=provider`
 - `OTP_PROVIDER_URL`
 - `OTP_PROVIDER_API_KEY`
+- `OTP_PROVIDER_TIMEOUT_MS`
 - `OTP_CODE_PEPPER` with at least 32 random characters
 - `ADMIN_BOOTSTRAP_TOKEN` with at least 32 random characters for initial admin bootstrap
 - `PAYMENTS_PROVIDER=razorpay`

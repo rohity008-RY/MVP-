@@ -15,6 +15,14 @@ interface RateLimitResult {
   store: "redis" | "memory";
 }
 
+interface RateLimitStoreHealth {
+  ok: boolean;
+  store: "redis" | "memory";
+  mode: "redis-tcp" | "upstash-rest" | "memory";
+  latencyMs?: number;
+  error?: string;
+}
+
 const memoryBuckets = new Map<string, RateLimitBucket>();
 let redis: Redis | undefined;
 
@@ -109,6 +117,54 @@ export async function incrementRateLimit(key: string, max: number, windowMs: num
       throw new ApiError(503, "Rate limit store is unavailable.", "RATE_LIMIT_STORE_UNAVAILABLE");
     }
     return memoryIncrement(key, max, windowMs);
+  }
+}
+
+function sanitizeHealthError(error: unknown) {
+  return error instanceof Error ? error.message : "Rate limit store check failed.";
+}
+
+export async function pingRateLimitStore(): Promise<RateLimitStoreHealth> {
+  const startedAt = Date.now();
+  const redisClient = getRedis();
+
+  if (!redisClient && !(config.upstashRedisRestUrl && config.upstashRedisRestToken)) {
+    return {
+      ok: !config.isProduction,
+      store: "memory",
+      mode: "memory",
+      latencyMs: Date.now() - startedAt,
+      error: config.isProduction ? "Redis is not configured." : undefined
+    };
+  }
+
+  try {
+    if (!redisClient) {
+      await upstashRestCommand<string>(["PING"]);
+      return {
+        ok: true,
+        store: "redis",
+        mode: "upstash-rest",
+        latencyMs: Date.now() - startedAt
+      };
+    }
+
+    if (redisClient.status === "wait") await redisClient.connect();
+    await redisClient.ping();
+    return {
+      ok: true,
+      store: "redis",
+      mode: "redis-tcp",
+      latencyMs: Date.now() - startedAt
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      store: redisClient || config.upstashRedisRestUrl ? "redis" : "memory",
+      mode: redisClient ? "redis-tcp" : config.upstashRedisRestUrl ? "upstash-rest" : "memory",
+      latencyMs: Date.now() - startedAt,
+      error: sanitizeHealthError(error)
+    };
   }
 }
 

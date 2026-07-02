@@ -90,6 +90,7 @@ These are intentionally free/staging defaults:
 - `MAPS_PROVIDER=browser`
 - `PAYMENTS_PROVIDER=mock`
 - `DEMO_AUTH_ENABLED=false`
+- `OTP_PROVIDER_TIMEOUT_MS=5000`
 
 ## 6. Render Admin Environment Variables
 
@@ -111,12 +112,14 @@ curl https://bazaar-setu-admin-free.onrender.com/health
 
 `/api/ready` should show:
 
-- `redisConfigured: true`
-- `redisMode: "upstash-rest"`
-- `otpDeliveryMode: "mock"`
-- `mapsProvider: "browser"`
-- `paymentsProvider: "mock"`
-- `adminBootstrapConfigured: true`
+- `config.redisConfigured: true`
+- `config.redisMode: "upstash-rest"`
+- `dependencies.database.ok: true`
+- `dependencies.rateLimitStore.ok: true`
+- `config.otpDeliveryMode: "mock"`
+- `config.mapsProvider: "browser"`
+- `config.paymentsProvider: "mock"`
+- `config.adminBootstrapConfigured: true`
 
 ## 8. Bootstrap First Admin
 

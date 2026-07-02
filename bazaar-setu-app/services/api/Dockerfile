@@ -20,6 +20,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 RUN apk add --no-cache openssl
+RUN addgroup -S bazaarsetu && adduser -S bazaarsetu -G bazaarsetu
 
 COPY --from=build /app/package.json /app/package-lock.json ./
 COPY --from=build /app/node_modules ./node_modules
@@ -28,5 +29,7 @@ COPY --from=build /app/services/api/dist ./services/api/dist
 COPY --from=build /app/services/api/prisma ./services/api/prisma
 
 EXPOSE 5010
+
+USER bazaarsetu
 
 CMD ["sh", "-c", "npm --workspace services/api run db:deploy && node services/api/dist/server.js"]

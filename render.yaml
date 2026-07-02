@@ -23,6 +23,8 @@ services:
         value: "60000"
       - key: RATE_LIMIT_MAX
         value: "60"
+      - key: SHUTDOWN_GRACE_MS
+        value: "10000"
       - key: DEMO_AUTH_ENABLED
         value: "false"
       - key: ACCESS_TOKEN_TTL_SECONDS
@@ -37,6 +39,8 @@ services:
         value: mock
       - key: OTP_PROVIDER_SENDER
         value: Bazaar Setu
+      - key: OTP_PROVIDER_TIMEOUT_MS
+        value: "5000"
       - key: MAPS_PROVIDER
         value: browser
       - key: PAYMENTS_PROVIDER

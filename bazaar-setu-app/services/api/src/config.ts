@@ -22,6 +22,7 @@ const envSchema = z.object({
   REQUEST_BODY_LIMIT: z.string().optional(),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().optional(),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().optional(),
+  SHUTDOWN_GRACE_MS: z.coerce.number().int().positive().optional(),
   DEMO_AUTH_ENABLED: booleanEnv.optional(),
   REDIS_URL: z.string().optional(),
   UPSTASH_REDIS_REST_URL: optionalUrlEnv,
@@ -39,6 +40,7 @@ const envSchema = z.object({
   RAZORPAY_KEY_SECRET: z.string().optional(),
   OTP_PROVIDER_API_KEY: z.string().optional(),
   OTP_PROVIDER_SENDER: z.string().optional(),
+  OTP_PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().optional(),
   OTP_CODE_PEPPER: z.string().optional(),
   ADMIN_BOOTSTRAP_TOKEN: z.string().optional()
 });
@@ -55,6 +57,8 @@ const deploymentEnv = env.DEPLOYMENT_ENV ?? (isProduction ? "production" : env.N
 const otpDeliveryMode = env.OTP_DELIVERY_MODE ?? (env.OTP_PROVIDER_URL ? "provider" : "mock");
 const mapsProvider = env.MAPS_PROVIDER ?? (env.GOOGLE_MAPS_API_KEY ? "google" : "browser");
 const paymentsProvider = env.PAYMENTS_PROVIDER ?? (env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET ? "razorpay" : "mock");
+const apiBaseUrlConfigured = Boolean(env.API_BASE_URL);
+const corsOriginsConfigured = Boolean(env.CORS_ORIGINS?.trim());
 
 function parseCorsOrigins(value?: string) {
   if (!value || value.trim() === "*") return ["*"];
@@ -72,10 +76,13 @@ export const config = {
   databaseUrl: env.DATABASE_URL ?? "",
   jwtSecret: env.JWT_SECRET ?? "dev-secret-change-me",
   apiBaseUrl: env.API_BASE_URL ?? "http://127.0.0.1:5010",
+  apiBaseUrlConfigured,
   corsOrigins: parseCorsOrigins(env.CORS_ORIGINS),
+  corsOriginsConfigured,
   requestBodyLimit: env.REQUEST_BODY_LIMIT ?? "2mb",
   rateLimitWindowMs: env.RATE_LIMIT_WINDOW_MS ?? 60_000,
   rateLimitMax: env.RATE_LIMIT_MAX ?? 60,
+  shutdownGraceMs: env.SHUTDOWN_GRACE_MS ?? 10_000,
   demoAuthEnabled: env.DEMO_AUTH_ENABLED ?? !isProduction,
   redisUrl: env.REDIS_URL ?? "",
   upstashRedisRestUrl: env.UPSTASH_REDIS_REST_URL ?? "",
@@ -93,6 +100,7 @@ export const config = {
   razorpayKeySecret: env.RAZORPAY_KEY_SECRET ?? "",
   otpProviderApiKey: env.OTP_PROVIDER_API_KEY ?? "",
   otpProviderSender: env.OTP_PROVIDER_SENDER ?? "Bazaar Setu",
+  otpProviderTimeoutMs: env.OTP_PROVIDER_TIMEOUT_MS ?? 5_000,
   otpCodePepper: env.OTP_CODE_PEPPER ?? "",
   adminBootstrapToken: env.ADMIN_BOOTSTRAP_TOKEN ?? ""
 };
@@ -101,6 +109,13 @@ export function readinessBlockers() {
   const blockers: string[] = [];
   if (!config.isProduction) return blockers;
   if (!config.databaseUrl) blockers.push("DATABASE_URL is required.");
+  if (!config.apiBaseUrlConfigured) blockers.push("API_BASE_URL is required.");
+  if (config.deploymentEnv === "production" && !config.apiBaseUrl.startsWith("https://")) {
+    blockers.push("API_BASE_URL must be HTTPS for production launch.");
+  }
+  if (!config.corsOriginsConfigured || config.corsOrigins.includes("*")) {
+    blockers.push("CORS_ORIGINS must list exact customer, seller, and admin origins.");
+  }
   if (!config.redisUrl && !(config.upstashRedisRestUrl && config.upstashRedisRestToken)) {
     blockers.push("REDIS_URL or UPSTASH_REDIS_REST_URL/UPSTASH_REDIS_REST_TOKEN is required for production rate limits.");
   }

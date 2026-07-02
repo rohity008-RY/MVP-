@@ -40,6 +40,23 @@ export const notFoundHandler: RequestHandler = (req, _res, next) => {
   next(new ApiError(404, `Route not found: ${req.method} ${req.originalUrl}`, "ROUTE_NOT_FOUND"));
 };
 
+function logServerError(error: unknown, req: Request, code: string) {
+  const base = {
+    level: "error",
+    code,
+    requestId: req.requestId,
+    method: req.method,
+    path: req.originalUrl
+  };
+
+  if (config.isProduction) {
+    console.error(JSON.stringify(base));
+    return;
+  }
+
+  console.error({ ...base, error });
+}
+
 export function errorHandler(error: unknown, req: Request, res: Response, _next: NextFunction) {
   const requestId = req.requestId;
 
@@ -69,6 +86,7 @@ export function errorHandler(error: unknown, req: Request, res: Response, _next:
   }
 
   if (error instanceof ApiError) {
+    if (error.statusCode >= 500) logServerError(error, req, error.code);
     return res.status(error.statusCode).json({
       ok: false,
       error: {
@@ -81,9 +99,7 @@ export function errorHandler(error: unknown, req: Request, res: Response, _next:
   }
 
   const message = error instanceof Error ? error.message : "Unexpected server error.";
-  if (!config.isProduction) {
-    console.error(error);
-  }
+  logServerError(error, req, "INTERNAL_SERVER_ERROR");
 
   return res.status(500).json({
     ok: false,

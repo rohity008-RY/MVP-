@@ -21,20 +21,34 @@ export async function sendOtp(input: SendOtpInput): Promise<SendOtpResult> {
     throw new ApiError(501, "OTP provider is not configured.", "OTP_PROVIDER_NOT_CONFIGURED");
   }
 
-  const response = await fetch(config.otpProviderUrl, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${config.otpProviderApiKey}`
-    },
-    body: JSON.stringify({
-      phone: input.phone,
-      otp: input.code,
-      sender: config.otpProviderSender,
-      requestId: input.requestId,
-      message: `${input.code} is your Bazaar Setu login OTP. It expires in ${Math.floor(config.otpTtlSeconds / 60)} minutes.`
-    })
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), config.otpProviderTimeoutMs);
+  let response: Response;
+
+  try {
+    response = await fetch(config.otpProviderUrl, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${config.otpProviderApiKey}`
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        phone: input.phone,
+        otp: input.code,
+        sender: config.otpProviderSender,
+        requestId: input.requestId,
+        message: `${input.code} is your Bazaar Setu login OTP. It expires in ${Math.floor(config.otpTtlSeconds / 60)} minutes.`
+      })
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new ApiError(504, "OTP provider timed out.", "OTP_PROVIDER_TIMEOUT");
+    }
+    throw new ApiError(502, "OTP provider request failed.", "OTP_PROVIDER_SEND_FAILED");
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
     throw new ApiError(502, "OTP provider rejected the send request.", "OTP_PROVIDER_SEND_FAILED");
