@@ -10,6 +10,11 @@ const optionalUrlEnv = z.preprocess(
   z.string().url().optional()
 );
 
+const optionalCompactSecretEnv = z.preprocess(
+  (value) => (typeof value === "string" ? value.replace(/\s+/g, "") : value),
+  z.string().optional()
+);
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   DEPLOYMENT_ENV: z.enum(["local", "test", "staging", "production"]).optional(),
@@ -26,7 +31,7 @@ const envSchema = z.object({
   DEMO_AUTH_ENABLED: booleanEnv.optional(),
   REDIS_URL: z.string().optional(),
   UPSTASH_REDIS_REST_URL: optionalUrlEnv,
-  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  UPSTASH_REDIS_REST_TOKEN: optionalCompactSecretEnv,
   ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().optional(),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().optional(),
   OTP_TTL_SECONDS: z.coerce.number().int().positive().optional(),
