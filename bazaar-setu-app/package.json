@@ -19,6 +19,7 @@
     "test:e2e": "npm --workspace services/api run test:e2e",
     "secrets:free-staging": "node scripts/generate-free-staging-secrets.mjs",
     "env:render-free": "node scripts/render-free-env.mjs",
+    "check:free-staging": "node scripts/check-free-staging-inputs.mjs",
     "smoke:free-staging": "node scripts/staging-smoke.mjs"
   },
   "engines": {

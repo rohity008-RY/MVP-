@@ -65,6 +65,11 @@ cd /Users/rohitvirendrayadav/bazaarsetu-mvp/bazaar-setu-app
 NEON_DATABASE_URL="postgresql://..." \
 UPSTASH_REDIS_REST_URL="https://..." \
 UPSTASH_REDIS_REST_TOKEN="..." \
+npm run check:free-staging
+
+NEON_DATABASE_URL="postgresql://..." \
+UPSTASH_REDIS_REST_URL="https://..." \
+UPSTASH_REDIS_REST_TOKEN="..." \
 npm run env:render-free
 ```
 
