@@ -25,6 +25,7 @@ RUN addgroup -S bazaarsetu && adduser -S bazaarsetu -G bazaarsetu
 COPY --from=build /app/package.json /app/package-lock.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/services/api/package.json ./services/api/package.json
+COPY --from=build /app/services/api/scripts ./services/api/scripts
 COPY --from=build /app/services/api/dist ./services/api/dist
 COPY --from=build /app/services/api/prisma ./services/api/prisma
 
@@ -32,4 +33,4 @@ EXPOSE 5010
 
 USER bazaarsetu
 
-CMD ["sh", "-c", "npm --workspace services/api run db:deploy && node services/api/dist/server.js"]
+CMD ["sh", "-c", "node services/api/scripts/migrate-or-baseline.mjs && node services/api/dist/server.js"]
