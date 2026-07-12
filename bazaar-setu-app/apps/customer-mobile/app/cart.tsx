@@ -2,6 +2,7 @@ import { colors } from "@bazaarsetu/ui-tokens";
 import { Link } from "expo-router";
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { apiSend } from "../src/lib/api";
+import { useAuthStore } from "../src/store/auth";
 import { useCart } from "../src/store/cart";
 
 const DEMO_CUSTOMER_ID = "demo-customer";
@@ -9,10 +10,13 @@ const DEMO_ADDRESS_ID = "demo-home-address";
 
 export default function CartScreen() {
   const cart = useCart();
+  const customerId = useAuthStore((state) => state.customerId) ?? DEMO_CUSTOMER_ID;
   const total = cart.items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const deliveryFee = cart.items.length ? 29 : 0;
+  const grandTotal = total + deliveryFee;
 
   async function checkout() {
-    await apiSend(`/api/customer/${DEMO_CUSTOMER_ID}/orders`, "POST", {
+    await apiSend(`/api/customer/${customerId}/orders`, "POST", {
       addressId: DEMO_ADDRESS_ID,
       paymentMethod: "upi",
       items: cart.items.map((item) => ({ sellerProductId: item.sellerProductId, qty: item.qty }))
@@ -39,8 +43,12 @@ export default function CartScreen() {
           </View>
         ))}
         <View style={styles.summary}>
-          <Text style={styles.summaryText}>Total</Text>
-          <Text style={styles.summaryTotal}>Rs. {total}</Text>
+          <View>
+            <Text style={styles.summaryText}>Items Rs. {total}</Text>
+            <Text style={styles.summaryText}>Delivery Rs. {deliveryFee}</Text>
+            <Text style={styles.summaryHint}>UPI, cards, wallet, COD enabled by Admin</Text>
+          </View>
+          <Text style={styles.summaryTotal}>Rs. {grandTotal}</Text>
         </View>
         <Pressable disabled={!cart.items.length} onPress={checkout} style={[styles.checkout, !cart.items.length && styles.disabled]}>
           <Text style={styles.checkoutText}>Place order</Text>
@@ -63,6 +71,7 @@ const styles = StyleSheet.create({
   qtyText: { fontWeight: "900" },
   summary: { backgroundColor: colors.brandDark, borderRadius: 16, padding: 16, flexDirection: "row", justifyContent: "space-between" },
   summaryText: { color: "#fff", fontWeight: "900" },
+  summaryHint: { color: "#AAA", fontSize: 11, marginTop: 4 },
   summaryTotal: { color: colors.brand, fontWeight: "900", fontSize: 18 },
   checkout: { backgroundColor: colors.brand, borderRadius: 14, padding: 16, alignItems: "center" },
   disabled: { opacity: 0.45 },

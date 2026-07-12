@@ -1,12 +1,39 @@
 import { demoFallback } from "./demo-data";
+import { useAuthStore } from "../store/auth";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5010";
 
+export { API_BASE_URL };
+
+function authHeaders(): Record<string, string> {
+  const token = useAuthStore.getState().accessToken;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function refreshAccessToken() {
+  const refreshToken = useAuthStore.getState().refreshToken;
+  if (!refreshToken) return false;
+  const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refreshToken })
+  });
+  const json = await response.json();
+  if (!json.ok) return false;
+  useAuthStore.getState().setSession(json.data);
+  return true;
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
   try {
-    const response = await fetch(`${API_BASE_URL}${path}`);
+    let response = await fetch(`${API_BASE_URL}${path}`, { headers: authHeaders() });
     const json = await response.json();
     if (!json.ok) {
+      if (json.error?.code === "AUTH_REQUIRED" && await refreshAccessToken()) {
+        response = await fetch(`${API_BASE_URL}${path}`, { headers: authHeaders() });
+        const refreshedJson = await response.json();
+        if (refreshedJson.ok) return refreshedJson.data as T;
+      }
       const fallback = demoFallback(path);
       if (json.error?.code === "AUTH_REQUIRED" && fallback) return fallback as T;
       throw new Error(json.error?.message ?? "API error");
@@ -21,13 +48,22 @@ export async function apiGet<T>(path: string): Promise<T> {
 
 export async function apiSend<T>(path: string, method: string, body: unknown): Promise<T> {
   try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
+    let response = await fetch(`${API_BASE_URL}${path}`, {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(body)
     });
     const json = await response.json();
     if (!json.ok) {
+      if (json.error?.code === "AUTH_REQUIRED" && await refreshAccessToken()) {
+        response = await fetch(`${API_BASE_URL}${path}`, {
+          method,
+          headers: { "Content-Type": "application/json", ...authHeaders() },
+          body: JSON.stringify(body)
+        });
+        const refreshedJson = await response.json();
+        if (refreshedJson.ok) return refreshedJson.data as T;
+      }
       if (json.error?.code === "AUTH_REQUIRED" && path.endsWith("/orders")) {
         return { id: `demo-order-${Date.now()}`, status: "PLACED" } as T;
       }

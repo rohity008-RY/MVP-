@@ -63,6 +63,10 @@ a {
 }
 
 .demo-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 14px;
   border: 1px solid #fad8c9;
   border-radius: 12px;
@@ -71,6 +75,12 @@ a {
   background: #fff2eb;
   font-size: 13px;
   font-weight: 800;
+}
+
+.demo-banner.live {
+  border-color: #bdebd8;
+  color: #085041;
+  background: #e8f8f1;
 }
 
 .topbar {
@@ -344,6 +354,128 @@ small {
   margin-top: 14px;
 }
 
+.login-shell {
+  display: grid;
+  min-height: calc(100vh - 40px);
+  place-items: center;
+}
+
+.login-card {
+  display: grid;
+  gap: 14px;
+  width: min(460px, 100%);
+  border: 1px solid #e4e2dc;
+  border-radius: 18px;
+  padding: 24px;
+  background: #fff;
+  box-shadow: 0 24px 80px rgba(12, 12, 18, 0.12);
+}
+
+.form-label,
+.settings-form {
+  display: grid;
+  gap: 8px;
+  color: #4f4f63;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.settings-form {
+  border: 1px solid #eceae6;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fbfaf7;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid #dedbd4;
+  border-radius: 10px;
+  padding: 10px 11px;
+  color: #0c0c12;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.input.compact {
+  min-width: 120px;
+  padding: 7px 9px;
+  font-size: 12px;
+}
+
+.button,
+.link-button {
+  border: 0;
+  border-radius: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+  background: #eceae6;
+  color: #0c0c12;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.button.primary {
+  color: #fff;
+  background: #ff4b2b;
+}
+
+.button.ghost {
+  color: #ff4b2b;
+  background: #fff2eb;
+}
+
+.button.danger {
+  color: #b42222;
+  background: #fcebeb;
+}
+
+.link-button {
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  text-decoration: underline;
+}
+
+.inline-form,
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.actions-cell {
+  min-width: 220px;
+}
+
+.actions-cell > * + * {
+  margin-top: 8px;
+}
+
+.ops-row.vertical {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.compose-form {
+  display: grid;
+  grid-template-columns: 150px 130px minmax(160px, 1fr) minmax(220px, 1.5fr) auto;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #eceae6;
+  background: #fbfaf7;
+}
+
+.helper {
+  color: #6f6f84;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 @media (max-width: 900px) {
   .shell {
     grid-template-columns: 1fr;
@@ -359,6 +491,10 @@ small {
   }
 
   .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .compose-form {
     grid-template-columns: 1fr;
   }
 }

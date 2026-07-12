@@ -1,4 +1,5 @@
 import { apiGet } from "../../lib/api";
+import { publishNotification, updateRewardRule, updateSellerLeadStatus } from "../actions";
 
 type Notification = {
   id: string;
@@ -70,6 +71,20 @@ export default async function SettingsPage() {
               <b>{settings.rewardConfig.enabled ? settings.rewardConfig.pointsPerHundred : 0} point per Rs 100</b>
               <small>Reward rules are available through the backend settings API.</small>
             </div>
+            <form action={updateRewardRule} className="settings-form">
+              <label className="form-label">
+                Reward status
+                <select className="input" name="enabled" defaultValue={settings.rewardConfig.enabled ? "true" : "false"}>
+                  <option value="true">Enabled</option>
+                  <option value="false">Disabled</option>
+                </select>
+              </label>
+              <label className="form-label">
+                Points per Rs 100
+                <input className="input" name="pointsPerHundred" type="number" min="0" defaultValue={settings.rewardConfig.pointsPerHundred} />
+              </label>
+              <button className="button primary" type="submit">Save rewards</button>
+            </form>
             <div className="metric-card">
               <span className="muted">Become Seller Leads</span>
               <b>{leads.length} open lead{leads.length === 1 ? "" : "s"}</b>
@@ -91,6 +106,7 @@ export default async function SettingsPage() {
               <th>Phone</th>
               <th>Notes</th>
               <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -103,6 +119,19 @@ export default async function SettingsPage() {
                 <td>{lead.phone}</td>
                 <td>{lead.notes ?? "No notes"}</td>
                 <td><span className="pill warn">{lead.status}</span></td>
+                <td className="actions-cell">
+                  <form action={updateSellerLeadStatus} className="inline-form">
+                    <input type="hidden" name="leadId" value={lead.id} />
+                    <select className="input compact" name="status" defaultValue={lead.status}>
+                      <option value="NEW">New</option>
+                      <option value="CONTACTED">Contacted</option>
+                      <option value="ONBOARDED">Onboarded</option>
+                      <option value="REJECTED">Rejected</option>
+                    </select>
+                    <input className="input compact" name="notes" placeholder="Support note" />
+                    <button className="button ghost" type="submit">Update</button>
+                  </form>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -114,6 +143,24 @@ export default async function SettingsPage() {
           <span>Published Notifications</span>
           <span className="muted">Admin-created messages shown in customer and seller apps</span>
         </div>
+        <form action={publishNotification} className="compose-form">
+          <select className="input" name="audience" defaultValue="all">
+            <option value="all">All users</option>
+            <option value="customer">Customers</option>
+            <option value="seller">Sellers</option>
+            <option value="admin">Admin/Ops</option>
+          </select>
+          <select className="input" name="type" defaultValue="offer">
+            <option value="offer">Offer</option>
+            <option value="order">Order</option>
+            <option value="system">System</option>
+            <option value="approval">Approval</option>
+            <option value="refund">Refund</option>
+          </select>
+          <input className="input" name="title" placeholder="Notification title" required />
+          <input className="input" name="body" placeholder="Message body" required />
+          <button className="button primary" type="submit">Publish</button>
+        </form>
         <table className="table">
           <thead>
             <tr>

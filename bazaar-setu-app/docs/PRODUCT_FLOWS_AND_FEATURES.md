@@ -14,7 +14,7 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
 1. Open app
    - Customer sees Bazaar Setu branded home.
    - App loads dynamic categories and live products from active sellers.
-   - Demo fallback data is available for app review before full login UI is connected.
+   - Demo fallback data is available for app review when the API is unavailable or the user is not logged in.
 
 2. Language and location
    - Customer selects preferred language.
@@ -167,7 +167,7 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
    - Admin/support user is provisioned securely.
    - Staff logs in with OTP.
    - Backend protects admin/ops routes by role.
-   - Current staging keeps backend protected and shows demo preview in unauthenticated admin web until full login UI is connected.
+   - Current staging keeps backend protected, provides OTP login for Admin/Support, and shows demo preview data before login.
 
 2. Dashboard
    - Ops sees total orders, today orders, revenue, live sellers, disabled sellers, active sub-orders, breached SLA, due-soon SLA, pending refunds, product requests, pending docs, and seller leads.
@@ -249,15 +249,15 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
 - Notifications
 - Payment/reward settings
 - Protected `/api/ops/*` backend
-- Admin web demo preview before login UI
+- Admin web OTP login with protected backend actions
 - Customer and seller APK demo fallback data
 
 ## Next Production Priorities
 
-1. Build real customer, seller, and admin login UI on top of existing OTP/session APIs.
-2. Replace mobile demo constants with authenticated profile lookup.
-3. Add real Google Maps address capture and geocoding.
-4. Add payment gateway integration, refund webhooks, COD reconciliation, and seller settlements.
+1. Replace in-memory mobile sessions with secure device storage and biometric/PIN unlock.
+2. Add real Google Maps address capture and geocoding.
+3. Add payment gateway integration, refund webhooks, COD reconciliation, and seller settlements.
+4. Add production notification delivery through FCM/APNs and WhatsApp/SMS providers.
 5. Add file/object storage for product photos, invoices, labels, and documents.
 6. Add printer-ready invoice/label rendering.
 7. Add push notifications through FCM/APNs.

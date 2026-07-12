@@ -1,4 +1,5 @@
 import { demoFallback } from "./demo-data";
+import { getAdminAccessToken } from "./session";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5010";
 
@@ -15,7 +16,11 @@ function errorMessage(error: unknown) {
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store" });
+  const token = await getAdminAccessToken();
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    cache: "no-store",
+    headers: token ? { authorization: `Bearer ${token}` } : undefined
+  });
   const json = await response.json();
   if (!json.ok) {
     const code = json.error?.code;
@@ -28,9 +33,13 @@ export async function apiGet<T>(path: string): Promise<T> {
 }
 
 export async function apiSend<T>(path: string, method: string, body: unknown): Promise<T> {
+  const token = await getAdminAccessToken();
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { authorization: `Bearer ${token}` } : {})
+    },
     body: JSON.stringify(body)
   });
   const json = await response.json();

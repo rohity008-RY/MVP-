@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import { FlatList, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { apiGet } from "../src/lib/api";
+import { useAuthStore } from "../src/store/auth";
 
 const DEMO_SELLER_ID = "demo-seller-fresh";
 
@@ -16,9 +17,10 @@ type SellerProduct = {
 };
 
 export default function SellerProducts() {
+  const sellerId = useAuthStore((state) => state.sellerId) ?? DEMO_SELLER_ID;
   const { data } = useQuery({
-    queryKey: ["seller-products"],
-    queryFn: () => apiGet<SellerProduct[]>(`/api/seller/${DEMO_SELLER_ID}/products`)
+    queryKey: ["seller-products", sellerId],
+    queryFn: () => apiGet<SellerProduct[]>(`/api/seller/${sellerId}/products`)
   });
   const products = data ?? [];
   const liveProducts = products.filter((product) => product.active);
@@ -39,6 +41,7 @@ export default function SellerProducts() {
               <MiniStat label="Catalogue" value="60+" />
             </View>
             <Section title="Catalogue flow" copy="Seller selects products from master catalogue, then only updates price, qty, tags, and active state." />
+            <Section title="Add new product request" copy="Upload/capture product photo, AI extracts basic details, then Admin approves before it goes live." />
           </>
         }
         renderItem={({ item }) => (

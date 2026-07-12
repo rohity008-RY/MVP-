@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { hasAdminSession } from "../lib/session";
 import "./globals.css";
 
 export const metadata = {
@@ -8,6 +9,7 @@ export const metadata = {
 
 const nav = [
   ["/", "Dashboard"],
+  ["/login", "Login"],
   ["/ops", "Ops Backend"],
   ["/orders", "Orders"],
   ["/sellers", "Sellers"],
@@ -15,7 +17,8 @@ const nav = [
   ["/settings", "Settings"]
 ];
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const loggedIn = await hasAdminSession();
   return (
     <html lang="en">
       <body>
@@ -25,8 +28,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             {nav.map(([href, label]) => <a href={href} className="nav-link" key={href}>{label}</a>)}
           </aside>
           <main className="main">
-            <div className="demo-banner">
-              Demo preview data is visible until admin/support login is connected. Backend ops APIs remain protected.
+            <div className={loggedIn ? "demo-banner live" : "demo-banner"}>
+              {loggedIn
+                ? "Logged in. Admin/Ops pages are using protected backend data and actions."
+                : "Demo preview data is visible until admin/support login is completed. Backend ops APIs remain protected."}
+              {loggedIn ? (
+                <form action="/api/logout" method="post">
+                  <button className="link-button">Logout</button>
+                </form>
+              ) : null}
             </div>
             {children}
           </main>

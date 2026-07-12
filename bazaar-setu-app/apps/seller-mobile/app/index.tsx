@@ -1,14 +1,18 @@
 import { colors } from "@bazaarsetu/ui-tokens";
 import { Link } from "expo-router";
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { useAuthStore } from "../src/store/auth";
 
 export default function SellerDashboard() {
+  const user = useAuthStore((state) => state.user);
+  const loggedIn = useAuthStore((state) => Boolean(state.accessToken));
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.header}>
         <Text style={styles.eyebrow}>Nirmala's Kitchen</Text>
-        <Text style={styles.title}>नमस्ते, Nirmala!</Text>
+        <Text style={styles.title}>नमस्ते, {user?.name?.split(" ")[0] ?? "Nirmala"}!</Text>
         <Text style={styles.meta}>Store Open · SLA 45 min · Auto invoice enabled</Text>
+        {!loggedIn ? <Link href="/login" asChild><Pressable style={styles.loginButton}><Text style={styles.loginText}>Login with OTP</Text></Pressable></Link> : null}
         <View style={styles.statRow}>
           <View style={styles.stat}><Text style={styles.statValue}>Rs. 1,840</Text><Text style={styles.statLabel}>Sales</Text></View>
           <View style={styles.stat}><Text style={styles.statValue}>3</Text><Text style={styles.statLabel}>Pending</Text></View>
@@ -44,6 +48,8 @@ const styles = StyleSheet.create({
   title: { color: "#fff", fontSize: 26, fontWeight: "900" },
   meta: { color: "#AAA" },
   statRow: { flexDirection: "row", gap: 8 },
+  loginButton: { alignSelf: "flex-start", backgroundColor: colors.brand, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12 },
+  loginText: { color: "#fff", fontWeight: "900" },
   stat: { flex: 1, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 12, padding: 12 },
   statValue: { color: "#fff", fontWeight: "900" },
   statLabel: { color: "#999", fontSize: 11 },

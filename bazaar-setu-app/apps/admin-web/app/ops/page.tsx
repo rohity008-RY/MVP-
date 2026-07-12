@@ -1,4 +1,11 @@
 import { apiGet } from "../../lib/api";
+import {
+  addOpsNote,
+  approveProductRequest,
+  markRefunded,
+  rejectProductRequest,
+  toggleSellerLive
+} from "../actions";
 
 type SlaOrder = {
   id: string;
@@ -87,14 +94,21 @@ export default async function OpsPage() {
           </div>
           <div className="stack">
             {slaOrders.slice(0, 8).map((order) => (
-              <div className="ops-row" key={order.id}>
+              <div className="ops-row vertical" key={order.id}>
                 <div>
                   <b>{order.seller.shopName}</b>
                   <span>{order.parentOrder.customer.user.name} · {order.items.map((item) => `${item.name} x${item.qty}`).join(", ")}</span>
                 </div>
-                <span className={statusClass(order.status, order.slaBreached)}>
-                  {slaLabel(order)}
-                </span>
+                <div className="row-actions">
+                  <span className={statusClass(order.status, order.slaBreached)}>
+                    {slaLabel(order)}
+                  </span>
+                  <form action={addOpsNote} className="inline-form">
+                    <input type="hidden" name="subOrderId" value={order.id} />
+                    <input className="input compact" name="note" placeholder="Ops note" />
+                    <button className="button ghost" type="submit">Add note</button>
+                  </form>
+                </div>
               </div>
             ))}
           </div>
@@ -107,12 +121,22 @@ export default async function OpsPage() {
           </div>
           <div className="stack">
             {refunds.length ? refunds.slice(0, 8).map((refund) => (
-              <div className="ops-row" key={refund.id}>
+              <div className="ops-row vertical" key={refund.id}>
                 <div>
                   <b>{refund.parentOrder.customer.user.name}</b>
                   <span>{refund.seller.shopName} · {refund.rejectReason ?? "No rejection note"}</span>
                 </div>
-                <span className={statusClass(refund.paymentState)}>{refund.paymentState.replaceAll("_", " ")}</span>
+                <div className="row-actions">
+                  <span className={statusClass(refund.paymentState)}>{refund.paymentState.replaceAll("_", " ")}</span>
+                  {refund.paymentState === "REFUND_PENDING" ? (
+                    <form action={markRefunded} className="inline-form">
+                      <input type="hidden" name="subOrderId" value={refund.id} />
+                      <input className="input compact" name="refundAmount" inputMode="numeric" placeholder={String(refund.refundAmount ?? 0)} />
+                      <input className="input compact" name="note" placeholder="Refund note" />
+                      <button className="button primary" type="submit">Mark refunded</button>
+                    </form>
+                  ) : null}
+                </div>
               </div>
             )) : <div className="empty">No refund queue right now.</div>}
           </div>
@@ -132,6 +156,7 @@ export default async function OpsPage() {
               <th>Docs</th>
               <th>Locations</th>
               <th>Products</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -148,6 +173,16 @@ export default async function OpsPage() {
                 </td>
                 <td>{seller.locations.map((location) => `${location.label}, ${location.city}`).join(" · ") || "No location"}</td>
                 <td><b>{seller.liveProducts}</b> live</td>
+                <td className="actions-cell">
+                  <form action={toggleSellerLive} className="inline-form">
+                    <input type="hidden" name="sellerId" value={seller.id} />
+                    <input type="hidden" name="storeLive" value={seller.storeLive ? "false" : "true"} />
+                    <input className="input compact" name="reason" placeholder={seller.storeLive ? "Disable reason" : "Enable note"} />
+                    <button className={seller.storeLive ? "button danger" : "button primary"} type="submit">
+                      {seller.storeLive ? "Disable" : "Enable"}
+                    </button>
+                  </form>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -167,6 +202,7 @@ export default async function OpsPage() {
               <th>Category</th>
               <th>Status</th>
               <th>Reason</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -180,6 +216,23 @@ export default async function OpsPage() {
                 <td>{request.categoryId}</td>
                 <td><span className={statusClass(request.status)}>{request.status}</span></td>
                 <td>{request.reason ?? "No reason"}</td>
+                <td className="actions-cell">
+                  {request.status === "PENDING" ? (
+                    <>
+                      <form action={approveProductRequest} className="inline-form">
+                        <input type="hidden" name="requestId" value={request.id} />
+                        <button className="button primary" type="submit">Approve</button>
+                      </form>
+                      <form action={rejectProductRequest} className="inline-form">
+                        <input type="hidden" name="requestId" value={request.id} />
+                        <input className="input compact" name="reason" placeholder="Reject reason" required />
+                        <button className="button danger" type="submit">Reject</button>
+                      </form>
+                    </>
+                  ) : (
+                    <span className="muted">Reviewed</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

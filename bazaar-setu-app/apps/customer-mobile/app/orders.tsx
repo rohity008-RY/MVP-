@@ -4,11 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import { FlatList, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { apiGet } from "../src/lib/api";
+import { useAuthStore } from "../src/store/auth";
 
 const DEMO_CUSTOMER_ID = "demo-customer";
 
 export default function OrdersScreen() {
-  const { data } = useQuery({ queryKey: ["orders"], queryFn: () => apiGet<ParentOrder[]>(`/api/customer/${DEMO_CUSTOMER_ID}/orders`) });
+  const customerId = useAuthStore((state) => state.customerId) ?? DEMO_CUSTOMER_ID;
+  const { data } = useQuery({ queryKey: ["orders", customerId], queryFn: () => apiGet<ParentOrder[]>(`/api/customer/${customerId}/orders`) });
 
   return (
     <SafeAreaView style={styles.screen}>

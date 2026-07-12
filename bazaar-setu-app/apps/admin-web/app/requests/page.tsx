@@ -1,4 +1,5 @@
 import { apiGet } from "../../lib/api";
+import { approveProductRequest, rejectProductRequest } from "../actions";
 
 type ProductRequest = {
   id: string;
@@ -39,6 +40,7 @@ export default async function ProductRequestsPage() {
               <th>Category</th>
               <th>Compliance</th>
               <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -60,6 +62,23 @@ export default async function ProductRequestsPage() {
                     {request.status}
                   </span>
                   {request.reason ? <div className="muted">Reason: {request.reason}</div> : null}
+                </td>
+                <td className="actions-cell">
+                  {request.status === "PENDING" ? (
+                    <>
+                      <form action={approveProductRequest} className="inline-form">
+                        <input type="hidden" name="requestId" value={request.id} />
+                        <button className="button primary" type="submit">Approve</button>
+                      </form>
+                      <form action={rejectProductRequest} className="inline-form">
+                        <input type="hidden" name="requestId" value={request.id} />
+                        <input className="input compact" name="reason" placeholder="Reject reason" required />
+                        <button className="button danger" type="submit">Reject</button>
+                      </form>
+                    </>
+                  ) : (
+                    <span className="muted">Reviewed</span>
+                  )}
                 </td>
               </tr>
             ))}
