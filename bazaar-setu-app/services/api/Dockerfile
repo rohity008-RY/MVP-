@@ -33,4 +33,4 @@ EXPOSE 5010
 
 USER bazaarsetu
 
-CMD ["sh", "-c", "node services/api/scripts/migrate-or-baseline.mjs && node services/api/dist/server.js"]
+CMD ["sh", "-c", "node services/api/scripts/migrate-or-baseline.mjs && . /tmp/bazaar-setu-api.env && node services/api/dist/server.js"]
