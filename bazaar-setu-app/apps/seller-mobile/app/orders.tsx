@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
-import { apiGet, apiSend } from "../src/lib/api";
+import { apiDocument, apiGet, apiSend } from "../src/lib/api";
 import { useAuthStore } from "../src/store/auth";
 
 const DEMO_SELLER_ID = "demo-seller-fresh";
@@ -32,7 +32,7 @@ export default function SellerOrders() {
             <Text style={styles.name}>{order.id}</Text>
             <Text style={styles.meta}>{order.status} · {order.paymentState} · Invoice {order.invoiceNumber ?? "pending"}</Text>
             {order.items.map((item) => <Text key={item.productId} style={styles.meta}>{item.name} x {item.qty}</Text>)}
-            <OrderActions order={order} onAction={action} />
+            <OrderActions order={order} sellerId={sellerId} onAction={action} />
           </View>
         ))}
       </View>
@@ -40,9 +40,20 @@ export default function SellerOrders() {
   );
 }
 
-function OrderActions({ order, onAction }: { order: MobileSellerSubOrder; onAction: (id: string, action: string, payload?: Record<string, string>) => Promise<void> }) {
+function OrderActions({ order, sellerId, onAction }: { order: MobileSellerSubOrder; sellerId: string; onAction: (id: string, action: string, payload?: Record<string, string>) => Promise<void> }) {
   const [rejectReason, setRejectReason] = useState("Out of stock");
   const [invoiceNumber, setInvoiceNumber] = useState(`MAN-${Date.now().toString(36).toUpperCase().slice(-6)}`);
+  const [format, setFormat] = useState<"a4" | "a5" | "4x6" | "80mm">("a4");
+  const [printMessage, setPrintMessage] = useState("");
+
+  async function generateDocument(type: "invoice" | "label") {
+    try {
+      const result = await apiDocument(`/api/seller/${sellerId}/orders/${order.id}/document?type=${type}&format=${format}`);
+      setPrintMessage(`${type} PDF ready · ${format.toUpperCase()} · ${Math.max(1, Math.round(result.bytes / 1024))} KB`);
+    } catch (error) {
+      setPrintMessage(error instanceof Error ? error.message : "Document generation failed.");
+    }
+  }
 
   if (order.status === "PLACED") {
     return (
@@ -67,10 +78,20 @@ function OrderActions({ order, onAction }: { order: MobileSellerSubOrder; onActi
 
   if (order.status === "BAG_PACKED") {
     return (
-      <View style={styles.row}>
-        <Pressable style={styles.print}><Text style={styles.printText}>Print invoice</Text></Pressable>
-        <Pressable style={styles.print}><Text style={styles.printText}>Print label</Text></Pressable>
-        <Pressable style={styles.primary} onPress={() => onAction(order.id, "handover")}><Text style={styles.primaryText}>Handover</Text></Pressable>
+      <View style={styles.actionStack}>
+        <View style={styles.formatRow}>
+          {(["a4", "a5", "4x6", "80mm"] as const).map((value) => (
+            <Pressable key={value} onPress={() => setFormat(value)} style={[styles.formatChip, format === value && styles.formatChipActive]}>
+              <Text style={format === value ? styles.formatTextActive : styles.formatText}>{value.toUpperCase()}</Text>
+            </Pressable>
+          ))}
+        </View>
+        <View style={styles.row}>
+          <Pressable style={styles.print} onPress={() => generateDocument("invoice")}><Text style={styles.printText}>Print invoice</Text></Pressable>
+          <Pressable style={styles.print} onPress={() => generateDocument("label")}><Text style={styles.printText}>Print label</Text></Pressable>
+          <Pressable style={styles.primary} onPress={() => onAction(order.id, "handover")}><Text style={styles.primaryText}>Handover</Text></Pressable>
+        </View>
+        {printMessage ? <Text style={styles.meta}>{printMessage}</Text> : null}
       </View>
     );
   }
@@ -103,5 +124,10 @@ const styles = StyleSheet.create({
   danger: { flex: 1, backgroundColor: "#FCEBEB", borderRadius: 12, padding: 12, alignItems: "center" },
   dangerText: { color: colors.red, fontWeight: "900" },
   print: { flex: 1, backgroundColor: "#F1EFEA", borderRadius: 12, padding: 12, alignItems: "center" },
-  printText: { color: colors.brandDark, fontWeight: "900" }
+  printText: { color: colors.brandDark, fontWeight: "900" },
+  formatRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  formatChip: { borderWidth: 1, borderColor: "#E6E2D8", borderRadius: 10, paddingVertical: 7, paddingHorizontal: 9 },
+  formatChipActive: { borderColor: colors.brand, backgroundColor: "#FFF2EB" },
+  formatText: { color: colors.textMuted, fontWeight: "800", fontSize: 11 },
+  formatTextActive: { color: colors.brandDark, fontWeight: "900", fontSize: 11 }
 });

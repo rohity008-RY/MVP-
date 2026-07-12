@@ -1,18 +1,23 @@
 import { colors } from "@bazaarsetu/ui-tokens";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { apiSend } from "../src/lib/api";
+import { apiGet, apiSend, logoutSession } from "../src/lib/api";
 import { useAuthStore } from "../src/store/auth";
 
 const DEMO_CUSTOMER_ID = "demo-customer";
 
 type Address = {
   id: string;
-  type: "Home" | "Office" | "Other";
+  type: "home" | "office" | "other";
   label: string;
-  line: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  pincode: string;
   lat: number;
   lng: number;
 };
@@ -20,32 +25,54 @@ type Address = {
 export default function ProfileScreen() {
   const user = useAuthStore((state) => state.user);
   const customerId = useAuthStore((state) => state.customerId) ?? DEMO_CUSTOMER_ID;
-  const logout = useAuthStore((state) => state.logout);
-  const [addresses, setAddresses] = useState<Address[]>([
-    { id: "home", type: "Home", label: "Home", line: "Andheri East, Mumbai 400069", lat: 19.1136, lng: 72.8697 },
-    { id: "office", type: "Office", label: "Office", line: "BKC, Mumbai 400051", lat: 19.0676, lng: 72.8678 }
-  ]);
+  const queryClient = useQueryClient();
+  const addressQueryKey = ["customer-addresses", customerId] as const;
+  const { data: addresses = [], refetch: refetchAddresses } = useQuery({
+    queryKey: addressQueryKey,
+    queryFn: () => apiGet<Address[]>(`/api/customer/${customerId}/addresses`)
+  });
   const [draftLine, setDraftLine] = useState("");
+  const [draftLabel, setDraftLabel] = useState("Other");
   const [leadMessage, setLeadMessage] = useState("Become-a-seller lead goes to Admin/Support.");
+  const [addressMessage, setAddressMessage] = useState("Address uses Google Maps lat/lng in production; demo saves Mumbai coordinates.");
 
-  function addAddress() {
+  async function addAddress() {
     if (!draftLine.trim() || addresses.length >= 5) return;
-    setAddresses((current) => [
-      ...current,
-      {
-        id: `addr-${Date.now()}`,
-        type: "Other",
-        label: "Other",
-        line: draftLine.trim(),
-        lat: 19.076,
-        lng: 72.8777
-      }
-    ]);
+    const address = await apiSend<Address>(`/api/customer/${customerId}/addresses`, "POST", {
+      type: "other",
+      label: draftLabel.trim() || "Other",
+      line1: draftLine.trim(),
+      city: "Mumbai",
+      state: "Maharashtra",
+      pincode: "400001",
+      lat: 19.076,
+      lng: 72.8777
+    });
+    queryClient.setQueryData<Address[]>(addressQueryKey, (current = []) => [...current, address]);
     setDraftLine("");
+    setAddressMessage("Address saved. You can edit or remove it anytime.");
+    if (user) void refetchAddresses();
   }
 
-  function editAddress(id: string) {
-    setAddresses((current) => current.map((address) => address.id === id ? { ...address, line: `${address.line} · Updated` } : address));
+  async function editAddress(address: Address) {
+    const nextLine = `${address.line1} · Updated`;
+    await apiSend(`/api/customer/${customerId}/addresses/${address.id}`, "PUT", {
+      line1: nextLine,
+      lat: Number(address.lat),
+      lng: Number(address.lng)
+    });
+    queryClient.setQueryData<Address[]>(addressQueryKey, (current = []) =>
+      current.map((item) => item.id === address.id ? { ...item, line1: nextLine } : item)
+    );
+    setAddressMessage(`${address.label} updated.`);
+    if (user) void refetchAddresses();
+  }
+
+  async function removeAddress(id: string) {
+    await apiSend(`/api/customer/${customerId}/addresses/${id}`, "DELETE", {});
+    queryClient.setQueryData<Address[]>(addressQueryKey, (current = []) => current.filter((address) => address.id !== id));
+    setAddressMessage("Address removed.");
+    if (user) void refetchAddresses();
   }
 
   async function submitSellerLead() {
@@ -71,14 +98,17 @@ export default function ProfileScreen() {
             {addresses.map((address) => (
               <View style={styles.address} key={address.id}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.name}>{address.type} · {address.label}</Text>
-                  <Text style={styles.meta}>{address.line}</Text>
+                  <Text style={styles.name}>{address.type.toUpperCase()} · {address.label}</Text>
+                  <Text style={styles.meta}>{address.line1}</Text>
+                  <Text style={styles.meta}>{address.city}, {address.pincode}</Text>
                   <Text style={styles.meta}>{address.lat}, {address.lng}</Text>
                 </View>
-                <Pressable onPress={() => editAddress(address.id)} style={styles.smallButton}><Text style={styles.smallButtonText}>Edit</Text></Pressable>
-                <Pressable onPress={() => setAddresses((current) => current.filter((item) => item.id !== address.id))} style={styles.smallDanger}><Text style={styles.dangerText}>Remove</Text></Pressable>
+                <Pressable onPress={() => editAddress(address)} style={styles.smallButton}><Text style={styles.smallButtonText}>Edit</Text></Pressable>
+                <Pressable onPress={() => removeAddress(address.id)} style={styles.smallDanger}><Text style={styles.dangerText}>Remove</Text></Pressable>
               </View>
             ))}
+            <Text style={styles.meta}>{addressMessage}</Text>
+            <TextInput value={draftLabel} onChangeText={setDraftLabel} placeholder="Address label" style={styles.input} />
             <TextInput value={draftLine} onChangeText={setDraftLine} placeholder="Add new address" style={styles.input} />
             <Pressable disabled={addresses.length >= 5} onPress={addAddress} style={[styles.primary, addresses.length >= 5 && styles.disabled]}><Text style={styles.primaryText}>Save address</Text></Pressable>
           </Card>
@@ -87,7 +117,7 @@ export default function ProfileScreen() {
           <Card title="Become a Seller" copy={leadMessage}>
             <Pressable onPress={submitSellerLead} style={styles.primary}><Text style={styles.primaryText}>Submit seller interest</Text></Pressable>
           </Card>
-          {user ? <Pressable onPress={logout} style={styles.logout}><Text style={styles.dangerText}>Logout</Text></Pressable> : null}
+          {user ? <Pressable onPress={logoutSession} style={styles.logout}><Text style={styles.dangerText}>Logout</Text></Pressable> : null}
         </View>
       </ScrollView>
     </SafeAreaView>

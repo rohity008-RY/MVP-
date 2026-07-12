@@ -1,4 +1,7 @@
+import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
+
+const SESSION_KEY = "bazaar_setu_seller_session";
 
 type SellerProfile = {
   id: string;
@@ -19,6 +22,8 @@ interface AuthState {
   sellerId?: string;
   user?: UserProfile;
   sellerProfile?: SellerProfile | null;
+  hydrated: boolean;
+  hydrateSession: () => Promise<void>;
   setSession: (session: {
     accessToken: string;
     refreshToken: string;
@@ -29,13 +34,43 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  setSession: (session) =>
-    set({
+  hydrated: false,
+  hydrateSession: async () => {
+    try {
+      const saved = await SecureStore.getItemAsync(SESSION_KEY);
+      if (!saved) {
+        set({ hydrated: true });
+        return;
+      }
+      const session = JSON.parse(saved) as {
+        accessToken?: string;
+        refreshToken?: string;
+        user?: UserProfile;
+        sellerProfile?: SellerProfile | null;
+        sellerId?: string;
+      };
+      set({ ...session, hydrated: true });
+    } catch {
+      await SecureStore.deleteItemAsync(SESSION_KEY);
+      set({ hydrated: true });
+    }
+  },
+  setSession: (session) => {
+    const next = {
       accessToken: session.accessToken,
       refreshToken: session.refreshToken,
       user: session.user,
       sellerProfile: session.sellerProfile,
       sellerId: session.sellerProfile?.id
-    }),
-  logout: () => set({ accessToken: undefined, refreshToken: undefined, sellerId: undefined, user: undefined, sellerProfile: undefined })
+    };
+    void SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(next));
+    set({
+      ...next,
+      hydrated: true
+    });
+  },
+  logout: () => {
+    void SecureStore.deleteItemAsync(SESSION_KEY);
+    set({ accessToken: undefined, refreshToken: undefined, sellerId: undefined, user: undefined, sellerProfile: undefined, hydrated: true });
+  }
 }));

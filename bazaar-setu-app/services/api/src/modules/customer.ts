@@ -30,6 +30,25 @@ customerRouter.get("/home", asyncHandler(async (_req, res) => {
   return sendOk(res, { categories, products });
 }));
 
+customerRouter.get("/config", asyncHandler(async (_req, res) => {
+  const settings = await prisma.platformSetting.findMany({
+    where: { key: { in: ["paymentConfig", "rewardConfig"] } }
+  });
+  const data = {
+    paymentConfig: {
+      vendors: [
+        { id: "razorpay-upi", label: "UPI via Razorpay", enabled: true },
+        { id: "razorpay-cards", label: "Cards via Razorpay", enabled: true },
+        { id: "wallet", label: "Bazaar Setu Wallet", enabled: false },
+        { id: "cod", label: "Cash on Delivery", enabled: true }
+      ]
+    },
+    rewardConfig: { enabled: true, pointsPerHundred: 1 },
+    ...Object.fromEntries(settings.map((setting) => [setting.key, setting.value]))
+  };
+  return sendOk(res, data);
+}));
+
 customerRouter.use("/:customerId", requireRole("CUSTOMER", "ADMIN", "SUPPORT"), requireCustomerAccess("customerId"));
 
 customerRouter.get("/:customerId/addresses", asyncHandler(async (req, res) => {

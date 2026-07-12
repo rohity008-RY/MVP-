@@ -40,7 +40,7 @@ npm --workspace apps/admin-web run build
 Build Android APKs for device testing:
 
 ```bash
-export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 export ANDROID_HOME=$HOME/Library/Android/sdk
 npm run build:apk:customer
 npm run build:apk:seller
@@ -77,12 +77,16 @@ Default URLs:
 The scaffold includes:
 
 - OTP auth contract, access tokens, refresh sessions, logout, and secure staff provisioning.
+- Customer/seller mobile secure session persistence through Expo SecureStore.
 - Master catalogue, categories, live seller offers, and product approval requests.
-- Customer addresses with lat/lng, max 5 address rule, editable/deleteable addresses.
+- Customer addresses with lat/lng, max 5 address rule, editable/deleteable addresses, and API-backed checkout selection.
+- Admin-configured payment methods and rewards surfaced in customer checkout.
 - Multi-seller parent order creation with seller sub-orders.
 - Seller profile, store live toggle, SLA, delivery fee, auto-invoicing, products, order actions, and rejection reason/refund state.
+- Seller invoice/label PDF document endpoints for A4, A5, 4x6, and 80mm printer formats.
 - Admin dashboard, orders, sellers, product request queue, notifications, platform payment/reward settings, and seller leads.
 - Dedicated Ops backend under `/api/ops` for SLA monitoring, refund queue actions, seller verification, store live control, catalogue approvals, and support timeline notes.
+- Admin audit logs for sensitive Admin/Support/Ops mutations with an admin-only Settings view.
 
 For the full start-to-end product walkthrough and feature list, see `docs/PRODUCT_FLOWS_AND_FEATURES.md`.
 
@@ -111,4 +115,4 @@ This is source scaffolding, not a live-ready production deployment. The API boun
 - Catalogue import governance with licensed/admin-owned product images and HSN/GST review.
 - Object storage for product/document uploads.
 - Push notifications through FCM/APNs.
-- Observability, audit logs, backups/PITR, production infrastructure hardening, dependency vulnerability resolution, and security testing.
+- Observability, backups/PITR, production infrastructure hardening, dependency vulnerability resolution, and security testing.

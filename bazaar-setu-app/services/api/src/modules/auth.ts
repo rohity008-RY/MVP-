@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { writeAuditLog } from "../audit-log.js";
 import { config } from "../config.js";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, sendOk } from "../http.js";
@@ -204,6 +205,13 @@ authRouter.post("/admin/bootstrap", asyncHandler(async (req, res) => {
     where: { phone: input.phone },
     update: { role: "ADMIN", name: input.name, email: input.email },
     create: { phone: input.phone, role: "ADMIN", name: input.name, email: input.email }
+  });
+
+  await writeAuditLog(req, {
+    action: "initial_admin_bootstrapped",
+    entityType: "User",
+    entityId: user.id,
+    metadata: { phone: user.phone, role: user.role }
   });
 
   return sendOk(res, { user }, 201);

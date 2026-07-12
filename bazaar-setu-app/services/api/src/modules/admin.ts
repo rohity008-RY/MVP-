@@ -1,6 +1,7 @@
 import { Router } from "express";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
+import { writeAuditLog } from "../audit-log.js";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
 import { requireRole } from "../middleware.js";
@@ -64,6 +65,13 @@ adminRouter.post("/staff-users", requireRole("ADMIN"), asyncHandler(async (req, 
     create: input
   });
 
+  await writeAuditLog(req, {
+    action: existing ? "staff_user_updated" : "staff_user_created",
+    entityType: "User",
+    entityId: user.id,
+    metadata: { phone: user.phone, role: user.role }
+  });
+
   return sendOk(res, user, existing ? 200 : 201);
 }));
 
@@ -79,6 +87,12 @@ adminRouter.patch("/seller-leads/:leadId", asyncHandler(async (req, res) => {
     notes: z.string().optional()
   }).parse(req.body);
   const lead = await prisma.sellerLead.update({ where: { id: leadId }, data: input });
+  await writeAuditLog(req, {
+    action: "seller_lead_updated",
+    entityType: "SellerLead",
+    entityId: lead.id,
+    metadata: input
+  });
   return sendOk(res, lead);
 }));
 
@@ -135,6 +149,13 @@ adminRouter.patch("/product-requests/:requestId", asyncHandler(async (req, res) 
     });
   }
 
+  await writeAuditLog(req, {
+    action: input.status === "APPROVED" ? "product_request_approved" : "product_request_rejected",
+    entityType: "ProductApprovalRequest",
+    entityId: request.id,
+    metadata: { status: input.status, reason: input.reason }
+  });
+
   return sendOk(res, request);
 }));
 
@@ -151,6 +172,12 @@ adminRouter.post("/notifications", asyncHandler(async (req, res) => {
     body: z.string()
   }).parse(req.body);
   const notification = await prisma.notification.create({ data: input });
+  await writeAuditLog(req, {
+    action: "notification_published",
+    entityType: "Notification",
+    entityId: notification.id,
+    metadata: input
+  });
   return sendOk(res, notification, 201);
 }));
 
@@ -183,10 +210,34 @@ adminRouter.patch("/settings", asyncHandler(async (req, res) => {
     })
   );
 
+  await writeAuditLog(req, {
+    action: "platform_settings_updated",
+    entityType: "PlatformSetting",
+    metadata: input as Prisma.InputJsonValue
+  });
+
   const settings = await prisma.platformSetting.findMany();
   const data = {
     ...defaultSettings,
     ...Object.fromEntries(settings.map((setting) => [setting.key, setting.value]))
   };
   return sendOk(res, data);
+}));
+
+adminRouter.get("/audit-logs", requireRole("ADMIN"), asyncHandler(async (req, res) => {
+  const query = z.object({
+    action: z.string().optional(),
+    entityType: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(200).default(100)
+  }).parse(req.query);
+
+  const logs = await prisma.auditLog.findMany({
+    where: {
+      ...(query.action ? { action: query.action } : {}),
+      ...(query.entityType ? { entityType: query.entityType } : {})
+    },
+    orderBy: { createdAt: "desc" },
+    take: query.limit
+  });
+  return sendOk(res, logs);
 }));

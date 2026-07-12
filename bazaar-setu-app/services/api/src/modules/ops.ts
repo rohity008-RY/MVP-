@@ -1,6 +1,7 @@
 import type { OrderStatus, PaymentState, Prisma } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
+import { writeAuditLog } from "../audit-log.js";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
 import { requireRole } from "../middleware.js";
@@ -244,6 +245,12 @@ opsRouter.patch("/sub-orders/:subOrderId/note", asyncHandler(async (req, res) =>
       })
     }
   });
+  await writeAuditLog(req, {
+    action: "ops_note_added",
+    entityType: "SellerSubOrder",
+    entityId: order.id,
+    metadata: input
+  });
   return sendOk(res, order);
 }));
 
@@ -296,6 +303,12 @@ opsRouter.patch("/refunds/:subOrderId", asyncHandler(async (req, res) => {
       })
     }
   });
+  await writeAuditLog(req, {
+    action: input.action === "markRefunded" ? "refund_marked_refunded" : "refund_marked_pending",
+    entityType: "SellerSubOrder",
+    entityId: order.id,
+    metadata: input
+  });
   return sendOk(res, order);
 }));
 
@@ -333,6 +346,12 @@ opsRouter.patch("/documents/:documentId", asyncHandler(async (req, res) => {
     where: { id: documentId },
     data: { status: input.status, reason: input.reason }
   });
+  await writeAuditLog(req, {
+    action: input.status === "APPROVED" ? "document_approved" : "document_rejected",
+    entityType: "ComplianceDocument",
+    entityId: document.id,
+    metadata: input
+  });
   return sendOk(res, document);
 }));
 
@@ -355,6 +374,13 @@ opsRouter.patch("/sellers/:sellerId/live", asyncHandler(async (req, res) => {
       title: input.storeLive ? "Store enabled" : "Store disabled",
       body: input.reason?.trim() || (input.storeLive ? "Your store is now live on Bazaar Setu." : "Your store is temporarily disabled by Ops.")
     }
+  });
+
+  await writeAuditLog(req, {
+    action: input.storeLive ? "seller_store_enabled" : "seller_store_disabled",
+    entityType: "SellerProfile",
+    entityId: seller.id,
+    metadata: input
   });
 
   return sendOk(res, seller);
@@ -381,6 +407,12 @@ opsRouter.patch("/catalogue-requests/:requestId", asyncHandler(async (req, res) 
 
   if (input.status === "APPROVED") {
     const approved = await approveProductRequest(requestId, input.reason);
+    await writeAuditLog(req, {
+      action: "catalogue_request_approved",
+      entityType: "ProductApprovalRequest",
+      entityId: approved.id,
+      metadata: input
+    });
     return sendOk(res, approved);
   }
 
@@ -395,6 +427,12 @@ opsRouter.patch("/catalogue-requests/:requestId", asyncHandler(async (req, res) 
       title: "Product request rejected",
       body: input.reason ?? `${request.name} needs more information before it can be approved.`
     }
+  });
+  await writeAuditLog(req, {
+    action: "catalogue_request_rejected",
+    entityType: "ProductApprovalRequest",
+    entityId: request.id,
+    metadata: input
   });
   return sendOk(res, request);
 }));

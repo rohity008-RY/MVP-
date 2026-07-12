@@ -1,7 +1,7 @@
 import { demoFallback } from "./demo-data";
 import { useAuthStore } from "../store/auth";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5010";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://bazaar-setu-api-free.onrender.com";
 
 export { API_BASE_URL };
 
@@ -67,11 +67,34 @@ export async function apiSend<T>(path: string, method: string, body: unknown): P
       if (json.error?.code === "AUTH_REQUIRED" && path.endsWith("/orders")) {
         return { id: `demo-order-${Date.now()}`, status: "PLACED" } as T;
       }
+      if (json.error?.code === "AUTH_REQUIRED" && path.includes("/addresses")) {
+        return { id: `demo-address-${Date.now()}`, ...(body as object) } as T;
+      }
+      if (json.error?.code === "AUTH_REQUIRED" && path.endsWith("/seller-leads")) {
+        return { id: `demo-lead-${Date.now()}`, status: "NEW", ...(body as object) } as T;
+      }
       throw new Error(json.error?.message ?? "API error");
     }
     return json.data as T;
   } catch (error) {
     if (path.endsWith("/orders")) return { id: `demo-order-${Date.now()}`, status: "PLACED" } as T;
+    if (path.includes("/addresses")) return { id: `demo-address-${Date.now()}`, ...(body as object) } as T;
+    if (path.endsWith("/seller-leads")) return { id: `demo-lead-${Date.now()}`, status: "NEW", ...(body as object) } as T;
     throw error;
+  }
+}
+
+export async function logoutSession() {
+  const { refreshToken, logout } = useAuthStore.getState();
+  try {
+    if (refreshToken) {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ refreshToken })
+      });
+    }
+  } finally {
+    logout();
   }
 }

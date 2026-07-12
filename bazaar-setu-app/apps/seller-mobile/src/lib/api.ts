@@ -1,7 +1,7 @@
 import { demoFallback } from "./demo-data";
 import { useAuthStore } from "../store/auth";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5010";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://bazaar-setu-api-free.onrender.com";
 
 export { API_BASE_URL };
 
@@ -71,4 +71,35 @@ export async function apiSend<T>(path: string, method: string, body: unknown): P
   } catch (error) {
     return { id: path.split("/").pop(), ...(body as object) } as T;
   }
+}
+
+export async function logoutSession() {
+  const { refreshToken, logout } = useAuthStore.getState();
+  try {
+    if (refreshToken) {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ refreshToken })
+      });
+    }
+  } finally {
+    logout();
+  }
+}
+
+export async function apiDocument(path: string) {
+  let response = await fetch(`${API_BASE_URL}${path}`, { headers: authHeaders() });
+  if (response.status === 401 && await refreshAccessToken()) {
+    response = await fetch(`${API_BASE_URL}${path}`, { headers: authHeaders() });
+  }
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || "Could not generate document.");
+  }
+  const bytes = await response.arrayBuffer();
+  return {
+    contentType: response.headers.get("content-type") ?? "application/pdf",
+    bytes: bytes.byteLength
+  };
 }

@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { Router } from "express";
+import PDFDocument from "pdfkit";
 import { z } from "zod";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
@@ -7,6 +8,32 @@ import { requireRole, requireSellerAccess } from "../middleware.js";
 
 export const sellerRouter = Router();
 sellerRouter.use("/:sellerId", requireRole("SELLER", "ADMIN", "SUPPORT"), requireSellerAccess("sellerId"));
+
+const documentFormatSchema = z.enum(["a4", "a5", "4x6", "80mm"]);
+const documentTypeSchema = z.enum(["invoice", "label"]);
+
+function pdfSize(format: z.infer<typeof documentFormatSchema>): [number, number] | string {
+  if (format === "a5") return "A5";
+  if (format === "4x6") return [288, 432];
+  if (format === "80mm") return [226, 560];
+  return "A4";
+}
+
+function money(value: number) {
+  return `Rs. ${value.toFixed(2)}`;
+}
+
+function writePdfHeader(doc: PDFKit.PDFDocument, title: string) {
+  doc.fontSize(18).fillColor("#ff4b2b").text("Bazaar Setu", { continued: false });
+  doc.moveDown(0.2);
+  doc.fontSize(13).fillColor("#0c0c12").text(title);
+  doc.moveDown(0.8);
+}
+
+function writeKeyValue(doc: PDFKit.PDFDocument, label: string, value?: string | number | null) {
+  doc.fontSize(8).fillColor("#6f6f84").text(label, { continued: true });
+  doc.fillColor("#0c0c12").text(`  ${value ?? "-"}`);
+}
 
 sellerRouter.get("/:sellerId/profile", asyncHandler(async (req, res) => {
   const sellerId = getParam(req, "sellerId");
@@ -172,6 +199,110 @@ sellerRouter.patch("/:sellerId/orders/:subOrderId", asyncHandler(async (req, res
 
   const order = await prisma.sellerSubOrder.update({ where: { id: subOrderId }, data: update });
   return sendOk(res, order);
+}));
+
+sellerRouter.get("/:sellerId/orders/:subOrderId/document", asyncHandler(async (req, res) => {
+  const sellerId = getParam(req, "sellerId");
+  const subOrderId = getParam(req, "subOrderId");
+  const query = z.object({
+    type: documentTypeSchema.default("invoice"),
+    format: documentFormatSchema.default("a4")
+  }).parse(req.query);
+
+  const order = await prisma.sellerSubOrder.findFirst({
+    where: { id: subOrderId, sellerId },
+    include: {
+      seller: { include: { user: true, locations: true, documents: true } },
+      items: true,
+      parentOrder: { include: { address: true, customer: { include: { user: true } } } }
+    }
+  });
+  if (!order) throw new ApiError(404, "Order not found.", "ORDER_NOT_FOUND");
+  if (query.type === "invoice" && !order.invoiceNumber) {
+    throw new ApiError(400, "Invoice number is required before invoice PDF can be generated.", "INVOICE_REQUIRED");
+  }
+
+  const doc = new PDFDocument({ size: pdfSize(query.format), margin: query.format === "80mm" ? 16 : 32 });
+  const filename = `${query.type}-${order.id}-${query.format}.pdf`;
+  res.status(200);
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+  doc.pipe(res);
+
+  const sellerLocation = order.seller.locations[0];
+  const fssai = order.seller.documents.find((document) => document.type === "FSSAI")?.identifier;
+
+  if (query.type === "label") {
+    writePdfHeader(doc, `Shipping Label · ${query.format.toUpperCase()}`);
+    writeKeyValue(doc, "Shipment", order.id);
+    writeKeyValue(doc, "Parent order", order.parentOrderId);
+    writeKeyValue(doc, "Seller", order.seller.shopName);
+    writeKeyValue(doc, "Pickup", sellerLocation ? `${sellerLocation.address}, ${sellerLocation.city} ${sellerLocation.pincode}` : "Seller location");
+    doc.moveDown(0.7);
+    doc.fontSize(10).fillColor("#0c0c12").text("Deliver to", { underline: true });
+    doc.fontSize(12).text(order.parentOrder.customer.user.name);
+    doc.fontSize(9).text(order.parentOrder.customer.user.phone);
+    doc.text(`${order.parentOrder.address.line1}${order.parentOrder.address.line2 ? `, ${order.parentOrder.address.line2}` : ""}`);
+    doc.text(`${order.parentOrder.address.city}, ${order.parentOrder.address.state} ${order.parentOrder.address.pincode}`);
+    doc.text(`Lat/Lng: ${order.parentOrder.address.lat}, ${order.parentOrder.address.lng}`);
+    doc.moveDown(0.7);
+    writeKeyValue(doc, "Invoice", order.invoiceNumber ?? "Pending");
+    writeKeyValue(doc, "Payment", order.paymentState);
+    writeKeyValue(doc, "Support", "support@bazaarsetu.local");
+    doc.moveDown(0.8);
+    doc.fontSize(9).text("Items");
+    order.items.forEach((item) => doc.fontSize(8).text(`• ${item.name} x ${item.qty} (${item.unit})`));
+    doc.end();
+    return;
+  }
+
+  writePdfHeader(doc, `Tax Invoice · ${query.format.toUpperCase()}`);
+  writeKeyValue(doc, "Invoice no.", order.invoiceNumber);
+  writeKeyValue(doc, "Invoice date", new Date().toLocaleString("en-IN"));
+  writeKeyValue(doc, "Shipment", order.id);
+  writeKeyValue(doc, "Order", order.parentOrderId);
+  doc.moveDown(0.6);
+  doc.fontSize(10).fillColor("#0c0c12").text("Seller");
+  writeKeyValue(doc, "Shop", order.seller.shopName);
+  writeKeyValue(doc, "Owner", order.seller.ownerName);
+  writeKeyValue(doc, "Phone", order.seller.user.phone);
+  writeKeyValue(doc, "FSSAI", fssai ?? "N/A");
+  writeKeyValue(doc, "Pickup", sellerLocation ? `${sellerLocation.address}, ${sellerLocation.city} ${sellerLocation.pincode}` : "N/A");
+  doc.moveDown(0.6);
+  doc.fontSize(10).fillColor("#0c0c12").text("Customer");
+  writeKeyValue(doc, "Name", order.parentOrder.customer.user.name);
+  writeKeyValue(doc, "Phone", order.parentOrder.customer.user.phone);
+  writeKeyValue(doc, "Address", `${order.parentOrder.address.line1}, ${order.parentOrder.address.city} ${order.parentOrder.address.pincode}`);
+  doc.moveDown(0.8);
+
+  const startX = doc.x;
+  const startY = doc.y;
+  doc.fontSize(8).fillColor("#0c0c12").text("Item", startX, startY, { width: 160 });
+  doc.text("HSN", startX + 165, startY, { width: 45 });
+  doc.text("Qty", startX + 215, startY, { width: 35 });
+  doc.text("Rate", startX + 252, startY, { width: 55 });
+  doc.text("Total", startX + 310, startY, { width: 65 });
+  doc.moveTo(startX, startY + 14).lineTo(startX + 375, startY + 14).strokeColor("#dedbd4").stroke();
+
+  let y = startY + 22;
+  let total = 0;
+  order.items.forEach((item) => {
+    const lineTotal = item.price * item.qty;
+    total += lineTotal;
+    doc.fontSize(8).fillColor("#0c0c12").text(item.name, startX, y, { width: 160 });
+    doc.text(item.hsn ?? "-", startX + 165, y, { width: 45 });
+    doc.text(`${item.qty} ${item.unit}`, startX + 215, y, { width: 35 });
+    doc.text(money(item.price), startX + 252, y, { width: 55 });
+    doc.text(money(lineTotal), startX + 310, y, { width: 65 });
+    y += 22;
+  });
+  doc.moveTo(startX, y).lineTo(startX + 375, y).strokeColor("#dedbd4").stroke();
+  doc.moveDown(1.2);
+  doc.fontSize(11).fillColor("#0c0c12").text(`Invoice total: ${money(total)}`, { align: "right" });
+  doc.moveDown(0.8);
+  doc.fontSize(7).fillColor("#6f6f84").text("Legal Metrology, HSN/GST, MRP/net quantity/origin/expiry and consumer-care fields must be validated before production use.");
+  doc.text("Bazaar Setu support: support@bazaarsetu.local");
+  doc.end();
 }));
 
 sellerRouter.post("/:sellerId/product-requests", asyncHandler(async (req, res) => {

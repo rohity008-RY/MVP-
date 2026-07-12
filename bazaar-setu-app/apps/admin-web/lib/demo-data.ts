@@ -286,6 +286,39 @@ export const demoSettings = {
   rewardConfig: { enabled: true, pointsPerHundred: 2, welcomeBonus: 25, sellerReferralBonus: 100 }
 };
 
+export const demoAuditLogs = [
+  {
+    id: "audit-demo-1",
+    actorRole: "ADMIN",
+    action: "notification_published",
+    entityType: "Notification",
+    entityId: "demo-notification-offer",
+    metadata: { audience: "customer", type: "offer" },
+    ipAddress: "127.0.0.1",
+    createdAt: iso(-12)
+  },
+  {
+    id: "audit-demo-2",
+    actorRole: "ADMIN",
+    action: "platform_settings_updated",
+    entityType: "PlatformSetting",
+    entityId: null,
+    metadata: { rewardConfig: { enabled: true, pointsPerHundred: 2 } },
+    ipAddress: "127.0.0.1",
+    createdAt: iso(-22)
+  },
+  {
+    id: "audit-demo-3",
+    actorRole: "SUPPORT",
+    action: "seller_lead_updated",
+    entityType: "SellerLead",
+    entityId: "demo-seller-lead",
+    metadata: { status: "CONTACTED" },
+    ipAddress: "127.0.0.1",
+    createdAt: iso(-48)
+  }
+];
+
 export function demoFallback(path: string) {
   const url = new URL(path, "http://demo.local");
   const pathname = url.pathname;
@@ -298,6 +331,7 @@ export function demoFallback(path: string) {
   if (pathname === "/api/admin/notifications") return demoNotifications;
   if (pathname === "/api/admin/seller-leads") return demoLeads;
   if (pathname === "/api/admin/settings") return demoSettings;
+  if (pathname === "/api/admin/audit-logs") return demoAuditLogs;
   if (pathname.startsWith("/api/admin/") || pathname.startsWith("/api/ops/")) return [];
   return undefined;
 }

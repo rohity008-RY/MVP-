@@ -3,7 +3,7 @@ import { Link } from "expo-router";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { apiSend } from "../src/lib/api";
+import { apiSend, logoutSession } from "../src/lib/api";
 import { useAuthStore } from "../src/store/auth";
 
 const DEMO_SELLER_ID = "demo-seller-fresh";
@@ -11,7 +11,6 @@ const DEMO_SELLER_ID = "demo-seller-fresh";
 export default function SellerProfile() {
   const sellerId = useAuthStore((state) => state.sellerId) ?? DEMO_SELLER_ID;
   const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
   const [storeLive, setStoreLive] = useState(true);
   const [autoInvoiceEnabled, setAutoInvoiceEnabled] = useState(true);
   const [deliveryFee, setDeliveryFee] = useState("29");
@@ -51,7 +50,7 @@ export default function SellerProfile() {
           <Card title="Locations" copy="Multiple pickup locations with exact Google Maps lat/lng are supported in backend profile flow." />
           <Pressable onPress={saveProfile} style={styles.primary}><Text style={styles.primaryText}>Save profile settings</Text></Pressable>
           <Text style={styles.meta}>{message}</Text>
-          {user ? <Pressable onPress={logout} style={styles.logout}><Text style={styles.dangerText}>Logout</Text></Pressable> : null}
+          {user ? <Pressable onPress={logoutSession} style={styles.logout}><Text style={styles.dangerText}>Logout</Text></Pressable> : null}
         </View>
       </ScrollView>
     </SafeAreaView>

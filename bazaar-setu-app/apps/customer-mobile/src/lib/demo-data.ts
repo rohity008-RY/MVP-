@@ -37,9 +37,28 @@ export const demoOrders = [
   }
 ];
 
+export const demoAddresses = [
+  { id: "demo-home-address", type: "home", label: "Home", line1: "Home - 17, Namam Premier, Marol", city: "Mumbai", state: "Maharashtra", pincode: "400059", lat: 19.1197, lng: 72.8468 },
+  { id: "demo-office-address", type: "office", label: "Office", line1: "Tower B, Bandra Kurla Complex", city: "Mumbai", state: "Maharashtra", pincode: "400051", lat: 19.0676, lng: 72.8676 }
+];
+
+export const demoConfig = {
+  paymentConfig: {
+    vendors: [
+      { id: "razorpay-upi", label: "UPI via Razorpay", enabled: true },
+      { id: "razorpay-cards", label: "Cards via Razorpay", enabled: true },
+      { id: "wallet", label: "Bazaar Setu Wallet", enabled: true },
+      { id: "cod", label: "Cash on Delivery", enabled: true }
+    ]
+  },
+  rewardConfig: { enabled: true, pointsPerHundred: 1 }
+};
+
 export function demoFallback(path: string) {
   const url = new URL(path, "http://demo.local");
   if (url.pathname === "/api/customer/home") return demoHome;
+  if (url.pathname === "/api/customer/config") return demoConfig;
   if (url.pathname === "/api/customer/demo-customer/orders") return demoOrders;
+  if (url.pathname === "/api/customer/demo-customer/addresses") return demoAddresses;
   return undefined;
 }

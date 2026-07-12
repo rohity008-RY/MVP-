@@ -251,16 +251,18 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
 - Protected `/api/ops/*` backend
 - Admin web OTP login with protected backend actions
 - Customer and seller APK demo fallback data
+- Secure mobile session persistence with refresh/logout
+- API-backed customer address and payment selection in checkout
+- Seller invoice/label PDF generation in A4, A5, 4x6, and 80mm formats
+- Admin-only audit log review for sensitive mutations
 
 ## Next Production Priorities
 
-1. Replace in-memory mobile sessions with secure device storage and biometric/PIN unlock.
-2. Add real Google Maps address capture and geocoding.
-3. Add payment gateway integration, refund webhooks, COD reconciliation, and seller settlements.
-4. Add production notification delivery through FCM/APNs and WhatsApp/SMS providers.
-5. Add file/object storage for product photos, invoices, labels, and documents.
-6. Add printer-ready invoice/label rendering.
-7. Add push notifications through FCM/APNs.
-8. Add audit logs for every admin/seller action.
-9. Add downloadable reports.
-10. Complete legal/FSSAI/GST/legal metrology/privacy/payment reviews before production launch.
+1. Add real Google Maps address capture and geocoding.
+2. Add payment gateway integration, refund webhooks, COD reconciliation, and seller settlements.
+3. Add production notification delivery through FCM/APNs and WhatsApp/SMS providers.
+4. Add file/object storage for product photos and compliance documents.
+5. Add biometric/PIN unlock and device/session management for mobile apps.
+6. Add downloadable reports and audit-log exports.
+7. Add CI/CD deployment gates for Prisma migrations, API tests, mobile builds, and staging smoke tests.
+8. Complete legal/FSSAI/GST/legal metrology/privacy/payment reviews before production launch.

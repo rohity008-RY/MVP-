@@ -24,12 +24,29 @@ type SellerLead = {
   createdAt: string;
 };
 
+type AuditLog = {
+  id: string;
+  actorRole?: string | null;
+  action: string;
+  entityType: string;
+  entityId?: string | null;
+  metadata?: unknown;
+  ipAddress?: string | null;
+  createdAt: string;
+};
+
 export default async function SettingsPage() {
   const [notifications, settings, leads] = await Promise.all([
     apiGet<Notification[]>("/api/admin/notifications"),
     apiGet<PlatformSettings>("/api/admin/settings"),
     apiGet<SellerLead[]>("/api/admin/seller-leads")
   ]);
+  let auditLogs: AuditLog[] = [];
+  try {
+    auditLogs = await apiGet<AuditLog[]>("/api/admin/audit-logs?limit=20");
+  } catch {
+    auditLogs = [];
+  }
 
   return (
     <>
@@ -184,6 +201,46 @@ export default async function SettingsPage() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      <section className="panel section-gap">
+        <div className="panel-header">
+          <span>Admin Audit Logs</span>
+          <span className="muted">Admin-only trail for sensitive backend changes</span>
+        </div>
+        {auditLogs.length ? (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>When</th>
+                <th>Actor</th>
+                <th>Action</th>
+                <th>Entity</th>
+                <th>Metadata</th>
+              </tr>
+            </thead>
+            <tbody>
+              {auditLogs.map((log) => (
+                <tr key={log.id}>
+                  <td>{new Date(log.createdAt).toLocaleString("en-IN")}</td>
+                  <td><span className="pill">{log.actorRole ?? "system"}</span></td>
+                  <td><b>{log.action.replaceAll("_", " ")}</b></td>
+                  <td>
+                    {log.entityType}
+                    {log.entityId ? <div className="muted">{log.entityId}</div> : null}
+                  </td>
+                  <td className="muted">{log.metadata ? JSON.stringify(log.metadata).slice(0, 120) : "No metadata"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="metric-card">
+            <span className="muted">No audit rows visible</span>
+            <b>Login as Admin to review mutation history.</b>
+            <small>Support users can continue daily ops without access to admin-only audit data.</small>
+          </div>
+        )}
       </section>
     </>
   );
