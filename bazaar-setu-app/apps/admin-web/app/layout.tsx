@@ -24,7 +24,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <div className="brand">Bazaar<span>Setu</span></div>
             {nav.map(([href, label]) => <a href={href} className="nav-link" key={href}>{label}</a>)}
           </aside>
-          <main className="main">{children}</main>
+          <main className="main">
+            <div className="demo-banner">
+              Demo preview data is visible until admin/support login is connected. Backend ops APIs remain protected.
+            </div>
+            {children}
+          </main>
         </div>
       </body>
     </html>

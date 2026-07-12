@@ -86,12 +86,17 @@ The scaffold includes:
 
 ## Demo IDs
 
-Seed data creates stable records used by the first mobile screens:
+Seed data creates stable records used by the first mobile screens and staging smoke tests:
 
 - Customer: `demo-customer`
 - Address: `demo-home-address`
-- Seller: `demo-seller`
-- Seller offers: `demo-offer-mango-pickle`, `demo-offer-milk`, `demo-offer-tomato`
+- Sellers: `demo-seller-fresh`, `demo-seller-meat`, `demo-seller-home`, `demo-seller-campus`
+- Demo admin login phone: `+919000000001`
+- Demo support login phone: `+919000000002`
+- OTP mode on free staging is `mock`; `/api/auth/otp/start` returns `demoOtp`.
+- Demo data includes 23 categories, 60+ catalogue products, live inventory, multi-seller orders, invoice-required and bag-packed lanes, refund queue, document review queue, catalogue approval requests, notifications, rewards, payment vendors, and seller leads.
+
+Staging deploys run this seed automatically after migrations when `DEPLOYMENT_ENV=staging`.
 
 ## Production Gaps Before Launch
 

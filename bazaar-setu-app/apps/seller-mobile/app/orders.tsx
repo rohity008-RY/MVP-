@@ -5,7 +5,7 @@ import { Link } from "expo-router";
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { apiGet, apiSend } from "../src/lib/api";
 
-const DEMO_SELLER_ID = "demo-seller";
+const DEMO_SELLER_ID = "demo-seller-fresh";
 
 export default function SellerOrders() {
   const query = useQuery({ queryKey: ["seller-orders"], queryFn: () => apiGet<SellerSubOrder[]>(`/api/seller/${DEMO_SELLER_ID}/orders`) });

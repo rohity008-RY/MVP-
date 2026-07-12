@@ -62,6 +62,17 @@ a {
   background: #f5f4f1;
 }
 
+.demo-banner {
+  margin-bottom: 14px;
+  border: 1px solid #fad8c9;
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #7a2e18;
+  background: #fff2eb;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .topbar {
   display: flex;
   align-items: center;
