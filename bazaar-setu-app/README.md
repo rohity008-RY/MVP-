@@ -84,6 +84,8 @@ The scaffold includes:
 - Admin dashboard, orders, sellers, product request queue, notifications, platform payment/reward settings, and seller leads.
 - Dedicated Ops backend under `/api/ops` for SLA monitoring, refund queue actions, seller verification, store live control, catalogue approvals, and support timeline notes.
 
+For the full start-to-end product walkthrough and feature list, see `docs/PRODUCT_FLOWS_AND_FEATURES.md`.
+
 ## Demo IDs
 
 Seed data creates stable records used by the first mobile screens and staging smoke tests:
