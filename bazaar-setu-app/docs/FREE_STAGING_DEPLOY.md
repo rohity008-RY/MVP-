@@ -58,6 +58,18 @@ Paste the generated values into the Render API service environment variables:
 
 Keep `ADMIN_BOOTSTRAP_TOKEN` private. Rotate/remove it after the first Admin user is created.
 
+Optional helper for Render:
+
+```bash
+cd /Users/rohitvirendrayadav/bazaarsetu-mvp/bazaar-setu-app
+NEON_DATABASE_URL="postgresql://..." \
+UPSTASH_REDIS_REST_URL="https://..." \
+UPSTASH_REDIS_REST_TOKEN="..." \
+npm run env:render-free
+```
+
+This prints all `sync:false` Render API/Admin values, including newly generated secrets.
+
 ## 4. Create Render Services From Blueprint
 
 1. Open `https://dashboard.render.com/`.
@@ -108,6 +120,15 @@ After deploy:
 curl https://bazaar-setu-api-free.onrender.com/api/health
 curl https://bazaar-setu-api-free.onrender.com/api/ready
 curl https://bazaar-setu-admin-free.onrender.com/health
+```
+
+Or run the scripted smoke check:
+
+```bash
+cd /Users/rohitvirendrayadav/bazaarsetu-mvp/bazaar-setu-app
+STAGING_API_URL=https://bazaar-setu-api-free.onrender.com \
+STAGING_ADMIN_URL=https://bazaar-setu-admin-free.onrender.com \
+npm run smoke:free-staging
 ```
 
 `/api/ready` should show:

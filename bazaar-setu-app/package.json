@@ -17,7 +17,9 @@
     "lint": "npm --workspaces --if-present run lint",
     "test": "npm --workspaces --if-present run test",
     "test:e2e": "npm --workspace services/api run test:e2e",
-    "secrets:free-staging": "node scripts/generate-free-staging-secrets.mjs"
+    "secrets:free-staging": "node scripts/generate-free-staging-secrets.mjs",
+    "env:render-free": "node scripts/render-free-env.mjs",
+    "smoke:free-staging": "node scripts/staging-smoke.mjs"
   },
   "engines": {
     "node": ">=22"
