@@ -8,6 +8,7 @@ export const metadata = {
 
 const nav = [
   ["/", "Dashboard"],
+  ["/ops", "Ops Backend"],
   ["/orders", "Orders"],
   ["/sellers", "Sellers"],
   ["/requests", "Product Requests"],

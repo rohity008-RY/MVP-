@@ -185,7 +185,9 @@ small {
 .todo-row,
 .role-card,
 .setting-row,
-.metric-card {
+.metric-card,
+.ops-row,
+.empty {
   border: 1px solid #eceae6;
   border-radius: 12px;
   padding: 12px;
@@ -196,6 +198,36 @@ small {
   display: flex;
   align-items: center;
   gap: 10px;
+  font-weight: 700;
+}
+
+.ops-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ops-row b,
+.ops-row span,
+.setting-row b,
+.setting-row span,
+.role-card b,
+.role-card span {
+  display: block;
+}
+
+.ops-row > div {
+  min-width: 0;
+}
+
+.ops-row > div span {
+  color: #8f8faa;
+  font-size: 12px;
+}
+
+.empty {
+  color: #8f8faa;
   font-weight: 700;
 }
 

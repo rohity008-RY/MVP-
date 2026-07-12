@@ -37,6 +37,20 @@ npm run test:e2e
 npm --workspace apps/admin-web run build
 ```
 
+Build Android APKs for device testing:
+
+```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
+export ANDROID_HOME=$HOME/Library/Android/sdk
+npm run build:apk:customer
+npm run build:apk:seller
+```
+
+APK outputs:
+
+- Customer: `apps/customer-mobile/android/app/build/outputs/apk/release/app-release.apk`
+- Seller: `apps/seller-mobile/android/app/build/outputs/apk/release/app-release.apk`
+
 For staging/production-style databases, use immutable migrations instead of development sync:
 
 ```bash
@@ -68,6 +82,7 @@ The scaffold includes:
 - Multi-seller parent order creation with seller sub-orders.
 - Seller profile, store live toggle, SLA, delivery fee, auto-invoicing, products, order actions, and rejection reason/refund state.
 - Admin dashboard, orders, sellers, product request queue, notifications, platform payment/reward settings, and seller leads.
+- Dedicated Ops backend under `/api/ops` for SLA monitoring, refund queue actions, seller verification, store live control, catalogue approvals, and support timeline notes.
 
 ## Demo IDs
 

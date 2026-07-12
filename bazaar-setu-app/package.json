@@ -13,6 +13,8 @@
     "dev:admin": "npm --workspace apps/admin-web run dev",
     "dev:customer": "npm --workspace apps/customer-mobile run start",
     "dev:seller": "npm --workspace apps/seller-mobile run start",
+    "build:apk:customer": "npm --workspace apps/customer-mobile run build:apk",
+    "build:apk:seller": "npm --workspace apps/seller-mobile run build:apk",
     "typecheck": "npm --workspaces --if-present run typecheck",
     "lint": "npm --workspaces --if-present run lint",
     "test": "npm --workspaces --if-present run test",

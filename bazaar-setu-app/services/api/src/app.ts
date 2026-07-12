@@ -10,6 +10,7 @@ import { authRouter } from "./modules/auth.js";
 import { catalogueRouter } from "./modules/catalogue.js";
 import { customerRouter } from "./modules/customer.js";
 import { healthRouter } from "./modules/health.js";
+import { opsRouter } from "./modules/ops.js";
 import { sellerRouter } from "./modules/seller.js";
 
 const corsOptions: CorsOptions = {
@@ -42,6 +43,7 @@ export function createApp() {
   app.use("/api/customer", customerRouter);
   app.use("/api/seller", sellerRouter);
   app.use("/api/admin", adminRouter);
+  app.use("/api/ops", opsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

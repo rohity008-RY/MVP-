@@ -4,6 +4,11 @@ node_modules/
 dist/
 build/
 coverage/
+exports/
+
+# Expo native prebuild output is generated locally for APK builds.
+bazaar-setu-app/apps/*/android/
+bazaar-setu-app/apps/*/ios/
 
 .env
 .env.local

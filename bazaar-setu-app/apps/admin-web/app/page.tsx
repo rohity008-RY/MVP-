@@ -1,19 +1,27 @@
 import { apiGet } from "../lib/api";
 
 type Dashboard = {
-  orders: number;
-  sellers: number;
-  productRequests: number;
-  notifications: number;
+  totalOrders: number;
+  todayOrders: number;
+  todayRevenue: number;
+  liveSellers: number;
+  disabledSellers: number;
+  pendingProductRequests: number;
+  pendingDocuments: number;
+  activeSubOrders: number;
+  breachedSla: number;
+  dueSoonSla: number;
+  pendingRefunds: number;
+  sellerLeads: number;
 };
 
 export default async function DashboardPage() {
-  const dashboard = await apiGet<Dashboard>("/api/admin/dashboard");
+  const dashboard = await apiGet<Dashboard>("/api/ops/dashboard");
   const stats = [
-    ["Orders", dashboard.orders, "Parent orders across all customer carts"],
-    ["Sellers", dashboard.sellers, "Self-serve seller accounts"],
-    ["Pending Requests", dashboard.productRequests, "Products waiting for ops approval"],
-    ["Notifications", dashboard.notifications, "Published platform messages"]
+    ["Orders", dashboard.totalOrders, `${dashboard.todayOrders} created today`],
+    ["Active Sub-orders", dashboard.activeSubOrders, `${dashboard.breachedSla} SLA breached, ${dashboard.dueSoonSla} due soon`],
+    ["Live Sellers", dashboard.liveSellers, `${dashboard.disabledSellers} disabled stores`],
+    ["Ops Queue", dashboard.pendingProductRequests + dashboard.pendingDocuments + dashboard.pendingRefunds, "Catalogue, documents, refunds"]
   ];
 
   return (
@@ -21,9 +29,9 @@ export default async function DashboardPage() {
       <div className="topbar">
         <div>
           <div className="eyebrow">Ops Command Centre</div>
-          <h1 className="title">Bazaar Setu backend</h1>
+          <h1 className="title">Bazaar Setu ops backend</h1>
         </div>
-        <span className="pill">Role: Admin / Support</span>
+        <span className="pill">Today revenue Rs {dashboard.todayRevenue}</span>
       </div>
 
       <section className="stat-row">
@@ -49,11 +57,11 @@ export default async function DashboardPage() {
             </div>
             <div className="todo-row">
               <span className="dot green" />
-              Monitor rejected prepaid sub-orders for refund action.
+              Monitor {dashboard.pendingRefunds} refund pending sub-order{dashboard.pendingRefunds === 1 ? "" : "s"}.
             </div>
             <div className="todo-row">
               <span className="dot blue" />
-              Publish customer/seller notifications from Settings.
+              Review {dashboard.sellerLeads} seller lead{dashboard.sellerLeads === 1 ? "" : "s"} from customers.
             </div>
           </div>
         </div>
@@ -74,7 +82,7 @@ export default async function DashboardPage() {
             </div>
             <div className="role-card">
               <b>Logistics</b>
-              <span>Monitor SLA, pickup, handover, delivery assignment, and route exceptions.</span>
+              <span>Monitor SLA, packed state, handover readiness, delivery exceptions, and refund risk.</span>
             </div>
           </div>
         </div>
