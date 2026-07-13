@@ -114,6 +114,9 @@ export default function ProfileScreen() {
           </Card>
           <Card title="Payments" copy="Admin controls what appears at checkout. Current demo: UPI, cards, wallet, COD." />
           <Card title="Rewards" copy="320 Bazaar Setu points. Admin can enable/disable and set earning rule." />
+          <Card title="Help & Support" copy="Raise order, refund, payment, address, or seller issues with Bazaar Setu Support.">
+            <Link href="/help" asChild><Pressable style={styles.primary}><Text style={styles.primaryText}>Open Help Center</Text></Pressable></Link>
+          </Card>
           <Card title="Become a Seller" copy={leadMessage}>
             <Pressable onPress={submitSellerLead} style={styles.primary}><Text style={styles.primaryText}>Submit seller interest</Text></Pressable>
           </Card>

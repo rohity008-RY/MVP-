@@ -1,4 +1,14 @@
-import type { ApprovalStatus, DocumentType, OrderStatus, PaymentState, Prisma } from "@prisma/client";
+import type {
+  ApprovalStatus,
+  DocumentType,
+  OrderStatus,
+  PaymentState,
+  Prisma,
+  SupportMessageVisibility,
+  SupportTicketPriority,
+  SupportTicketSource,
+  SupportTicketStatus
+} from "@prisma/client";
 import { prisma } from "./db.js";
 
 type DemoCategory = { id: string; name: string; icon: string };
@@ -639,6 +649,176 @@ async function seedOrders() {
   });
 }
 
+type DemoSupportTicket = {
+  ticketNumber: string;
+  source: SupportTicketSource;
+  status: SupportTicketStatus;
+  priority: SupportTicketPriority;
+  category: string;
+  subCategory?: string;
+  subject: string;
+  description: string;
+  customerId?: string;
+  sellerId?: string;
+  parentOrderId?: string;
+  subOrderId?: string;
+  createdByUserId?: string;
+  assignedToUserId?: string;
+  slaDueAt: Date;
+  metadata?: Prisma.InputJsonValue;
+  messages: Array<{
+    authorRole: string;
+    visibility: SupportMessageVisibility;
+    message: string;
+    createdAt: Date;
+  }>;
+};
+
+async function seedSupportTickets() {
+  const supportUser = await prisma.user.findUnique({ where: { phone: "+919000000002" } });
+  const sellerFreshUser = await prisma.user.findUnique({ where: { phone: "+919876544321" } });
+  const sellerMeatUser = await prisma.user.findUnique({ where: { phone: "+919876544322" } });
+
+  const tickets: DemoSupportTicket[] = [
+    {
+      ticketNumber: "BST-DEMO-1001",
+      source: "CUSTOMER",
+      status: "WAITING_DELIVERY",
+      priority: "HIGH",
+      category: "late_order",
+      subCategory: "handover_delay",
+      subject: "Customer waiting after seller handover",
+      description: "Order says handed over but the delivery partner has not arrived at my address.",
+      customerId: "demo-customer",
+      sellerId: "demo-seller-fresh",
+      parentOrderId: "demo-order-1005",
+      subOrderId: "demo-sub-1005-a",
+      createdByUserId: "demo-customer-user",
+      assignedToUserId: supportUser?.id,
+      slaDueAt: nowPlusMinutes(20),
+      metadata: { channel: "customer_app", preferredContact: "call", addressLabel: "Andheri (E)" },
+      messages: [
+        { authorRole: "CUSTOMER", visibility: "CUSTOMER", message: "Please check delivery status. It is already beyond the shown SLA.", createdAt: nowMinusMinutes(18) },
+        { authorRole: "SUPPORT", visibility: "CUSTOMER", message: "We are checking with logistics and will update you shortly.", createdAt: nowMinusMinutes(10) },
+        { authorRole: "SUPPORT", visibility: "INTERNAL", message: "Call delivery partner and validate last scan for demo-sub-1005-a.", createdAt: nowMinusMinutes(8) }
+      ]
+    },
+    {
+      ticketNumber: "BST-DEMO-1002",
+      source: "SELLER",
+      status: "WAITING_DELIVERY",
+      priority: "HIGH",
+      category: "delivery_exception",
+      subCategory: "pickup_delay",
+      subject: "Courier partner not assigned",
+      description: "Manual invoice order is ready but no delivery partner is assigned for pickup.",
+      customerId: "demo-customer-ria",
+      sellerId: "demo-seller-meat",
+      parentOrderId: "demo-order-1004",
+      subOrderId: "demo-sub-1004-a",
+      createdByUserId: sellerMeatUser?.id,
+      assignedToUserId: supportUser?.id,
+      slaDueAt: nowPlusMinutes(45),
+      metadata: { channel: "seller_app", pickupLocation: "Bandra Counter" },
+      messages: [
+        { authorRole: "SELLER", visibility: "SELLER", message: "Order is prepared. Need pickup assignment quickly because fresh items are packed.", createdAt: nowMinusMinutes(14) },
+        { authorRole: "SUPPORT", visibility: "SELLER", message: "Ops is checking available delivery riders near Bandra.", createdAt: nowMinusMinutes(5) }
+      ]
+    },
+    {
+      ticketNumber: "BST-DEMO-1003",
+      source: "SYSTEM",
+      status: "REFUND_REVIEW",
+      priority: "CRITICAL",
+      category: "refund",
+      subCategory: "prepaid_rejection",
+      subject: "Prepaid rejected order needs refund closure",
+      description: "Seller rejected a prepaid order. Refund is pending customer closure.",
+      customerId: "demo-customer-ria",
+      sellerId: "demo-seller-meat",
+      parentOrderId: "demo-order-1002",
+      subOrderId: "demo-sub-1002-a",
+      assignedToUserId: supportUser?.id,
+      slaDueAt: nowPlusMinutes(10),
+      metadata: { refundAmount: 210, paymentMethod: "card", rejectReason: "Fresh fish batch failed quality check." },
+      messages: [
+        { authorRole: "SYSTEM", visibility: "INTERNAL", message: "Refund pending after seller rejection. Verify payment gateway state and close refund.", createdAt: nowMinusMinutes(48) },
+        { authorRole: "SUPPORT", visibility: "CUSTOMER", message: "Your refund has been queued and will be updated after payment gateway confirmation.", createdAt: nowMinusMinutes(32) }
+      ]
+    },
+    {
+      ticketNumber: "BST-DEMO-1004",
+      source: "SELLER",
+      status: "ASSIGNED",
+      priority: "MEDIUM",
+      category: "print_issue",
+      subCategory: "thermal_label",
+      subject: "80mm label text is not fitting",
+      description: "Seller needs help printing the customer label in 80mm thermal size.",
+      customerId: "demo-customer",
+      sellerId: "demo-seller-fresh",
+      parentOrderId: "demo-order-1001",
+      subOrderId: "demo-sub-1001-a",
+      createdByUserId: sellerFreshUser?.id,
+      assignedToUserId: supportUser?.id,
+      slaDueAt: nowPlusMinutes(180),
+      metadata: { channel: "seller_app", printerSize: "80mm thermal" },
+      messages: [
+        { authorRole: "SELLER", visibility: "SELLER", message: "Thermal label is cutting customer address. Need alternate size.", createdAt: nowMinusMinutes(28) },
+        { authorRole: "SUPPORT", visibility: "SELLER", message: "Try 4x6 for this shipment while we inspect thermal formatting.", createdAt: nowMinusMinutes(20) }
+      ]
+    }
+  ];
+
+  for (const ticket of tickets) {
+    await prisma.supportTicket.upsert({
+      where: { ticketNumber: ticket.ticketNumber },
+      update: {
+        source: ticket.source,
+        status: ticket.status,
+        priority: ticket.priority,
+        category: ticket.category,
+        subCategory: ticket.subCategory,
+        subject: ticket.subject,
+        description: ticket.description,
+        customerId: ticket.customerId,
+        sellerId: ticket.sellerId,
+        parentOrderId: ticket.parentOrderId,
+        subOrderId: ticket.subOrderId,
+        createdByUserId: ticket.createdByUserId,
+        assignedToUserId: ticket.assignedToUserId,
+        slaDueAt: ticket.slaDueAt,
+        metadata: ticket.metadata,
+        messages: {
+          deleteMany: {},
+          create: ticket.messages
+        }
+      },
+      create: {
+        ticketNumber: ticket.ticketNumber,
+        source: ticket.source,
+        status: ticket.status,
+        priority: ticket.priority,
+        category: ticket.category,
+        subCategory: ticket.subCategory,
+        subject: ticket.subject,
+        description: ticket.description,
+        customerId: ticket.customerId,
+        sellerId: ticket.sellerId,
+        parentOrderId: ticket.parentOrderId,
+        subOrderId: ticket.subOrderId,
+        createdByUserId: ticket.createdByUserId,
+        assignedToUserId: ticket.assignedToUserId,
+        slaDueAt: ticket.slaDueAt,
+        metadata: ticket.metadata,
+        messages: {
+          create: ticket.messages
+        }
+      }
+    });
+  }
+}
+
 async function seedQueuesAndSettings() {
   const requests = [
     { id: "demo-product-request-1", sellerId: "demo-seller-fresh", categoryId: "packaged-food", name: "Handmade Garlic Chutney", unit: "200 g jar", hsn: "2103", imageUrl: "demo://bazaar-setu/uploads/garlic-chutney.jpg", status: "PENDING" as ApprovalStatus, aiExtractedFields: { name: "Garlic Chutney", unit: "200 g", fssaiLikely: true } },
@@ -718,6 +898,7 @@ async function main() {
   await seedUsersAndSellers();
   await seedCustomers();
   await seedOrders();
+  await seedSupportTickets();
   await seedQueuesAndSettings();
   console.log(`Seeded Bazaar Setu demo data: ${categories.length} categories, ${products.length} products, ${sellers.length} sellers.`);
 }

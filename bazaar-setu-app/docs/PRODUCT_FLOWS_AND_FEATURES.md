@@ -53,7 +53,9 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
 
 8. Support and reorder
    - Customer can view order history.
-   - Support flow routes issues to Ops/Admin.
+   - Customer can raise order, refund, payment, address, seller, or delivery issues from Help Center.
+   - Customer support tickets can be linked to a parent order and seller sub-order.
+   - Support replies appear in the ticket history and can be sent as customer notifications.
    - Reorder can be built from previous order items.
 
 9. Become a seller
@@ -73,6 +75,8 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
 - Payment methods controlled by admin
 - Rewards display and earning rules
 - Order history and seller-wise timeline
+- Help Center with order-linked support ticket creation
+- Customer-visible support replies and ticket status
 - Notifications published by admin
 - Become-a-seller lead submission
 - Support/refund visibility
@@ -134,6 +138,12 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
    - Seller can view order count, revenue, SLA health, cancellation/rejection reasons, low-stock items, category sales, and COD/prepaid mix.
    - Downloadable detailed reports are planned for production.
 
+10. Seller support and escalation
+   - Seller can raise Ops support tickets for order blockers, delivery pickup, invoice/label print issues, payouts, catalogue, and documents.
+   - Seller tickets can be linked to the affected sub-order.
+   - Ops replies appear in seller ticket history and can be sent as seller notifications.
+   - Prepaid order rejection automatically creates an Ops refund-review ticket so refunds do not depend on manual discovery.
+
 ## Seller Feature List
 
 - OTP/session login
@@ -160,6 +170,8 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
 - Printable invoice and label formats
 - SLA timeline events
 - Analytics and reports
+- Seller Help flow with Ops escalation
+- Order-linked support tickets for pickup, print, payout, catalogue, and documents
 
 ## Ops/Admin Start-To-End Flow
 
@@ -212,6 +224,13 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
    - Ops/Admin should export order, refund, inventory, seller, compliance, settlement, and SLA reports.
    - Production needs audit logs, role-specific permissions, and compliance-ready exports.
 
+11. Support desk and escalation monitoring
+   - Ops/Admin sees customer, seller, and system-created tickets in one Support Desk.
+   - Ticket statuses include New, Assigned, Waiting Customer, Waiting Seller, Waiting Delivery, Refund Review, Resolved, and Reopened.
+   - Ticket priority drives support SLA: Critical 1 hour, High 2 hours, Medium 6 hours, Low 24 hours.
+   - Ops can add internal notes, reply to customers, reply to sellers, change status/priority, and monitor breached support SLAs.
+   - Refund-review tickets are created automatically for prepaid seller rejection flows.
+
 ## Ops/Admin Feature List
 
 - Admin/support RBAC
@@ -230,6 +249,10 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
 - Payment vendor settings
 - Reward configuration
 - Support notes on order timeline
+- Support Desk with ticket assignment/status/priority/SLA
+- Customer and seller visible support replies
+- Internal support notes hidden from external users
+- Automatic refund-review support ticket on prepaid rejection
 - Compliance reporting planned
 - Downloadable operational reports planned
 
@@ -250,6 +273,9 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
 - Payment/reward settings
 - Protected `/api/ops/*` backend
 - Admin web OTP login with protected backend actions
+- Customer Help Center and seller Help escalation screens
+- Ops/Admin Support Desk with four seeded demo tickets
+- System-created refund-review support ticket flow
 - Customer and seller APK demo fallback data
 - Secure mobile session persistence with refresh/logout
 - API-backed customer address and payment selection in checkout
@@ -261,8 +287,9 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
 1. Add real Google Maps address capture and geocoding.
 2. Add payment gateway integration, refund webhooks, COD reconciliation, and seller settlements.
 3. Add production notification delivery through FCM/APNs and WhatsApp/SMS providers.
-4. Add file/object storage for product photos and compliance documents.
-5. Add biometric/PIN unlock and device/session management for mobile apps.
-6. Add downloadable reports and audit-log exports.
-7. Add CI/CD deployment gates for Prisma migrations, API tests, mobile builds, and staging smoke tests.
-8. Complete legal/FSSAI/GST/legal metrology/privacy/payment reviews before production launch.
+4. Add file/object storage for product photos, support attachments, and compliance documents.
+5. Add support assignment queues, escalation timers, canned replies, call/WhatsApp logging, and satisfaction rating.
+6. Add biometric/PIN unlock and device/session management for mobile apps.
+7. Add downloadable reports and audit-log exports.
+8. Add CI/CD deployment gates for Prisma migrations, API tests, E2E tests, mobile builds, and staging smoke tests.
+9. Complete legal/FSSAI/GST/legal metrology/privacy/payment reviews before production launch.

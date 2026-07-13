@@ -42,6 +42,28 @@ export const demoAddresses = [
   { id: "demo-office-address", type: "office", label: "Office", line1: "Tower B, Bandra Kurla Complex", city: "Mumbai", state: "Maharashtra", pincode: "400051", lat: 19.0676, lng: 72.8676 }
 ];
 
+export const demoSupportTickets = [
+  {
+    id: "demo-ticket-customer-1",
+    ticketNumber: "BST-DEMO-1001",
+    source: "CUSTOMER",
+    status: "WAITING_DELIVERY",
+    priority: "HIGH",
+    category: "late_order",
+    subject: "Customer waiting after seller handover",
+    description: "Order says handed over but the delivery partner has not arrived at my address.",
+    parentOrderId: "demo-order-1005",
+    subOrderId: "demo-sub-1005-a",
+    slaDueAt: new Date(Date.now() + 20 * 60_000).toISOString(),
+    messages: [
+      { id: "demo-ticket-message-1", ticketId: "demo-ticket-customer-1", authorRole: "CUSTOMER", visibility: "CUSTOMER", message: "Please check delivery status. It is already beyond the shown SLA.", createdAt: new Date(Date.now() - 18 * 60_000).toISOString() },
+      { id: "demo-ticket-message-2", ticketId: "demo-ticket-customer-1", authorRole: "SUPPORT", visibility: "CUSTOMER", message: "We are checking with logistics and will update you shortly.", createdAt: new Date(Date.now() - 10 * 60_000).toISOString() }
+    ],
+    createdAt: new Date(Date.now() - 18 * 60_000).toISOString(),
+    updatedAt: new Date(Date.now() - 10 * 60_000).toISOString()
+  }
+];
+
 export const demoConfig = {
   paymentConfig: {
     vendors: [
@@ -60,5 +82,6 @@ export function demoFallback(path: string) {
   if (url.pathname === "/api/customer/config") return demoConfig;
   if (url.pathname === "/api/customer/demo-customer/orders") return demoOrders;
   if (url.pathname === "/api/customer/demo-customer/addresses") return demoAddresses;
+  if (url.pathname === "/api/customer/demo-customer/support-tickets") return demoSupportTickets;
   return undefined;
 }

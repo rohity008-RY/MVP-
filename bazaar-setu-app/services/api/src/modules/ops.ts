@@ -5,6 +5,7 @@ import { writeAuditLog } from "../audit-log.js";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
 import { requireRole } from "../middleware.js";
+import { addSupportMessage, supportTicketInclude } from "../support-service.js";
 
 export const opsRouter = Router();
 opsRouter.use(requireRole("ADMIN", "SUPPORT"));
@@ -22,6 +23,8 @@ const orderStatusSchema = z.enum([
   "REFUNDED"
 ]);
 const paymentStateSchema = z.enum(["PENDING", "PAID", "COD", "REFUND_PENDING", "REFUNDED", "FAILED"]);
+const supportStatusSchema = z.enum(["NEW", "ASSIGNED", "WAITING_CUSTOMER", "WAITING_SELLER", "WAITING_DELIVERY", "REFUND_REVIEW", "RESOLVED", "REOPENED"]);
+const supportPrioritySchema = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
 
 function startOfToday() {
   const date = new Date();
@@ -117,6 +120,9 @@ opsRouter.get("/dashboard", asyncHandler(async (_req, res) => {
     dueSoonSla,
     pendingRefunds,
     sellerLeads,
+    openSupportTickets,
+    criticalSupportTickets,
+    dueSupportTickets,
     statusGroups,
     paymentGroups
   ] = await Promise.all([
@@ -132,6 +138,9 @@ opsRouter.get("/dashboard", asyncHandler(async (_req, res) => {
     prisma.sellerSubOrder.count({ where: buildSlaWhere("dueSoon") }),
     prisma.sellerSubOrder.count({ where: { paymentState: "REFUND_PENDING" } }),
     prisma.sellerLead.count({ where: { status: { in: ["NEW", "CONTACTED"] } } }),
+    prisma.supportTicket.count({ where: { status: { not: "RESOLVED" } } }),
+    prisma.supportTicket.count({ where: { status: { not: "RESOLVED" }, priority: { in: ["HIGH", "CRITICAL"] } } }),
+    prisma.supportTicket.count({ where: { status: { not: "RESOLVED" }, slaDueAt: { lt: new Date() } } }),
     prisma.sellerSubOrder.groupBy({ by: ["status"], _count: true }),
     prisma.sellerSubOrder.groupBy({ by: ["paymentState"], _count: true })
   ]);
@@ -149,6 +158,9 @@ opsRouter.get("/dashboard", asyncHandler(async (_req, res) => {
     dueSoonSla,
     pendingRefunds,
     sellerLeads,
+    openSupportTickets,
+    criticalSupportTickets,
+    dueSupportTickets,
     statusCounts: mapGroupCounts(statusGroups, "status"),
     paymentCounts: mapGroupCounts(paymentGroups, "paymentState")
   });
@@ -310,6 +322,165 @@ opsRouter.patch("/refunds/:subOrderId", asyncHandler(async (req, res) => {
     metadata: input
   });
   return sendOk(res, order);
+}));
+
+opsRouter.get("/support-tickets", asyncHandler(async (req, res) => {
+  const query = z.object({
+    status: supportStatusSchema.optional(),
+    priority: supportPrioritySchema.optional(),
+    assignedToUserId: z.string().optional(),
+    q: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(200).default(100)
+  }).parse(req.query);
+
+  const tickets = await prisma.supportTicket.findMany({
+    where: {
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.priority ? { priority: query.priority } : {}),
+      ...(query.assignedToUserId ? { assignedToUserId: query.assignedToUserId } : {})
+    },
+    include: supportTicketInclude,
+    orderBy: [{ priority: "desc" }, { slaDueAt: "asc" }, { updatedAt: "desc" }],
+    take: query.limit
+  });
+
+  const search = query.q?.trim().toLowerCase();
+  const filtered = search
+    ? tickets.filter((ticket) => {
+        const haystack = [
+          ticket.ticketNumber,
+          ticket.subject,
+          ticket.description,
+          ticket.category,
+          ticket.customer?.user.name,
+          ticket.customer?.user.phone,
+          ticket.seller?.shopName,
+          ticket.seller?.user.phone,
+          ticket.parentOrderId,
+          ticket.subOrderId
+        ].filter(Boolean).join(" ").toLowerCase();
+        return haystack.includes(search);
+      })
+    : tickets;
+
+  return sendOk(res, filtered);
+}));
+
+opsRouter.patch("/support-tickets/:ticketId", asyncHandler(async (req, res) => {
+  const ticketId = getParam(req, "ticketId");
+  const input = z.object({
+    status: supportStatusSchema.optional(),
+    priority: supportPrioritySchema.optional(),
+    assignedToUserId: z.string().optional(),
+    internalNote: z.string().optional(),
+    customerReply: z.string().optional(),
+    sellerReply: z.string().optional()
+  }).parse(req.body);
+
+  const existing = await prisma.supportTicket.findUnique({ where: { id: ticketId } });
+  if (!existing) throw new ApiError(404, "Support ticket not found.", "SUPPORT_TICKET_NOT_FOUND");
+
+  const data: Prisma.SupportTicketUpdateInput = {
+    ...(input.status ? { status: input.status } : {}),
+    ...(input.priority ? { priority: input.priority } : {}),
+    ...(input.assignedToUserId ? { assignedTo: { connect: { id: input.assignedToUserId } } } : {}),
+    ...(input.status === "RESOLVED" ? { resolvedAt: new Date() } : {}),
+    ...(input.status === "REOPENED" ? { reopenedAt: new Date(), resolvedAt: null } : {})
+  };
+
+  const ticket = await prisma.supportTicket.update({
+    where: { id: ticketId },
+    data,
+    include: supportTicketInclude
+  });
+
+  if (input.internalNote?.trim()) {
+    await addSupportMessage({
+      ticketId,
+      authorUserId: req.user?.id,
+      authorRole: req.user?.role ?? "SUPPORT",
+      visibility: "INTERNAL",
+      message: input.internalNote.trim()
+    });
+  }
+  if (input.customerReply?.trim()) {
+    await addSupportMessage({
+      ticketId,
+      authorUserId: req.user?.id,
+      authorRole: req.user?.role ?? "SUPPORT",
+      visibility: "CUSTOMER",
+      message: input.customerReply.trim()
+    });
+    await prisma.notification.create({
+      data: {
+        audience: "customer",
+        type: "system",
+        title: `Support update ${ticket.ticketNumber}`,
+        body: input.customerReply.trim()
+      }
+    });
+  }
+  if (input.sellerReply?.trim()) {
+    await addSupportMessage({
+      ticketId,
+      authorUserId: req.user?.id,
+      authorRole: req.user?.role ?? "SUPPORT",
+      visibility: "SELLER",
+      message: input.sellerReply.trim()
+    });
+    await prisma.notification.create({
+      data: {
+        audience: "seller",
+        type: "system",
+        title: `Support update ${ticket.ticketNumber}`,
+        body: input.sellerReply.trim()
+      }
+    });
+  }
+
+  await writeAuditLog(req, {
+    action: "support_ticket_updated",
+    entityType: "SupportTicket",
+    entityId: ticket.id,
+    metadata: input as Prisma.InputJsonValue
+  });
+
+  const updated = await prisma.supportTicket.findUniqueOrThrow({
+    where: { id: ticketId },
+    include: supportTicketInclude
+  });
+  return sendOk(res, updated);
+}));
+
+opsRouter.post("/support-tickets/:ticketId/messages", asyncHandler(async (req, res) => {
+  const ticketId = getParam(req, "ticketId");
+  const input = z.object({
+    message: z.string().min(2),
+    visibility: z.enum(["INTERNAL", "CUSTOMER", "SELLER", "BOTH"]).default("INTERNAL")
+  }).parse(req.body);
+
+  const ticket = await prisma.supportTicket.findUnique({ where: { id: ticketId } });
+  if (!ticket) throw new ApiError(404, "Support ticket not found.", "SUPPORT_TICKET_NOT_FOUND");
+
+  const message = await addSupportMessage({
+    ticketId,
+    authorUserId: req.user?.id,
+    authorRole: req.user?.role ?? "SUPPORT",
+    visibility: input.visibility,
+    message: input.message
+  });
+
+  await prisma.supportTicket.update({
+    where: { id: ticketId },
+    data: { updatedAt: new Date() }
+  });
+  await writeAuditLog(req, {
+    action: "support_message_added",
+    entityType: "SupportTicket",
+    entityId: ticket.id,
+    metadata: input
+  });
+  return sendOk(res, message, 201);
 }));
 
 opsRouter.get("/seller-verification", asyncHandler(async (_req, res) => {

@@ -17,6 +17,9 @@ export const demoDashboard = {
   dueSoonSla: 2,
   pendingRefunds: 1,
   sellerLeads: 3,
+  openSupportTickets: 4,
+  criticalSupportTickets: 2,
+  dueSupportTickets: 1,
   statusCounts: { PLACED: 1, INVOICE_REQUIRED: 1, BAG_PACKED: 1, HANDED_OVER: 1, DELIVERED: 1, REJECTED: 1, REFUNDED: 1 },
   paymentCounts: { PAID: 4, COD: 1, REFUND_PENDING: 1, REFUNDED: 1 }
 };
@@ -273,6 +276,110 @@ export const demoLeads = [
   { id: "demo-seller-lead-3", name: "Aman Verma", phone: "+919876543212", notes: "Hostel laundry and essentials cart lead.", status: "NEW", createdAt: iso(-310) }
 ];
 
+export const demoSupportTickets = [
+  {
+    id: "demo-ticket-1001",
+    ticketNumber: "BST-DEMO-1001",
+    source: "CUSTOMER",
+    status: "WAITING_DELIVERY",
+    priority: "HIGH",
+    category: "late_order",
+    subCategory: "handover_delay",
+    subject: "Customer waiting after seller handover",
+    description: "Order says handed over but delivery partner has not arrived.",
+    customerId: "demo-customer",
+    sellerId: "demo-seller-fresh",
+    parentOrderId: "demo-order-1005",
+    subOrderId: "demo-sub-1005-a",
+    slaDueAt: iso(20),
+    customer: { user: { name: "Rahul Kumar", phone: "+919876543210" } },
+    seller: { shopName: "Nirmala's Kitchen", user: { phone: "+919876544321" } },
+    assignedTo: { name: "Vikram Support", phone: "+919000000002" },
+    messages: [
+      { id: "m1", ticketId: "demo-ticket-1001", authorRole: "CUSTOMER", visibility: "CUSTOMER", message: "Please check delivery status. It is already beyond the shown SLA.", createdAt: iso(-18) },
+      { id: "m2", ticketId: "demo-ticket-1001", authorRole: "SUPPORT", visibility: "CUSTOMER", message: "We are checking with logistics and will update you shortly.", createdAt: iso(-10) },
+      { id: "m3", ticketId: "demo-ticket-1001", authorRole: "SUPPORT", visibility: "INTERNAL", message: "Call delivery partner and validate last scan.", createdAt: iso(-8) }
+    ],
+    createdAt: iso(-18),
+    updatedAt: iso(-8)
+  },
+  {
+    id: "demo-ticket-1002",
+    ticketNumber: "BST-DEMO-1002",
+    source: "SELLER",
+    status: "WAITING_DELIVERY",
+    priority: "HIGH",
+    category: "delivery_exception",
+    subCategory: "pickup_delay",
+    subject: "Courier partner not assigned",
+    description: "Manual invoice order is ready but no delivery partner is assigned.",
+    customerId: "demo-customer-ria",
+    sellerId: "demo-seller-meat",
+    parentOrderId: "demo-order-1004",
+    subOrderId: "demo-sub-1004-a",
+    slaDueAt: iso(45),
+    customer: { user: { name: "Ria Shah", phone: "+919876543211" } },
+    seller: { shopName: "FreshCut Halal & Seafood", user: { phone: "+919876544322" } },
+    assignedTo: { name: "Vikram Support", phone: "+919000000002" },
+    messages: [
+      { id: "m4", ticketId: "demo-ticket-1002", authorRole: "SELLER", visibility: "SELLER", message: "Order is prepared. Need pickup assignment quickly.", createdAt: iso(-14) },
+      { id: "m5", ticketId: "demo-ticket-1002", authorRole: "SUPPORT", visibility: "SELLER", message: "Ops is checking available delivery riders near Bandra.", createdAt: iso(-5) }
+    ],
+    createdAt: iso(-14),
+    updatedAt: iso(-5)
+  },
+  {
+    id: "demo-ticket-1003",
+    ticketNumber: "BST-DEMO-1003",
+    source: "SYSTEM",
+    status: "REFUND_REVIEW",
+    priority: "CRITICAL",
+    category: "refund",
+    subCategory: "prepaid_rejection",
+    subject: "Prepaid rejected order needs refund closure",
+    description: "Seller rejected a prepaid order. Refund is pending customer closure.",
+    customerId: "demo-customer-ria",
+    sellerId: "demo-seller-meat",
+    parentOrderId: "demo-order-1002",
+    subOrderId: "demo-sub-1002-a",
+    slaDueAt: iso(-5),
+    customer: { user: { name: "Ria Shah", phone: "+919876543211" } },
+    seller: { shopName: "FreshCut Halal & Seafood", user: { phone: "+919876544322" } },
+    assignedTo: { name: "Vikram Support", phone: "+919000000002" },
+    messages: [
+      { id: "m6", ticketId: "demo-ticket-1003", authorRole: "SYSTEM", visibility: "INTERNAL", message: "Refund pending after seller rejection. Verify payment gateway state.", createdAt: iso(-48) },
+      { id: "m7", ticketId: "demo-ticket-1003", authorRole: "SUPPORT", visibility: "CUSTOMER", message: "Your refund has been queued and will be updated after payment gateway confirmation.", createdAt: iso(-32) }
+    ],
+    createdAt: iso(-48),
+    updatedAt: iso(-32)
+  },
+  {
+    id: "demo-ticket-1004",
+    ticketNumber: "BST-DEMO-1004",
+    source: "SELLER",
+    status: "ASSIGNED",
+    priority: "MEDIUM",
+    category: "print_issue",
+    subCategory: "thermal_label",
+    subject: "80mm label text is not fitting",
+    description: "Seller needs help printing the customer label in 80mm thermal size.",
+    customerId: "demo-customer",
+    sellerId: "demo-seller-fresh",
+    parentOrderId: "demo-order-1001",
+    subOrderId: "demo-sub-1001-a",
+    slaDueAt: iso(180),
+    customer: { user: { name: "Rahul Kumar", phone: "+919876543210" } },
+    seller: { shopName: "Nirmala's Kitchen", user: { phone: "+919876544321" } },
+    assignedTo: { name: "Vikram Support", phone: "+919000000002" },
+    messages: [
+      { id: "m8", ticketId: "demo-ticket-1004", authorRole: "SELLER", visibility: "SELLER", message: "Thermal label is cutting customer address. Need alternate size.", createdAt: iso(-28) },
+      { id: "m9", ticketId: "demo-ticket-1004", authorRole: "SUPPORT", visibility: "SELLER", message: "Try 4x6 for this shipment while we inspect thermal formatting.", createdAt: iso(-20) }
+    ],
+    createdAt: iso(-28),
+    updatedAt: iso(-20)
+  }
+];
+
 export const demoSettings = {
   paymentConfig: {
     vendors: [
@@ -327,6 +434,7 @@ export function demoFallback(path: string) {
   if (pathname === "/api/ops/refunds") return demoRefunds;
   if (pathname === "/api/ops/seller-verification" || pathname === "/api/admin/sellers") return demoSellers;
   if (pathname === "/api/ops/catalogue-requests" || pathname === "/api/admin/product-requests") return demoCatalogueRequests;
+  if (pathname === "/api/ops/support-tickets") return demoSupportTickets;
   if (pathname === "/api/admin/orders") return demoOrders;
   if (pathname === "/api/admin/notifications") return demoNotifications;
   if (pathname === "/api/admin/seller-leads") return demoLeads;

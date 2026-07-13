@@ -70,6 +70,9 @@ export async function apiSend<T>(path: string, method: string, body: unknown): P
       if (json.error?.code === "AUTH_REQUIRED" && path.includes("/addresses")) {
         return { id: `demo-address-${Date.now()}`, ...(body as object) } as T;
       }
+      if (json.error?.code === "AUTH_REQUIRED" && path.includes("/support-tickets")) {
+        return { id: `demo-ticket-${Date.now()}`, ticketNumber: "BST-DEMO-NEW", status: "NEW", priority: "MEDIUM", messages: [], ...(body as object) } as T;
+      }
       if (json.error?.code === "AUTH_REQUIRED" && path.endsWith("/seller-leads")) {
         return { id: `demo-lead-${Date.now()}`, status: "NEW", ...(body as object) } as T;
       }
@@ -79,6 +82,7 @@ export async function apiSend<T>(path: string, method: string, body: unknown): P
   } catch (error) {
     if (path.endsWith("/orders")) return { id: `demo-order-${Date.now()}`, status: "PLACED" } as T;
     if (path.includes("/addresses")) return { id: `demo-address-${Date.now()}`, ...(body as object) } as T;
+    if (path.includes("/support-tickets")) return { id: `demo-ticket-${Date.now()}`, ticketNumber: "BST-DEMO-NEW", status: "NEW", priority: "MEDIUM", messages: [], ...(body as object) } as T;
     if (path.endsWith("/seller-leads")) return { id: `demo-lead-${Date.now()}`, status: "NEW", ...(body as object) } as T;
     throw error;
   }

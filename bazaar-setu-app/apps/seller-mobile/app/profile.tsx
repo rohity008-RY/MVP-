@@ -48,6 +48,9 @@ export default function SellerProfile() {
           </Card>
           <Card title="Compliance Documents" copy="FSSAI, GSTIN, PAN, Legal Metrology, shop proof, and bank proof are visible to Ops for approval." />
           <Card title="Locations" copy="Multiple pickup locations with exact Google Maps lat/lng are supported in backend profile flow." />
+          <Card title="Need help?" copy="Ask Ops about payouts, documents, catalogue, delivery, invoice, or label printing.">
+            <Link href="/help" asChild><Pressable style={styles.primary}><Text style={styles.primaryText}>Open Seller Support</Text></Pressable></Link>
+          </Card>
           <Pressable onPress={saveProfile} style={styles.primary}><Text style={styles.primaryText}>Save profile settings</Text></Pressable>
           <Text style={styles.meta}>{message}</Text>
           {user ? <Pressable onPress={logoutSession} style={styles.logout}><Text style={styles.dangerText}>Logout</Text></Pressable> : null}

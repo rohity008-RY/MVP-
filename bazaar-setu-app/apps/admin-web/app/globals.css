@@ -476,6 +476,67 @@ small {
   font-weight: 700;
 }
 
+.support-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ticket-card .panel-header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.ticket-card .panel-header small {
+  font-weight: 800;
+}
+
+.ticket-summary,
+.message-list,
+.support-form {
+  display: grid;
+  gap: 8px;
+}
+
+.ticket-summary span {
+  color: #6f6f84;
+  font-weight: 700;
+}
+
+.danger-text {
+  color: #b42222 !important;
+}
+
+.ticket-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.message-row {
+  display: grid;
+  gap: 4px;
+  border-left: 3px solid #ffddd2;
+  padding: 8px 10px;
+  background: #fffaf7;
+}
+
+.message-row b {
+  color: #7a2e18;
+  font-size: 11px;
+}
+
+.message-row span {
+  color: #4f4f63;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.support-form {
+  border-top: 1px solid #eceae6;
+  padding-top: 12px;
+}
+
 @media (max-width: 900px) {
   .shell {
     grid-template-columns: 1fr;
@@ -491,6 +552,11 @@ small {
   }
 
   .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .support-grid,
+  .ticket-meta-grid {
     grid-template-columns: 1fr;
   }
 

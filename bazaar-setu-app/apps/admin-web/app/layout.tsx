@@ -12,6 +12,7 @@ const nav = [
   ["/login", "Login"],
   ["/ops", "Ops Backend"],
   ["/orders", "Orders"],
+  ["/support", "Support"],
   ["/sellers", "Sellers"],
   ["/requests", "Product Requests"],
   ["/settings", "Settings"]

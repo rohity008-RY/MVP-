@@ -176,6 +176,62 @@ export interface Notification {
   createdAt: string;
 }
 
+export type SupportTicketStatus =
+  | "NEW"
+  | "ASSIGNED"
+  | "WAITING_CUSTOMER"
+  | "WAITING_SELLER"
+  | "WAITING_DELIVERY"
+  | "REFUND_REVIEW"
+  | "RESOLVED"
+  | "REOPENED";
+
+export type SupportTicketPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+export type SupportTicketSource = "CUSTOMER" | "SELLER" | "OPS" | "SYSTEM";
+
+export type SupportMessageVisibility = "INTERNAL" | "CUSTOMER" | "SELLER" | "BOTH";
+
+export interface SupportTicketMessage {
+  id: string;
+  ticketId: string;
+  authorUserId?: string | null;
+  authorRole: string;
+  visibility: SupportMessageVisibility;
+  message: string;
+  attachments?: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+export interface SupportTicket {
+  id: string;
+  ticketNumber: string;
+  source: SupportTicketSource;
+  status: SupportTicketStatus;
+  priority: SupportTicketPriority;
+  category: string;
+  subCategory?: string | null;
+  subject: string;
+  description: string;
+  customerId?: string | null;
+  sellerId?: string | null;
+  parentOrderId?: string | null;
+  subOrderId?: string | null;
+  assignedToUserId?: string | null;
+  slaDueAt?: string | null;
+  resolvedAt?: string | null;
+  reopenedAt?: string | null;
+  metadata?: Record<string, unknown> | null;
+  customer?: { user?: { name: string; phone: string } } | null;
+  seller?: { shopName: string; user?: { phone: string; email?: string | null } } | null;
+  parentOrder?: { id: string; status: string; paymentState: string } | null;
+  subOrder?: { id: string; status: string; paymentState: string; invoiceNumber?: string | null; items?: OrderItem[] } | null;
+  assignedTo?: { name: string; phone: string } | null;
+  messages: SupportTicketMessage[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SellerLead {
   id: string;
   customerId?: string;

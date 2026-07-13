@@ -13,6 +13,9 @@ type Dashboard = {
   dueSoonSla: number;
   pendingRefunds: number;
   sellerLeads: number;
+  openSupportTickets: number;
+  criticalSupportTickets: number;
+  dueSupportTickets: number;
 };
 
 export default async function DashboardPage() {
@@ -21,7 +24,7 @@ export default async function DashboardPage() {
     ["Orders", dashboard.totalOrders, `${dashboard.todayOrders} created today`],
     ["Active Sub-orders", dashboard.activeSubOrders, `${dashboard.breachedSla} SLA breached, ${dashboard.dueSoonSla} due soon`],
     ["Live Sellers", dashboard.liveSellers, `${dashboard.disabledSellers} disabled stores`],
-    ["Ops Queue", dashboard.pendingProductRequests + dashboard.pendingDocuments + dashboard.pendingRefunds, "Catalogue, documents, refunds"]
+    ["Support Queue", dashboard.openSupportTickets, `${dashboard.criticalSupportTickets} high priority, ${dashboard.dueSupportTickets} SLA due`]
   ];
 
   return (
@@ -62,6 +65,10 @@ export default async function DashboardPage() {
             <div className="todo-row">
               <span className="dot blue" />
               Review {dashboard.sellerLeads} seller lead{dashboard.sellerLeads === 1 ? "" : "s"} from customers.
+            </div>
+            <div className="todo-row">
+              <span className="dot orange" />
+              Work {dashboard.openSupportTickets} open support ticket{dashboard.openSupportTickets === 1 ? "" : "s"} across customer, seller, and refund queues.
             </div>
           </div>
         </div>

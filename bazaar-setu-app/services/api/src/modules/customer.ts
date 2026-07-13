@@ -1,8 +1,10 @@
 import { Router } from "express";
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
 import { requireCustomerAccess, requireRole } from "../middleware.js";
+import { addSupportMessage, createSupportTicket, filterTicketMessages, supportTicketInclude } from "../support-service.js";
 
 export const customerRouter = Router();
 
@@ -130,6 +132,117 @@ customerRouter.post("/:customerId/seller-leads", asyncHandler(async (req, res) =
     data: { ...input, customer: { connect: { id: customerId } } }
   });
   return sendOk(res, lead, 201);
+}));
+
+customerRouter.get("/:customerId/support-tickets", asyncHandler(async (req, res) => {
+  const customerId = getParam(req, "customerId");
+  const query = z.object({
+    status: z.enum(["NEW", "ASSIGNED", "WAITING_CUSTOMER", "WAITING_SELLER", "WAITING_DELIVERY", "REFUND_REVIEW", "RESOLVED", "REOPENED"]).optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(50)
+  }).parse(req.query);
+
+  const tickets = await prisma.supportTicket.findMany({
+    where: {
+      customerId,
+      ...(query.status ? { status: query.status } : {})
+    },
+    include: supportTicketInclude,
+    orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+    take: query.limit
+  });
+
+  return sendOk(res, tickets.map((ticket) => filterTicketMessages(ticket, "customer")));
+}));
+
+customerRouter.post("/:customerId/support-tickets", asyncHandler(async (req, res) => {
+  const customerId = getParam(req, "customerId");
+  const input = z.object({
+    category: z.string().min(2),
+    subCategory: z.string().optional(),
+    subject: z.string().min(3),
+    description: z.string().min(5),
+    priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).default("MEDIUM"),
+    parentOrderId: z.string().optional(),
+    subOrderId: z.string().optional(),
+    preferredContact: z.enum(["chat", "call", "whatsapp"]).default("chat"),
+    attachments: z.array(z.object({ name: z.string(), url: z.string() })).optional()
+  }).parse(req.body);
+
+  let sellerId: string | undefined;
+  let parentOrderId = input.parentOrderId;
+  if (input.subOrderId) {
+    const subOrder = await prisma.sellerSubOrder.findFirst({
+      where: { id: input.subOrderId, parentOrder: { customerId } }
+    });
+    if (!subOrder) throw new ApiError(404, "Sub-order not found for this customer.", "SUB_ORDER_NOT_FOUND");
+    sellerId = subOrder.sellerId;
+    parentOrderId = subOrder.parentOrderId;
+  } else if (parentOrderId) {
+    const parentOrder = await prisma.parentOrder.findFirst({
+      where: { id: parentOrderId, customerId }
+    });
+    if (!parentOrder) throw new ApiError(404, "Order not found for this customer.", "ORDER_NOT_FOUND");
+  }
+
+  const ticket = await createSupportTicket({
+    source: "CUSTOMER",
+    category: input.category,
+    subCategory: input.subCategory,
+    subject: input.subject,
+    description: input.description,
+    priority: input.priority,
+    customerId,
+    sellerId,
+    parentOrderId,
+    subOrderId: input.subOrderId,
+    createdByUserId: req.user?.id,
+    metadata: {
+      preferredContact: input.preferredContact,
+      attachments: input.attachments ?? []
+    }
+  });
+
+  await prisma.notification.create({
+    data: {
+      audience: "admin",
+      type: "system",
+      title: `New customer support ticket ${ticket.ticketNumber}`,
+      body: `${ticket.subject} · ${ticket.priority}`
+    }
+  });
+
+  return sendOk(res, filterTicketMessages(ticket, "customer"), 201);
+}));
+
+customerRouter.post("/:customerId/support-tickets/:ticketId/messages", asyncHandler(async (req, res) => {
+  const customerId = getParam(req, "customerId");
+  const ticketId = getParam(req, "ticketId");
+  const input = z.object({
+    message: z.string().min(2),
+    attachments: z.array(z.object({ name: z.string(), url: z.string() })).optional()
+  }).parse(req.body);
+
+  const ticket = await prisma.supportTicket.findFirst({ where: { id: ticketId, customerId } });
+  if (!ticket) throw new ApiError(404, "Support ticket not found.", "SUPPORT_TICKET_NOT_FOUND");
+
+  await addSupportMessage({
+    ticketId,
+    authorUserId: req.user?.id,
+    authorRole: "CUSTOMER",
+    visibility: "CUSTOMER",
+    message: input.message,
+    attachments: input.attachments as Prisma.InputJsonValue | undefined
+  });
+
+  const updated = await prisma.supportTicket.update({
+    where: { id: ticketId },
+    data: {
+      status: ticket.status === "RESOLVED" ? "REOPENED" : "ASSIGNED",
+      reopenedAt: ticket.status === "RESOLVED" ? new Date() : ticket.reopenedAt
+    },
+    include: supportTicketInclude
+  });
+  return sendOk(res, filterTicketMessages(updated, "customer"));
 }));
 
 customerRouter.get("/:customerId/orders", asyncHandler(async (req, res) => {

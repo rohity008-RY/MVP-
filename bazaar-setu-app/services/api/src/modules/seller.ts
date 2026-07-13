@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
 import { requireRole, requireSellerAccess } from "../middleware.js";
+import { addSupportMessage, createSupportTicket, createSystemTicketForSubOrder, filterTicketMessages, supportTicketInclude } from "../support-service.js";
 
 export const sellerRouter = Router();
 sellerRouter.use("/:sellerId", requireRole("SELLER", "ADMIN", "SUPPORT"), requireSellerAccess("sellerId"));
@@ -198,6 +199,17 @@ sellerRouter.patch("/:sellerId/orders/:subOrderId", asyncHandler(async (req, res
   update.timeline = [...timeline, { status: update.status, at: new Date().toISOString(), note: input.reason }];
 
   const order = await prisma.sellerSubOrder.update({ where: { id: subOrderId }, data: update });
+  if (input.action === "reject" && order.paymentState === "REFUND_PENDING") {
+    await createSystemTicketForSubOrder({
+      subOrderId: order.id,
+      category: "refund",
+      subject: "Prepaid order rejected, refund review needed",
+      description: input.reason ?? "Seller rejected a prepaid order. Ops needs to review refund and customer communication.",
+      priority: "HIGH",
+      status: "REFUND_REVIEW",
+      metadata: { rejectReason: input.reason, sellerId }
+    });
+  }
   return sendOk(res, order);
 }));
 
@@ -325,4 +337,110 @@ sellerRouter.post("/:sellerId/product-requests", asyncHandler(async (req, res) =
     }
   });
   return sendOk(res, request, 201);
+}));
+
+sellerRouter.get("/:sellerId/support-tickets", asyncHandler(async (req, res) => {
+  const sellerId = getParam(req, "sellerId");
+  const query = z.object({
+    status: z.enum(["NEW", "ASSIGNED", "WAITING_CUSTOMER", "WAITING_SELLER", "WAITING_DELIVERY", "REFUND_REVIEW", "RESOLVED", "REOPENED"]).optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(50)
+  }).parse(req.query);
+
+  const tickets = await prisma.supportTicket.findMany({
+    where: {
+      sellerId,
+      ...(query.status ? { status: query.status } : {})
+    },
+    include: supportTicketInclude,
+    orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+    take: query.limit
+  });
+
+  return sendOk(res, tickets.map((ticket) => filterTicketMessages(ticket, "seller")));
+}));
+
+sellerRouter.post("/:sellerId/support-tickets", asyncHandler(async (req, res) => {
+  const sellerId = getParam(req, "sellerId");
+  const input = z.object({
+    category: z.string().min(2),
+    subCategory: z.string().optional(),
+    subject: z.string().min(3),
+    description: z.string().min(5),
+    priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).default("MEDIUM"),
+    subOrderId: z.string().optional(),
+    preferredContact: z.enum(["chat", "call", "whatsapp"]).default("chat"),
+    attachments: z.array(z.object({ name: z.string(), url: z.string() })).optional()
+  }).parse(req.body);
+
+  let customerId: string | undefined;
+  let parentOrderId: string | undefined;
+  if (input.subOrderId) {
+    const subOrder = await prisma.sellerSubOrder.findFirst({
+      where: { id: input.subOrderId, sellerId },
+      include: { parentOrder: true }
+    });
+    if (!subOrder) throw new ApiError(404, "Sub-order not found for this seller.", "SUB_ORDER_NOT_FOUND");
+    customerId = subOrder.parentOrder.customerId;
+    parentOrderId = subOrder.parentOrderId;
+  }
+
+  const ticket = await createSupportTicket({
+    source: "SELLER",
+    category: input.category,
+    subCategory: input.subCategory,
+    subject: input.subject,
+    description: input.description,
+    priority: input.priority,
+    customerId,
+    sellerId,
+    parentOrderId,
+    subOrderId: input.subOrderId,
+    createdByUserId: req.user?.id,
+    metadata: {
+      preferredContact: input.preferredContact,
+      attachments: input.attachments ?? []
+    }
+  });
+
+  await prisma.notification.create({
+    data: {
+      audience: "admin",
+      type: "system",
+      title: `New seller support ticket ${ticket.ticketNumber}`,
+      body: `${ticket.subject} · ${ticket.priority}`
+    }
+  });
+
+  return sendOk(res, filterTicketMessages(ticket, "seller"), 201);
+}));
+
+sellerRouter.post("/:sellerId/support-tickets/:ticketId/messages", asyncHandler(async (req, res) => {
+  const sellerId = getParam(req, "sellerId");
+  const ticketId = getParam(req, "ticketId");
+  const input = z.object({
+    message: z.string().min(2),
+    attachments: z.array(z.object({ name: z.string(), url: z.string() })).optional()
+  }).parse(req.body);
+
+  const ticket = await prisma.supportTicket.findFirst({ where: { id: ticketId, sellerId } });
+  if (!ticket) throw new ApiError(404, "Support ticket not found.", "SUPPORT_TICKET_NOT_FOUND");
+
+  await addSupportMessage({
+    ticketId,
+    authorUserId: req.user?.id,
+    authorRole: "SELLER",
+    visibility: "SELLER",
+    message: input.message,
+    attachments: input.attachments as Prisma.InputJsonValue | undefined
+  });
+
+  const updated = await prisma.supportTicket.update({
+    where: { id: ticketId },
+    data: {
+      status: ticket.status === "RESOLVED" ? "REOPENED" : "ASSIGNED",
+      reopenedAt: ticket.status === "RESOLVED" ? new Date() : ticket.reopenedAt
+    },
+    include: supportTicketInclude
+  });
+  return sendOk(res, filterTicketMessages(updated, "seller"));
 }));

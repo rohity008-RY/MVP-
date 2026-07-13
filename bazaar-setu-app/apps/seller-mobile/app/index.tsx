@@ -26,6 +26,7 @@ export default function SellerDashboard() {
           <Tile href="/products" label="Products" sub="Catalogue and inventory" />
           <Tile href="/ai" label="AI Help" sub="Hindi/English assistant" />
           <Tile href="/analytics" label="Analytics" sub="Sales and SLA" />
+          <Tile href="/help" label="Need Help" sub="Pickup, payout, documents" />
           <Tile href="/profile" label="Profile" sub="Docs, SLA, payments" />
         </View>
       </View>

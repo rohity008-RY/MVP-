@@ -30,6 +30,9 @@ Base URL: `http://127.0.0.1:5010`
 - `PUT /api/customer/:customerId/addresses/:addressId`
 - `DELETE /api/customer/:customerId/addresses/:addressId`
 - `POST /api/customer/:customerId/seller-leads`
+- `GET /api/customer/:customerId/support-tickets?status=&limit=`
+- `POST /api/customer/:customerId/support-tickets`
+- `POST /api/customer/:customerId/support-tickets/:ticketId/messages`
 - `GET /api/customer/:customerId/orders`
 - `POST /api/customer/:customerId/orders`
 
@@ -45,6 +48,9 @@ Base URL: `http://127.0.0.1:5010`
 - `PATCH /api/seller/:sellerId/orders/:subOrderId`
 - `GET /api/seller/:sellerId/orders/:subOrderId/document?type=invoice|label&format=a4|a5|4x6|80mm`
 - `POST /api/seller/:sellerId/product-requests`
+- `GET /api/seller/:sellerId/support-tickets?status=&limit=`
+- `POST /api/seller/:sellerId/support-tickets`
+- `POST /api/seller/:sellerId/support-tickets/:ticketId/messages`
 
 ## Admin
 
@@ -66,12 +72,22 @@ Base URL: `http://127.0.0.1:5010`
 ## Ops
 
 - `GET /api/ops/dashboard`
+- `GET /api/ops/orders?status=&paymentState=&sellerId=&sla=&q=&limit=`
 - `GET /api/ops/sla`
-- `POST /api/ops/sub-orders/:subOrderId/notes`
+- `PATCH /api/ops/sub-orders/:subOrderId/note`
 - `GET /api/ops/refunds`
 - `PATCH /api/ops/refunds/:subOrderId`
+- `GET /api/ops/support-tickets?status=&priority=&assignedToUserId=&q=&limit=`
+- `PATCH /api/ops/support-tickets/:ticketId`
+- `POST /api/ops/support-tickets/:ticketId/messages`
 - `GET /api/ops/seller-verification`
-- `PATCH /api/ops/seller-documents/:documentId`
-- `PATCH /api/ops/sellers/:sellerId/live-state`
+- `PATCH /api/ops/documents/:documentId`
+- `PATCH /api/ops/sellers/:sellerId/live`
 - `GET /api/ops/catalogue-requests`
 - `PATCH /api/ops/catalogue-requests/:requestId`
+
+## Support Ticket Notes
+
+- Customer and seller ticket messages are filtered by audience. Internal Ops notes are never returned to customer/seller app ticket APIs.
+- Rejected prepaid seller orders automatically create a system support ticket in `REFUND_REVIEW` when refund follow-up is required.
+- Support priority sets a response SLA: critical 1 hour, high 2 hours, medium 6 hours, low 24 hours.

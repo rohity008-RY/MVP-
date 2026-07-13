@@ -64,11 +64,17 @@ export async function apiSend<T>(path: string, method: string, body: unknown): P
         const refreshedJson = await response.json();
         if (refreshedJson.ok) return refreshedJson.data as T;
       }
+      if (json.error?.code === "AUTH_REQUIRED" && path.includes("/support-tickets")) {
+        return { id: `demo-ticket-${Date.now()}`, ticketNumber: "BST-DEMO-NEW", status: "NEW", priority: "MEDIUM", messages: [], ...(body as object) } as T;
+      }
       if (json.error?.code === "AUTH_REQUIRED") return { id: path.split("/").pop(), ...(body as object) } as T;
       throw new Error(json.error?.message ?? "API error");
     }
     return json.data as T;
   } catch (error) {
+    if (path.includes("/support-tickets")) {
+      return { id: `demo-ticket-${Date.now()}`, ticketNumber: "BST-DEMO-NEW", status: "NEW", priority: "MEDIUM", messages: [], ...(body as object) } as T;
+    }
     return { id: path.split("/").pop(), ...(body as object) } as T;
   }
 }

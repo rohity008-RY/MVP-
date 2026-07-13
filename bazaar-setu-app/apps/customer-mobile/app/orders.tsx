@@ -27,6 +27,7 @@ export default function OrdersScreen() {
             <Text style={styles.name}>{item.id}</Text>
             <Text style={styles.meta}>{item.status} · {item.paymentState} · Rs. {item.total}</Text>
             {item.subOrders?.map((subOrder) => <Text key={subOrder.id} style={styles.sub}>{subOrder.id} · {subOrder.status}</Text>)}
+            <Link href="/help" asChild><Pressable style={styles.helpButton}><Text style={styles.helpText}>Need help with this order</Text></Pressable></Link>
           </View>
         )}
       />
@@ -43,5 +44,7 @@ const styles = StyleSheet.create({
   card: { backgroundColor: "#fff", borderRadius: 14, padding: 14, gap: 6 },
   name: { fontWeight: "900" },
   meta: { color: colors.textMuted },
-  sub: { color: colors.brandDark, fontWeight: "700" }
+  sub: { color: colors.brandDark, fontWeight: "700" },
+  helpButton: { marginTop: 6, backgroundColor: "#FFF2EB", borderRadius: 12, padding: 11, alignItems: "center" },
+  helpText: { color: colors.brand, fontWeight: "900" }
 });

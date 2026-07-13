@@ -33,6 +33,7 @@ export default function SellerOrders() {
             <Text style={styles.meta}>{order.status} · {order.paymentState} · Invoice {order.invoiceNumber ?? "pending"}</Text>
             {order.items.map((item) => <Text key={item.productId} style={styles.meta}>{item.name} x {item.qty}</Text>)}
             <OrderActions order={order} sellerId={sellerId} onAction={action} />
+            <Link href="/help" asChild><Pressable style={styles.helpButton}><Text style={styles.helpText}>Need Ops help</Text></Pressable></Link>
           </View>
         ))}
       </View>
@@ -125,6 +126,8 @@ const styles = StyleSheet.create({
   dangerText: { color: colors.red, fontWeight: "900" },
   print: { flex: 1, backgroundColor: "#F1EFEA", borderRadius: 12, padding: 12, alignItems: "center" },
   printText: { color: colors.brandDark, fontWeight: "900" },
+  helpButton: { backgroundColor: "#FFF2EB", borderRadius: 12, padding: 11, alignItems: "center" },
+  helpText: { color: colors.brand, fontWeight: "900" },
   formatRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   formatChip: { borderWidth: 1, borderColor: "#E6E2D8", borderRadius: 10, paddingVertical: 7, paddingHorizontal: 9 },
   formatChipActive: { borderColor: colors.brand, backgroundColor: "#FFF2EB" },

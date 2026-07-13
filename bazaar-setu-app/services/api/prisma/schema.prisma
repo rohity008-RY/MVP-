@@ -50,6 +50,38 @@ enum PaymentState {
   FAILED
 }
 
+enum SupportTicketStatus {
+  NEW
+  ASSIGNED
+  WAITING_CUSTOMER
+  WAITING_SELLER
+  WAITING_DELIVERY
+  REFUND_REVIEW
+  RESOLVED
+  REOPENED
+}
+
+enum SupportTicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SupportTicketSource {
+  CUSTOMER
+  SELLER
+  OPS
+  SYSTEM
+}
+
+enum SupportMessageVisibility {
+  INTERNAL
+  CUSTOMER
+  SELLER
+  BOTH
+}
+
 model User {
   id        String   @id @default(cuid())
   role      UserRole
@@ -62,6 +94,9 @@ model User {
   customerProfile CustomerProfile?
   sellerProfile   SellerProfile?
   sessions        AuthSession[]
+  createdTickets  SupportTicket[]        @relation("SupportTicketCreatedBy")
+  assignedTickets SupportTicket[]        @relation("SupportTicketAssignedTo")
+  supportMessages SupportTicketMessage[]
 }
 
 model OtpChallenge {
@@ -109,6 +144,7 @@ model CustomerProfile {
   addresses   CustomerAddress[]
   orders      ParentOrder[]
   sellerLeads SellerLead[]
+  supportTickets SupportTicket[]
 }
 
 model CustomerAddress {
@@ -150,6 +186,7 @@ model SellerProfile {
   products  SellerProduct[]
   subOrders SellerSubOrder[]
   requests  ProductApprovalRequest[]
+  supportTickets SupportTicket[]
 }
 
 model SellerLocation {
@@ -272,6 +309,7 @@ model ParentOrder {
   customer  CustomerProfile  @relation(fields: [customerId], references: [id])
   address   CustomerAddress  @relation(fields: [addressId], references: [id])
   subOrders SellerSubOrder[]
+  supportTickets SupportTicket[]
 }
 
 model SellerSubOrder {
@@ -292,6 +330,66 @@ model SellerSubOrder {
   parentOrder ParentOrder   @relation(fields: [parentOrderId], references: [id])
   seller      SellerProfile @relation(fields: [sellerId], references: [id])
   items       OrderItem[]
+  supportTickets SupportTicket[]
+}
+
+model SupportTicket {
+  id              String                @id @default(cuid())
+  ticketNumber    String                @unique
+  source          SupportTicketSource
+  status          SupportTicketStatus   @default(NEW)
+  priority        SupportTicketPriority @default(MEDIUM)
+  category        String
+  subCategory     String?
+  subject         String
+  description     String
+  customerId      String?
+  sellerId        String?
+  parentOrderId   String?
+  subOrderId      String?
+  createdByUserId String?
+  assignedToUserId String?
+  slaDueAt        DateTime?
+  resolvedAt      DateTime?
+  reopenedAt      DateTime?
+  metadata        Json?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  customer      CustomerProfile?       @relation(fields: [customerId], references: [id])
+  seller        SellerProfile?         @relation(fields: [sellerId], references: [id])
+  parentOrder   ParentOrder?           @relation(fields: [parentOrderId], references: [id])
+  subOrder      SellerSubOrder?        @relation(fields: [subOrderId], references: [id])
+  createdBy     User?                  @relation("SupportTicketCreatedBy", fields: [createdByUserId], references: [id])
+  assignedTo    User?                  @relation("SupportTicketAssignedTo", fields: [assignedToUserId], references: [id])
+  messages      SupportTicketMessage[]
+
+  @@index([status, priority])
+  @@index([customerId])
+  @@index([sellerId])
+  @@index([parentOrderId])
+  @@index([subOrderId])
+  @@index([assignedToUserId])
+  @@index([createdAt])
+  @@index([slaDueAt])
+}
+
+model SupportTicketMessage {
+  id             String                   @id @default(cuid())
+  ticketId       String
+  authorUserId   String?
+  authorRole     String
+  visibility     SupportMessageVisibility @default(INTERNAL)
+  message        String
+  attachments    Json?
+  createdAt      DateTime                 @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User?         @relation(fields: [authorUserId], references: [id])
+
+  @@index([ticketId])
+  @@index([authorUserId])
+  @@index([createdAt])
 }
 
 model OrderItem {

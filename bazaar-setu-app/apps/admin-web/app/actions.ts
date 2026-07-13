@@ -41,6 +41,20 @@ export async function addOpsNote(formData: FormData) {
   revalidatePath("/orders");
 }
 
+export async function updateSupportTicket(formData: FormData) {
+  const ticketId = getString(formData, "ticketId");
+  await apiSend(`/api/ops/support-tickets/${ticketId}`, "PATCH", {
+    status: getString(formData, "status") || undefined,
+    priority: getString(formData, "priority") || undefined,
+    internalNote: getString(formData, "internalNote") || undefined,
+    customerReply: getString(formData, "customerReply") || undefined,
+    sellerReply: getString(formData, "sellerReply") || undefined
+  });
+  revalidatePath("/support");
+  revalidatePath("/");
+  revalidatePath("/ops");
+}
+
 export async function toggleSellerLive(formData: FormData) {
   const sellerId = getString(formData, "sellerId");
   const storeLive = getString(formData, "storeLive") === "true";

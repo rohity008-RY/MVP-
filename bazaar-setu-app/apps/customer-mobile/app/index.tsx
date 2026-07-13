@@ -29,6 +29,7 @@ export default function CustomerHome() {
         <View style={styles.navRow}>
           <Link href="/cart" asChild><Pressable style={styles.navButton}><Text style={styles.navText}>Cart ({cart.items.length})</Text></Pressable></Link>
           <Link href="/orders" asChild><Pressable style={styles.navButton}><Text style={styles.navText}>Orders</Text></Pressable></Link>
+          <Link href="/help" asChild><Pressable style={styles.navButton}><Text style={styles.navText}>Help</Text></Pressable></Link>
           <Link href="/profile" asChild><Pressable style={styles.navButton}><Text style={styles.navText}>Profile</Text></Pressable></Link>
           {!loggedIn ? <Link href="/login" asChild><Pressable style={styles.navButtonAlt}><Text style={styles.navTextAlt}>Login</Text></Pressable></Link> : null}
         </View>
