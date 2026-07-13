@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { Router } from "express";
 import PDFDocument from "pdfkit";
 import { z } from "zod";
+import { catalogueImagePath } from "../catalogue-images.js";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
 import { requireRole, requireSellerAccess } from "../middleware.js";
@@ -74,7 +75,10 @@ sellerRouter.get("/:sellerId/catalogue", asyncHandler(async (req, res) => {
     where: { active: true, categoryId: { in: seller?.selectedCategoryIds ?? [] } },
     include: { category: true }
   });
-  return sendOk(res, products);
+  return sendOk(res, products.map((product) => ({
+    ...product,
+    imageUrl: product.imageUrl || catalogueImagePath("products", product.id)
+  })));
 }));
 
 sellerRouter.get("/:sellerId/products", asyncHandler(async (req, res) => {
@@ -83,7 +87,13 @@ sellerRouter.get("/:sellerId/products", asyncHandler(async (req, res) => {
     where: { sellerId },
     include: { product: true }
   });
-  return sendOk(res, products);
+  return sendOk(res, products.map((sellerProduct) => ({
+    ...sellerProduct,
+    product: {
+      ...sellerProduct.product,
+      imageUrl: sellerProduct.product.imageUrl || catalogueImagePath("products", sellerProduct.product.id)
+    }
+  })));
 }));
 
 sellerRouter.post("/:sellerId/products", asyncHandler(async (req, res) => {

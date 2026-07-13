@@ -107,6 +107,7 @@ This document describes the start-to-end Bazaar Setu product journey for Custome
    - Seller selects product and adds price/quantity to make it live.
    - Seller edits only seller-controlled fields: price, quantity, active/inactive, tags, SLA override.
    - Product master keeps platform-owned fields: HSN, GST, legal metrology, FSSAI applicability, image, unit, label/invoice name.
+   - Every seeded product/category has a backend-generated default Bazaar Setu image, so sellers can go live even before real product photography is uploaded.
 
 5. Add new product request
    - Seller uploads/captures product photo.

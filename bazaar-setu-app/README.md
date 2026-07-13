@@ -78,7 +78,7 @@ The scaffold includes:
 
 - OTP auth contract, access tokens, refresh sessions, logout, and secure staff provisioning.
 - Customer/seller mobile secure session persistence through Expo SecureStore.
-- Master catalogue, categories, live seller offers, and product approval requests.
+- Master catalogue, categories, backend-generated default product/category images, live seller offers, and product approval requests.
 - Customer addresses with lat/lng, max 5 address rule, editable/deleteable addresses, and API-backed checkout selection.
 - Admin-configured payment methods and rewards surfaced in customer checkout.
 - Multi-seller parent order creation with seller sub-orders.
@@ -112,7 +112,7 @@ This is source scaffolding, not a live-ready production deployment. The API boun
 - Google Maps Places/geocoding keys and address validation.
 - Payment gateway onboarding, refunds, COD reconciliation, seller payout KYC, and settlement jobs.
 - FSSAI/GST/legal metrology review and compliance document verification workflow.
-- Catalogue import governance with licensed/admin-owned product images and HSN/GST review.
+- Catalogue import governance with licensed/admin-owned real product images and HSN/GST review.
 - Object storage for product/document uploads.
 - Push notifications through FCM/APNs.
 - Observability, backups/PITR, production infrastructure hardening, dependency vulnerability resolution, and security testing.

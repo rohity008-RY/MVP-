@@ -9,6 +9,7 @@ import type {
   SupportTicketSource,
   SupportTicketStatus
 } from "@prisma/client";
+import { catalogueImagePath } from "./catalogue-images.js";
 import { prisma } from "./db.js";
 
 type DemoCategory = { id: string; name: string; icon: string };
@@ -200,7 +201,7 @@ function nowMinusMinutes(minutes: number) {
 }
 
 function productImage(id: string) {
-  return `demo://bazaar-setu/products/${id}.svg`;
+  return catalogueImagePath("products", id);
 }
 
 async function seedCategoriesAndProducts() {

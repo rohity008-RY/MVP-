@@ -1,6 +1,7 @@
 import { Router } from "express";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
+import { catalogueImagePath } from "../catalogue-images.js";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
 import { requireCustomerAccess, requireRole } from "../middleware.js";
@@ -29,7 +30,16 @@ customerRouter.get("/home", asyncHandler(async (_req, res) => {
       take: 24
     })
   ]);
-  return sendOk(res, { categories, products });
+  return sendOk(res, {
+    categories: categories.map((category) => ({
+      ...category,
+      imageUrl: catalogueImagePath("categories", category.id)
+    })),
+    products: products.map((product) => ({
+      ...product,
+      imageUrl: product.imageUrl || catalogueImagePath("products", product.id)
+    }))
+  });
 }));
 
 customerRouter.get("/config", asyncHandler(async (_req, res) => {

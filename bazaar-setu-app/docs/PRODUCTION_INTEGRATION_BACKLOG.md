@@ -40,7 +40,7 @@ This tracks the remaining external integrations and hardening work needed before
 
 ## Catalogue And Media
 
-- Replace placeholder product images with licensed/admin-owned assets.
+- Replace backend-generated default product/category image cards with licensed/admin-owned real product photography where required.
 - Add object storage for seller uploaded product photos and compliance documents.
 - Run legal/ToS review before any external catalogue import.
 - Add HSN/GST/legal-metrology review workflow for packaged goods.

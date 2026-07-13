@@ -2,6 +2,7 @@ import type { OrderStatus, PaymentState, Prisma } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
 import { writeAuditLog } from "../audit-log.js";
+import { catalogueImagePath } from "../catalogue-images.js";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
 import { requireRole } from "../middleware.js";
@@ -64,6 +65,9 @@ async function approveProductRequest(requestId: string, reason?: string) {
 
     const baseId = request.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
     const productId = baseId || `product-${request.id.slice(0, 8)}`;
+    const imageUrl = request.imageUrl?.startsWith("demo://") || !request.imageUrl
+      ? catalogueImagePath("products", productId)
+      : request.imageUrl;
     const product = await tx.productMaster.upsert({
       where: { id: productId },
       update: {
@@ -72,7 +76,7 @@ async function approveProductRequest(requestId: string, reason?: string) {
         name: request.name,
         unit: request.unit,
         hsn: request.hsn,
-        imageUrl: request.imageUrl
+        imageUrl
       },
       create: {
         id: productId,
@@ -80,7 +84,7 @@ async function approveProductRequest(requestId: string, reason?: string) {
         name: request.name,
         unit: request.unit,
         hsn: request.hsn,
-        imageUrl: request.imageUrl,
+        imageUrl,
         aliases: [request.name.toLowerCase()],
         fssaiApplicable: true,
         legalMetrology: { netQuantity: request.unit, countryOfOrigin: "India", consumerCare: "Bazaar Setu Support" }

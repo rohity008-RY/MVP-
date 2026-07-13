@@ -20,6 +20,10 @@ Base URL: `http://127.0.0.1:5010`
 
 - `GET /api/catalogue/categories`
 - `GET /api/catalogue/products?q=&categoryId=`
+- `GET /api/catalogue/images/categories/:categoryId.svg`
+- `GET /api/catalogue/images/products/:productId.svg`
+
+Catalogue image endpoints return backend-generated Bazaar Setu SVG cards. They are used as default images for every seeded master product/category so sellers can make products live without uploading photos first.
 
 ## Customer
 
