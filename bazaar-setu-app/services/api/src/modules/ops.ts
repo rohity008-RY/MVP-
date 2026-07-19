@@ -2,9 +2,10 @@ import type { OrderStatus, PaymentState, Prisma } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
 import { writeAuditLog } from "../audit-log.js";
-import { catalogueImagePath } from "../catalogue-images.js";
+import { approveProductRequest, rejectProductRequest } from "../catalogue-approval-service.js";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
+import { rollupParentOrder } from "../order-service.js";
 import { requireRole } from "../middleware.js";
 import { addSupportMessage, supportTicketInclude } from "../support-service.js";
 
@@ -54,59 +55,6 @@ function buildSlaWhere(sla?: "breached" | "dueSoon" | "all"): Prisma.SellerSubOr
     };
   }
   return {};
-}
-
-async function approveProductRequest(requestId: string, reason?: string) {
-  return prisma.$transaction(async (tx) => {
-    const request = await tx.productApprovalRequest.update({
-      where: { id: requestId },
-      data: { status: "APPROVED", reason: reason?.trim() || undefined }
-    });
-
-    const baseId = request.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-    const productId = baseId || `product-${request.id.slice(0, 8)}`;
-    const imageUrl = request.imageUrl?.startsWith("demo://") || !request.imageUrl
-      ? catalogueImagePath("products", productId)
-      : request.imageUrl;
-    const product = await tx.productMaster.upsert({
-      where: { id: productId },
-      update: {
-        active: true,
-        categoryId: request.categoryId,
-        name: request.name,
-        unit: request.unit,
-        hsn: request.hsn,
-        imageUrl
-      },
-      create: {
-        id: productId,
-        categoryId: request.categoryId,
-        name: request.name,
-        unit: request.unit,
-        hsn: request.hsn,
-        imageUrl,
-        aliases: [request.name.toLowerCase()],
-        fssaiApplicable: true,
-        legalMetrology: { netQuantity: request.unit, countryOfOrigin: "India", consumerCare: "Bazaar Setu Support" }
-      }
-    });
-
-    const updatedRequest = await tx.productApprovalRequest.update({
-      where: { id: request.id },
-      data: { productId: product.id }
-    });
-
-    await tx.notification.create({
-      data: {
-        audience: "seller",
-        type: "approval",
-        title: "Product request approved",
-        body: `${request.name} is now available in the Bazaar Setu master catalogue.`
-      }
-    });
-
-    return updatedRequest;
-  });
 }
 
 opsRouter.get("/dashboard", asyncHandler(async (_req, res) => {
@@ -305,19 +253,23 @@ opsRouter.patch("/refunds/:subOrderId", asyncHandler(async (req, res) => {
 
   const paymentState: PaymentState = input.action === "markRefunded" ? "REFUNDED" : "REFUND_PENDING";
   const status: OrderStatus | undefined = input.action === "markRefunded" ? "REFUNDED" : undefined;
-  const order = await prisma.sellerSubOrder.update({
-    where: { id: subOrderId },
-    data: {
-      paymentState,
-      ...(status ? { status } : {}),
-      refundAmount: input.refundAmount ?? current.refundAmount,
-      timeline: appendTimeline(current.timeline, {
-        status: status ?? current.status,
-        tag: "refund",
-        note: input.note ?? (input.action === "markRefunded" ? "Refund marked as completed by Ops." : "Refund marked as pending by Ops."),
-        paymentState
-      })
-    }
+  const order = await prisma.$transaction(async (tx) => {
+    const updated = await tx.sellerSubOrder.update({
+      where: { id: subOrderId },
+      data: {
+        paymentState,
+        ...(status ? { status } : {}),
+        refundAmount: input.refundAmount ?? current.refundAmount,
+        timeline: appendTimeline(current.timeline, {
+          status: status ?? current.status,
+          tag: "refund",
+          note: input.note ?? (input.action === "markRefunded" ? "Refund marked as completed by Ops." : "Refund marked as pending by Ops."),
+          paymentState
+        })
+      }
+    });
+    await rollupParentOrder(tx, updated.parentOrderId);
+    return updated;
   });
   await writeAuditLog(req, {
     action: input.action === "markRefunded" ? "refund_marked_refunded" : "refund_marked_pending",
@@ -591,18 +543,7 @@ opsRouter.patch("/catalogue-requests/:requestId", asyncHandler(async (req, res) 
     return sendOk(res, approved);
   }
 
-  const request = await prisma.productApprovalRequest.update({
-    where: { id: requestId },
-    data: { status: "REJECTED", reason: input.reason }
-  });
-  await prisma.notification.create({
-    data: {
-      audience: "seller",
-      type: "approval",
-      title: "Product request rejected",
-      body: input.reason ?? `${request.name} needs more information before it can be approved.`
-    }
-  });
+  const request = await rejectProductRequest(requestId, input.reason?.trim() ?? "");
   await writeAuditLog(req, {
     action: "catalogue_request_rejected",
     entityType: "ProductApprovalRequest",

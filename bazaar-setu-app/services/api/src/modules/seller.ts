@@ -6,6 +6,7 @@ import { catalogueImagePath } from "../catalogue-images.js";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
 import { requireRole, requireSellerAccess } from "../middleware.js";
+import { buildSellerOrderActionUpdate, rollupParentOrder } from "../order-service.js";
 import { addSupportMessage, createSupportTicket, createSystemTicketForSubOrder, filterTicketMessages, supportTicketInclude } from "../support-service.js";
 
 export const sellerRouter = Router();
@@ -183,33 +184,15 @@ sellerRouter.patch("/:sellerId/orders/:subOrderId", asyncHandler(async (req, res
   const current = await prisma.sellerSubOrder.findFirst({ where: { id: subOrderId, sellerId } });
   if (!seller || !current) throw new ApiError(404, "Order not found.", "ORDER_NOT_FOUND");
 
-  const timeline = Array.isArray(current.timeline) ? current.timeline : [];
-  const update: Prisma.SellerSubOrderUpdateInput = {};
+  const transition = buildSellerOrderActionUpdate(current, seller, input);
 
-  if (input.action === "confirm") {
-    update.status = seller.autoInvoiceEnabled ? "BAG_PACKED" : "INVOICE_REQUIRED";
-    if (seller.autoInvoiceEnabled) {
-      update.invoiceNumber = `BS-${Date.now().toString(36).toUpperCase()}`;
-      update.invoiceMode = "auto";
-    }
-  }
-  if (input.action === "reject") {
-    update.status = "REJECTED";
-    update.rejectReason = input.reason ?? "No reason added";
-    update.paymentState = current.paymentState === "PAID" ? "REFUND_PENDING" : current.paymentState;
-  }
-  if (input.action === "addInvoice") {
-    update.status = "BAG_PACKED";
-    update.invoiceNumber = input.invoiceNumber;
-    update.invoiceMode = "manual";
-  }
-  if (input.action === "handover") update.status = "HANDED_OVER";
-  if (input.action === "delivered") update.status = "DELIVERED";
+  const order = await prisma.$transaction(async (tx) => {
+    const updated = await tx.sellerSubOrder.update({ where: { id: subOrderId }, data: transition.data });
+    await rollupParentOrder(tx, updated.parentOrderId);
+    return updated;
+  });
 
-  update.timeline = [...timeline, { status: update.status, at: new Date().toISOString(), note: input.reason }];
-
-  const order = await prisma.sellerSubOrder.update({ where: { id: subOrderId }, data: update });
-  if (input.action === "reject" && order.paymentState === "REFUND_PENDING") {
+  if (transition.refundReviewNeeded && order.paymentState === "REFUND_PENDING") {
     await createSystemTicketForSubOrder({
       subOrderId: order.id,
       category: "refund",

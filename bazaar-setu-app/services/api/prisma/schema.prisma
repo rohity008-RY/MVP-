@@ -143,6 +143,7 @@ model CustomerProfile {
   user        User              @relation(fields: [userId], references: [id])
   addresses   CustomerAddress[]
   orders      ParentOrder[]
+  rewardLedger RewardLedger[]
   sellerLeads SellerLead[]
   supportTickets SupportTicket[]
 }
@@ -310,6 +311,25 @@ model ParentOrder {
   address   CustomerAddress  @relation(fields: [addressId], references: [id])
   subOrders SellerSubOrder[]
   supportTickets SupportTicket[]
+  rewardLedger RewardLedger[]
+}
+
+model RewardLedger {
+  id            String   @id @default(cuid())
+  customerId    String
+  parentOrderId String?
+  points        Int
+  source        String
+  reason        String
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  customer CustomerProfile @relation(fields: [customerId], references: [id])
+  parentOrder ParentOrder? @relation(fields: [parentOrderId], references: [id])
+
+  @@index([customerId])
+  @@index([parentOrderId])
+  @@index([createdAt])
 }
 
 model SellerSubOrder {

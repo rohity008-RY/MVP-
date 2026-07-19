@@ -122,3 +122,21 @@ Known residual:
 - A Google Cloud account is not logged in locally, so real Cloud Run resources were not created from this machine.
 - A dedicated non-Fynd Bazaar Setu Google Cloud project, GitHub `staging` environment values, and Google Cloud Secret Manager entries must be created before running the deploy workflow.
 - Free Render/Neon/Upstash staging can be used before paid cloud resources, but it has cold starts and free-tier limits.
+
+## Phase 6: Core Marketplace Correctness
+
+Completed:
+
+- Added checkout validation against Admin-enabled payment methods.
+- Added checkout reward calculation with an auditable `RewardLedger` table and customer balance increment.
+- Added a strict seller order transition state machine for confirm, reject, manual invoice, handover, and delivery.
+- Blocked invalid seller lane jumps, including delivery before handover and handover before invoice.
+- Added parent order status/payment rollup after seller order actions and Ops refund actions.
+- Unified Admin and Ops product approval/rejection through shared catalogue approval services.
+- Added focused API unit tests for payment validation, reward calculation, seller order transitions, prepaid rejection refund routing, and parent rollups.
+
+Known residual:
+
+- Online payment methods still create staging/mock pending orders; real provider order creation, capture, webhooks, and refund reconciliation remain required before launch.
+- Role-wise Admin/Support permissions are still coarse and need a formal permission matrix.
+- Reward reversal rules for cancelled/refunded orders still need finance/product policy.

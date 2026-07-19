@@ -5,6 +5,7 @@ import { catalogueImagePath } from "../catalogue-images.js";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
 import { requireCustomerAccess, requireRole } from "../middleware.js";
+import { getPaymentConfig, getRewardConfig, isCodPaymentMethod, postCheckoutRewards, resolveEnabledPaymentMethod } from "../platform-config.js";
 import { addSupportMessage, createSupportTicket, filterTicketMessages, supportTicketInclude } from "../support-service.js";
 
 export const customerRouter = Router();
@@ -43,22 +44,8 @@ customerRouter.get("/home", asyncHandler(async (_req, res) => {
 }));
 
 customerRouter.get("/config", asyncHandler(async (_req, res) => {
-  const settings = await prisma.platformSetting.findMany({
-    where: { key: { in: ["paymentConfig", "rewardConfig"] } }
-  });
-  const data = {
-    paymentConfig: {
-      vendors: [
-        { id: "razorpay-upi", label: "UPI via Razorpay", enabled: true },
-        { id: "razorpay-cards", label: "Cards via Razorpay", enabled: true },
-        { id: "wallet", label: "Bazaar Setu Wallet", enabled: false },
-        { id: "cod", label: "Cash on Delivery", enabled: true }
-      ]
-    },
-    rewardConfig: { enabled: true, pointsPerHundred: 1 },
-    ...Object.fromEntries(settings.map((setting) => [setting.key, setting.value]))
-  };
-  return sendOk(res, data);
+  const [paymentConfig, rewardConfig] = await Promise.all([getPaymentConfig(), getRewardConfig()]);
+  return sendOk(res, { paymentConfig, rewardConfig });
 }));
 
 customerRouter.use("/:customerId", requireRole("CUSTOMER", "ADMIN", "SUPPORT"), requireCustomerAccess("customerId"));
@@ -272,6 +259,9 @@ customerRouter.post("/:customerId/orders", asyncHandler(async (req, res) => {
     paymentMethod: z.string(),
     items: z.array(z.object({ sellerProductId: z.string(), qty: z.number().int().positive() })).min(1)
   }).parse(req.body);
+  const [paymentConfig, rewardConfig] = await Promise.all([getPaymentConfig(), getRewardConfig()]);
+  const paymentMethod = resolveEnabledPaymentMethod(paymentConfig, input.paymentMethod);
+  const paymentState = isCodPaymentMethod(paymentMethod.id) ? "COD" : "PENDING";
 
   const address = await prisma.customerAddress.findFirst({
     where: { id: input.addressId, customerId }
@@ -308,12 +298,12 @@ customerRouter.post("/:customerId/orders", asyncHandler(async (req, res) => {
       }
     }
 
-    return tx.parentOrder.create({
+    const createdOrder = await tx.parentOrder.create({
       data: {
         customer: { connect: { id: customerId } },
         address: { connect: { id: input.addressId } },
-        paymentMethod: input.paymentMethod,
-        paymentState: input.paymentMethod === "cod" ? "COD" : "PENDING",
+        paymentMethod: paymentMethod.id,
+        paymentState,
         total,
         deliveryFee,
         subOrders: {
@@ -321,7 +311,7 @@ customerRouter.post("/:customerId/orders", asyncHandler(async (req, res) => {
             const seller = items[0]?.sellerProduct.seller;
             return {
               seller: { connect: { id: sellerId } },
-              paymentState: input.paymentMethod === "cod" ? "COD" : "PENDING",
+              paymentState,
               slaDueAt: seller ? addSlaToDate(seller.defaultSlaValue, seller.defaultSlaUnit) : undefined,
               timeline: [{ status: "placed", at: new Date().toISOString() }],
               items: {
@@ -343,6 +333,15 @@ customerRouter.post("/:customerId/orders", asyncHandler(async (req, res) => {
       },
       include: { subOrders: { include: { items: true } } }
     });
+
+    await postCheckoutRewards(tx, {
+      customerId,
+      parentOrderId: createdOrder.id,
+      orderTotal: total,
+      rewardConfig
+    });
+
+    return createdOrder;
   });
 
   return sendOk(res, order, 201);

@@ -2,23 +2,18 @@ import { Router } from "express";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { writeAuditLog } from "../audit-log.js";
+import { approveProductRequest, rejectProductRequest } from "../catalogue-approval-service.js";
 import { prisma } from "../db.js";
 import { ApiError, asyncHandler, getParam, sendOk } from "../http.js";
 import { requireRole } from "../middleware.js";
+import { defaultPaymentConfig, defaultRewardConfig } from "../platform-config.js";
 
 export const adminRouter = Router();
 adminRouter.use(requireRole("ADMIN", "SUPPORT"));
 
 const defaultSettings = {
-  paymentConfig: {
-    vendors: [
-      { id: "razorpay-upi", label: "UPI via Razorpay", enabled: true },
-      { id: "razorpay-cards", label: "Cards via Razorpay", enabled: true },
-      { id: "wallet", label: "Bazaar Setu Wallet", enabled: false },
-      { id: "cod", label: "Cash on Delivery", enabled: true }
-    ]
-  },
-  rewardConfig: { enabled: true, pointsPerHundred: 1 }
+  paymentConfig: defaultPaymentConfig,
+  rewardConfig: defaultRewardConfig
 };
 
 adminRouter.get("/dashboard", asyncHandler(async (_req, res) => {
@@ -122,32 +117,9 @@ adminRouter.patch("/product-requests/:requestId", asyncHandler(async (req, res) 
     })
     .parse(req.body);
 
-  const request = await prisma.productApprovalRequest.update({
-    where: { id: requestId },
-    data: { status: input.status, reason: input.reason }
-  });
-
-  if (input.status === "APPROVED") {
-    const productId = request.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-    const product = await prisma.productMaster.upsert({
-      where: { id: productId },
-      update: {},
-      create: {
-        id: productId,
-        categoryId: request.categoryId,
-        name: request.name,
-        unit: request.unit,
-        hsn: request.hsn,
-        aliases: [request.name.toLowerCase()],
-        fssaiApplicable: true,
-        legalMetrology: { netQuantity: request.unit, countryOfOrigin: "India" }
-      }
-    });
-    await prisma.productApprovalRequest.update({
-      where: { id: request.id },
-      data: { productId: product.id }
-    });
-  }
+  const request = input.status === "APPROVED"
+    ? await approveProductRequest(requestId, input.reason)
+    : await rejectProductRequest(requestId, input.reason?.trim() ?? "");
 
   await writeAuditLog(req, {
     action: input.status === "APPROVED" ? "product_request_approved" : "product_request_rejected",
